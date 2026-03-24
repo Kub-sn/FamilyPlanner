@@ -1,0 +1,18 @@
+{
+  "name": "Familienplaner",
+  "short_name": "Planer",
+  "description": "Alltagsorganisation fuer Familien mit Listen, Kalender, Essensplan und Dokumenten.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6efe2",
+  "theme_color": "#f46f3a",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "/family-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+- Bei jeder Codeänderung zuerst eine kurze, ehrliche Code-Review auf die eigenen Änderungen machen.
+- Review-Fokus: Bugs, Risiken, Regressionsgefahr, fehlende Tests, unsaubere Annahmen.
+- Sei direkt und brutal ehrlich. Beschönige keine Risiken.
+- Erst nach der Review neue Tests schreiben oder bestehende Tests anpassen.
+- Jede fachliche Änderung braucht passende Unit-Tests oder eine bewusste Begründung, warum keine sinnvoll sind.
+- Jede relevante Nutzerfluss-Änderung braucht passende E2E-Tests oder eine bewusste Begründung, warum keine sinnvoll sind.
+- Nach Änderungen immer `npm run test:unit` und `npm run test:e2e` ausführen.
+- Wenn Tests fehlschlagen, zuerst die Ursache im Code beheben statt Tests weichzuspülen.
+- Danach die zuvor fehlgeschlagenen Tests erneut ausführen, bis sie grün sind.
+- Playwright ist das Standardwerkzeug für E2E-Tests in diesem Repository.
+- Vitest und Testing Library sind der Standard für Unit- und Component-Tests in diesem Repository.
+- Neue Features gelten erst als fertig, wenn Build, Unit-Tests und E2E-Tests erfolgreich sind.
