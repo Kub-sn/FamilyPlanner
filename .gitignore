@@ -2,8 +2,10 @@ node_modules/
 dist/
 .DS_Store
 *.local
+*.tsbuildinfo
 .env
 .env.*
 !.env.example
+test-results/
 android/.gradle/
 android/local.properties
