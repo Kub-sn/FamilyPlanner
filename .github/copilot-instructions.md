@@ -1,12 +1,12 @@
-- Bei jeder Codeänderung zuerst eine kurze, ehrliche Code-Review auf die eigenen Änderungen machen.
-- Review-Fokus: Bugs, Risiken, Regressionsgefahr, fehlende Tests, unsaubere Annahmen.
-- Sei direkt und brutal ehrlich. Beschönige keine Risiken.
-- Erst nach der Review neue Tests schreiben oder bestehende Tests anpassen.
-- Jede fachliche Änderung braucht passende Unit-Tests oder eine bewusste Begründung, warum keine sinnvoll sind.
-- Jede relevante Nutzerfluss-Änderung braucht passende E2E-Tests oder eine bewusste Begründung, warum keine sinnvoll sind.
-- Nach Änderungen immer `npm run test:unit` und `npm run test:e2e` ausführen.
-- Wenn Tests fehlschlagen, zuerst die Ursache im Code beheben statt Tests weichzuspülen.
-- Danach die zuvor fehlgeschlagenen Tests erneut ausführen, bis sie grün sind.
-- Playwright ist das Standardwerkzeug für E2E-Tests in diesem Repository.
-- Vitest und Testing Library sind der Standard für Unit- und Component-Tests in diesem Repository.
-- Neue Features gelten erst als fertig, wenn Build, Unit-Tests und E2E-Tests erfolgreich sind.
+- For every code change, do a short, honest code review of your own changes first.
+- Review focus: bugs, risks, regression potential, missing tests, and sloppy assumptions.
+- Be direct and brutally honest. Do not downplay risks.
+- Only write new tests or adjust existing tests after the review.
+- Every functional change needs appropriate unit tests or a conscious justification for why none are meaningful.
+- Every relevant user flow change needs appropriate E2E tests or a conscious justification for why none are meaningful.
+- After changes, always run `npm run test:unit` and `npm run test:e2e`.
+- If tests fail, fix the root cause in the code first instead of watering down the tests.
+- Then rerun the previously failing tests until they are green.
+- Playwright is the standard tool for E2E tests in this repository.
+- Vitest and Testing Library are the standard tools for unit and component tests in this repository.
+- New features are only considered done when the build, unit tests, and E2E tests pass.

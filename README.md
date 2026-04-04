@@ -1,107 +1,107 @@
-# Familienplaner
+# Family Planner
 
-Ein erster MVP fuer eine familienfreundliche Planer-App, die im Browser laeuft, lokal speichert und fuer Supabase sowie Android mit Capacitor vorbereitet ist.
+A first MVP for a family-friendly planner app that runs in the browser, stores data locally, and is prepared for Supabase and Android via Capacitor.
 
-## Enthaltene Bereiche
+## Included Areas
 
-- Einkaufsliste
-- To-do-Listen
-- Notizen
-- Kalender
-- Essensplan
-- Dokumente
-- Rollenmodell mit `admin` und `familyuser`
+- Shopping list
+- To-do lists
+- Notes
+- Calendar
+- Meal plan
+- Documents
+- Role model with `admin` and `familyuser`
 
-## Technik
+## Tech Stack
 
 - Vite
 - React
 - TypeScript
-- PWA-Basis mit `manifest.webmanifest`
-- Local Storage fuer sofortige Persistenz
-- Supabase-Client vorbereitet fuer Auth, Sync und Familienfreigaben
-- Capacitor-Konfiguration fuer Android
+- PWA foundation with `manifest.webmanifest`
+- Local Storage for immediate persistence
+- Supabase client prepared for auth, sync, and family sharing
+- Capacitor configuration for Android
 
-## Aktueller Stand
+## Current Status
 
-Die App speichert ihren Zustand jetzt dauerhaft in Local Storage. Zusaetzlich sind Supabase und Capacitor vorbereitet, damit du auf echte Benutzerkonten, Familienfreigaben und eine Android-App erweitern kannst. Alle Planer-Module laufen fuer angemeldete Nutzer jetzt ueber Supabase. Eingebaute Mock-Daten wurden entfernt, neue Konten starten leer.
+The app now stores its state persistently in Local Storage. In addition, Supabase and Capacitor are prepared so you can extend it with real user accounts, family sharing, and an Android app. All planner modules now run through Supabase for signed-in users. Built-in mock data has been removed, and new accounts start empty.
 
-## Empfehlung zur Speicherung
+## Storage Recommendation
 
-- Kurzfristig: Local Storage ist perfekt fuer schnelles Prototyping und Offline-MVPs.
-- Mittelfristig: Supabase ist die richtige Wahl fuer mehrere Benutzer, Familienfreigaben und Geraete-Synchronisierung.
-- Empfehlung fuer dieses Projekt: Local Storage fuer den aktuellen Stand behalten und anschliessend auf Supabase fuer Benutzerkonten und gemeinsame Daten erweitern.
+- Short term: Local Storage is perfect for rapid prototyping and offline MVPs.
+- Medium term: Supabase is the right choice for multiple users, family sharing, and device synchronization.
+- Recommendation for this project: Keep Local Storage for the current stage and then extend to Supabase for user accounts and shared data.
 
-## Sicherheit mit Supabase
+## Security with Supabase
 
-- Supabase ist fuer diesen Anwendungsfall ausreichend sicher, wenn du Row Level Security aktivierst.
-- Der `anon key` ist nicht geheim. Sicherheit entsteht durch Authentifizierung, Policies und saubere Datenmodellierung.
-- Bei neuen Supabase-Projekten kannst du statt des alten `anon key` direkt den `publishable key` verwenden.
-- Rollenmodell in diesem Projekt: `admin` und `familyuser`.
-- Beispieltabellen und erste Policies liegen in `supabase/schema.sql`.
+- Supabase is sufficiently secure for this use case if you enable Row Level Security.
+- The `anon key` is not secret. Security comes from authentication, policies, and clean data modeling.
+- In new Supabase projects, you can use the `publishable key` directly instead of the old `anon key`.
+- Role model in this project: `admin` and `familyuser`.
+- Example tables and initial policies are in `supabase/schema.sql`.
 
-## Supabase einrichten
+## Set Up Supabase
 
-1. `.env.example` nach `.env` kopieren.
-2. `VITE_SUPABASE_URL` und `VITE_SUPABASE_PUBLISHABLE_KEY` eintragen.
-3. SQL aus `supabase/schema.sql` im Supabase SQL Editor ausfuehren.
-4. Danach Auth und Datenabgleich im Frontend aktivieren.
+1. Copy `.env.example` to `.env`.
+2. Enter `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`.
+3. Run the SQL from `supabase/schema.sql` in the Supabase SQL Editor.
+4. Then enable auth and data synchronization in the frontend.
 
-## Auth-Flow
+## Auth Flow
 
-- Registrierung mit E-Mail und Passwort ist im Frontend eingebaut.
-- Nach der ersten Anmeldung wird automatisch ein eigenes Profil in `profiles` angelegt.
-- Wenn noch keine Familie existiert, fuehrt die App in ein Onboarding und legt eine neue Familie an.
-- Der erste Benutzer dieser Familie wird automatisch `admin`.
-- Weitere Benutzer laufen spaeter ueber gemeinsame Cloud-Tabellen und Einladungslogik.
+- Email and password sign-up is built into the frontend.
+- After the first sign-in, a profile entry is created automatically in `profiles`.
+- If no family exists yet, the app leads the user through onboarding and creates a new family.
+- The first user of that family automatically becomes `admin`.
+- Additional users are later handled through shared cloud tables and invitation logic.
 
-## Erste Cloud-Module
+## First Cloud Modules
 
-- Einkauf, To-dos, Notizen, Kalender, Essensplan und Dokumente werden fuer authentifizierte Familienmitglieder aus Supabase geladen.
-- Neue Einkaufsartikel, Aufgaben, Notizen, Termine, Gerichte und Dokumente werden direkt in Supabase gespeichert.
-- Dokumente koennen optional einen Link auf eine externe Datei oder Freigabe enthalten.
-- Dokumente koennen ausserdem direkt als Datei in Supabase Storage hochgeladen werden, zum Beispiel als PDF oder Foto.
-- Dokumente unterstuetzen jetzt auch Word-Dateien, Mehrfach-Upload, Drag and Drop, Vorschaubilder fuer Bilder sowie Loeschen inklusive Storage-Datei.
-- Die Dokumentansicht bietet Suche, Filter und Sortierung, Bearbeiten der Metadaten und eine In-App-Vorschau fuer Bilder und PDFs.
-- Statusaenderungen bei Einkauf, To-dos und Essensplan werden direkt in Supabase aktualisiert.
-- Wichtig: Nach der Schema-Erweiterung musst du das aktuelle SQL aus `supabase/schema.sql` in Supabase erneut ausfuehren.
+- Shopping, to-dos, notes, calendar, meal plan, and documents are loaded from Supabase for authenticated family members.
+- New shopping items, tasks, notes, appointments, meals, and documents are stored directly in Supabase.
+- Documents can optionally contain a link to an external file or shared resource.
+- Documents can also be uploaded directly as files to Supabase Storage, for example as a PDF or photo.
+- Documents now also support Word files, multi-upload, drag and drop, image previews, and deletion including the storage file.
+- The document view provides search, filtering, and sorting, metadata editing, and an in-app preview for images and PDFs.
+- Status changes in shopping, to-dos, and the meal plan are updated directly in Supabase.
+- Important: After extending the schema, you must rerun the current SQL from `supabase/schema.sql` in Supabase.
 
-## Familien-Einladungen
+## Family Invitations
 
-- Admins koennen Einladungen fuer weitere Familienmitglieder per E-Mail anlegen.
-- Registriert oder meldet sich ein Nutzer mit derselben E-Mail an, wird die Einladung beim Login automatisch angenommen.
-- Fuer bestehende Supabase-Projekte fuehre zusaetzlich `supabase/add-family-invites.sql` aus.
-- Fuer bestehende Supabase-Projekte mit Dokument-Uploads fuehre zusaetzlich `supabase/add-document-uploads.sql` aus. Das aktuelle Skript enthaelt jetzt auch die Update-Policy fuer bearbeitbare Dokument-Metadaten.
+- Admins can create email invitations for additional family members.
+- If a user signs up or signs in with the same email address, the invitation is accepted automatically during login.
+- For existing Supabase projects, also run `supabase/add-family-invites.sql`.
+- For existing Supabase projects with document uploads, also run `supabase/add-document-uploads.sql`. The current script now also includes the update policy for editable document metadata.
 
 ## Supabase Troubleshooting
 
-- Wenn Supabase `infinite recursion detected in policy for relation "family_members"` meldet, fuehre fuer bestehende Projekte das SQL aus `supabase/fix-family-members-recursion.sql` im SQL Editor aus.
-- Ursache war eine rekursive RLS-Pruefung auf `family_members`. Das Fix-Script ersetzt diese Pruefungen durch sichere Helper-Funktionen.
+- If Supabase reports `infinite recursion detected in policy for relation "family_members"`, run the SQL from `supabase/fix-family-members-recursion.sql` in the SQL Editor for existing projects.
+- The cause was a recursive RLS check on `family_members`. The fix script replaces those checks with safe helper functions.
 
-## Rollen
+## Roles
 
-- `admin`: darf Familie anlegen und verwalten.
-- `familyuser`: arbeitet mit den Inhalten im Alltag.
+- `admin`: can create and manage the family.
+- `familyuser`: works with the daily content.
 
-## Testen des Auth-Setups
+## Test the Auth Setup
 
-1. In Supabase unter Authentication den E-Mail-Provider aktivieren.
-2. Optional E-Mail-Bestaetigung konfigurieren.
-3. App starten und einen neuen Benutzer registrieren.
-4. Nach dem Login die Familie anlegen.
-5. Danach steht die geschuetzte App-Ansicht bereit.
+1. In Supabase, enable the email provider under Authentication.
+2. Optionally configure email confirmation.
+3. Start the app and register a new user.
+4. Create the family after login.
+5. The protected app view is then available.
 
 ## CI
 
-Eine GitHub-Actions-Pipeline liegt in `.github/workflows/ci.yml` und fuehrt fuer Pushes und Pull Requests aus:
+A GitHub Actions pipeline is located at `.github/workflows/ci.yml` and runs the following for pushes and pull requests:
 
 1. `npm run build`
 2. `npm run test:unit`
 3. `npm run test:e2e`
 
-## Android mit Capacitor
+## Android with Capacitor
 
-Nach einem erfolgreichen Web-Build:
+After a successful web build:
 
 ```bash
 npm run build
@@ -109,11 +109,11 @@ npm run cap:sync
 npm run cap:android
 ```
 
-Hinweis: Fuer den letzten Schritt brauchst du Android Studio.
+Note: You need Android Studio for the last step.
 
-## Starten
+## Run
 
-Voraussetzung: Node.js und npm muessen installiert und im Pfad verfuegbar sein.
+Prerequisite: Node.js and npm must be installed and available in your path.
 
 ```bash
 npm install

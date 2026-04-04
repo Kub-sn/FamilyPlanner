@@ -14,7 +14,11 @@ test('shows the planner shell and lets the user open the shopping module', async
     return;
   }
 
-  await expect(page.getByRole('button', { name: 'Cloud-Sync inaktiv' })).toBeVisible();
+  await expect(
+    page.getByText(
+      /Demo-Modus ohne Supabase-Synchronisierung\.|Lokal aktiv\. F(?:uer|ür) Synchronisierung bitte mit Supabase anmelden\./,
+    ),
+  ).toBeVisible();
   await page.getByRole('button', { name: 'Einkauf' }).click();
   await expect(page.getByRole('heading', { name: 'Einkaufsliste' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Artikel speichern' })).toBeVisible();

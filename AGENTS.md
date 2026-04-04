@@ -2,23 +2,23 @@
 
 ## Review First
 
-- Nach jeder Codeänderung zuerst eine kurze, harte Code-Review auf die eigenen Änderungen machen.
-- Fokus immer auf Fehler, Regressionsrisiken, Sicherheitslücken, unklare Annahmen und fehlende Tests.
-- Review kommt vor dem Anpassen oder Schreiben neuer Tests.
+- After every code change, do a short, hard code review of your own changes first.
+- Always focus on bugs, regression risks, security issues, unclear assumptions, and missing tests.
+- The review comes before adjusting or writing new tests.
 
 ## Test Policy
 
-- Jede Verhaltensänderung braucht Unit-Tests oder aktualisierte bestehende Unit-Tests.
-- Jede relevante Nutzerfluss-Änderung braucht E2E-Tests oder aktualisierte bestehende E2E-Tests.
-- Standardwerkzeuge:
+- Every behavioral change requires unit tests or updated existing unit tests.
+- Every relevant user flow change requires E2E tests or updated existing E2E tests.
+- Standard tools:
   - Unit: Vitest + Testing Library
   - E2E: Playwright
 
 ## Execution Policy
 
-- Am Ende einer Änderung immer diese Reihenfolge ausführen:
+- At the end of a change, always run this sequence:
   1. `npm run test:unit`
   2. `npm run test:e2e`
-- Bei Fehlern zuerst Code oder Konfiguration beheben.
-- Danach nur die zuvor kaputten Tests erneut laufen lassen.
-- Eine Änderung ist nicht fertig, solange Build oder Tests fehlschlagen.
+- If there are failures, fix the code or configuration first.
+- Then rerun only the tests that were failing before.
+- A change is not finished as long as the build or tests are failing.
