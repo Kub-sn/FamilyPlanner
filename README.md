@@ -69,9 +69,19 @@ The app now stores its state persistently in Local Storage. In addition, Supabas
 ## Family Invitations
 
 - Admins can create email invitations for additional family members.
+- After the invite is created, the app calls the Supabase Edge Function `send-family-invite` to send a real invitation email.
 - If a user signs up or signs in with the same email address, the invitation is accepted automatically during login.
 - For existing Supabase projects, also run `supabase/add-family-invites.sql`.
 - For existing Supabase projects with document uploads, also run `supabase/add-document-uploads.sql`. The current script now also includes the update policy for editable document metadata.
+
+### Configure Invite Emails
+
+1. Deploy the Edge Function:
+	`supabase functions deploy send-family-invite`
+2. Set the required secrets in Supabase:
+	`supabase secrets set RESEND_API_KEY=... FAMILY_INVITE_FROM_EMAIL=Family Planner <noreply@your-domain.tld> INVITE_APP_URL=https://your-app-url`
+3. Use a verified sender address in Resend.
+4. After that, new family invitations are stored in Supabase and sent by email.
 
 ## Supabase Troubleshooting
 

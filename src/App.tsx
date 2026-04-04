@@ -812,18 +812,23 @@ function PlannerShell({
     }
 
     try {
-      const invite = await createFamilyInvite(
+      const result = await createFamilyInvite(
         authState.family.familyId,
         email,
         role,
         authState.profile.id,
       );
 
-      setFamilyInvites((current) => [invite, ...current.filter((entry) => entry.id !== invite.id)]);
+      setFamilyInvites((current) => [
+        result.invite,
+        ...current.filter((entry) => entry.id !== result.invite.id),
+      ]);
       formElement.reset();
       setCloudSync({
         phase: 'ready',
-        message: 'Einladung wurde in Supabase gespeichert.',
+        message: result.emailSent
+          ? 'Einladung wurde gespeichert und per E-Mail verschickt.'
+          : 'Einladung wurde gespeichert.',
       });
     } catch (error) {
       setCloudSync({
@@ -2110,7 +2115,7 @@ function PlannerShell({
                 {canManageFamily ? 'Einladung senden' : 'Nur Admin kann Einladungen senden'}
               </button>
               <small>
-                Die Einladung wird in Supabase gespeichert. Sobald sich der Nutzer mit derselben
+                Die Einladung wird per E-Mail verschickt. Sobald sich der Nutzer mit derselben
                 E-Mail registriert oder anmeldet, wird die Familienzuordnung automatisch uebernommen.
               </small>
             </form>

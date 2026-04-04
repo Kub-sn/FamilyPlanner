@@ -37,6 +37,11 @@ export type SupabaseFamilyInvite = {
   acceptedAt: string | null;
 };
 
+export type CreateFamilyInviteResult = {
+  invite: SupabaseFamilyInvite;
+  emailSent: boolean;
+};
+
 type ShoppingItemRow = {
   id: string;
   name: string;
@@ -96,6 +101,13 @@ type FamilyInviteRow = {
   role: UserRole;
   created_at: string;
   accepted_at: string | null;
+};
+
+type EdgeFunctionErrorLike = Error & {
+  context?: {
+    json?: () => Promise<unknown>;
+    text?: () => Promise<string>;
+  };
 };
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -434,14 +446,62 @@ export async function fetchFamilyInvites(familyId: string): Promise<SupabaseFami
   }));
 }
 
+function mapFamilyInvite(invite: FamilyInviteRow): SupabaseFamilyInvite {
+  return {
+    id: invite.id,
+    familyId: invite.family_id,
+    email: invite.email,
+    role: invite.role,
+    createdAt: invite.created_at,
+    acceptedAt: invite.accepted_at,
+  };
+}
+
+async function extractEdgeFunctionErrorMessage(error: EdgeFunctionErrorLike) {
+  const response = error.context;
+
+  if (!response) {
+    return error.message;
+  }
+
+  const payload = await response.json?.().catch(() => null);
+
+  if (payload && typeof payload === 'object' && 'error' in payload) {
+    const details = 'details' in payload && typeof payload.details === 'string'
+      ? ` ${payload.details}`
+      : '';
+    const errorMessage = typeof payload.error === 'string' ? payload.error : error.message;
+
+    return `${errorMessage}${details}`.trim();
+  }
+
+  const text = await response.text?.().catch(() => '');
+
+  return text || error.message;
+}
+
+async function triggerFamilyInviteEmail(client: SupabaseClient, inviteId: string) {
+  const { error } = await client.functions.invoke('send-family-invite', {
+    body: {
+      inviteId,
+      appUrl: window.location.origin,
+    },
+  });
+
+  if (error) {
+    throw new Error(await extractEdgeFunctionErrorMessage(error as EdgeFunctionErrorLike));
+  }
+}
+
 export async function createFamilyInvite(
   familyId: string,
   email: string,
   role: UserRole,
   invitedByUserId: string,
-) {
+): Promise<CreateFamilyInviteResult> {
   const client = requireSupabase();
   const normalizedEmail = email.trim().toLowerCase();
+  let invite: FamilyInviteRow | null = null;
 
   if (!normalizedEmail) {
     throw new Error('Bitte eine E-Mail-Adresse eingeben.');
@@ -459,18 +519,32 @@ export async function createFamilyInvite(
     .single();
 
   if (error) {
-    throw error;
+    if (error.code !== '23505') {
+      throw error;
+    }
+
+    const { data: existingInvite, error: existingInviteError } = await client
+      .from('family_invites')
+      .select('id, family_id, email, role, created_at, accepted_at')
+      .eq('family_id', familyId)
+      .eq('email', normalizedEmail)
+      .is('accepted_at', null)
+      .single();
+
+    if (existingInviteError || !existingInvite) {
+      throw error;
+    }
+
+    invite = existingInvite as FamilyInviteRow;
+  } else {
+    invite = data as FamilyInviteRow;
   }
 
-  const invite = data as FamilyInviteRow;
+  await triggerFamilyInviteEmail(client, invite.id);
 
   return {
-    id: invite.id,
-    familyId: invite.family_id,
-    email: invite.email,
-    role: invite.role,
-    createdAt: invite.created_at,
-    acceptedAt: invite.accepted_at,
+    invite: mapFamilyInvite(invite),
+    emailSent: true,
   };
 }
 

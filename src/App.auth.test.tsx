@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   acceptPendingFamilyInvite,
+  createFamilyInvite,
   ensureProfile,
   fetchCalendarEntries,
   fetchDocuments,
@@ -18,6 +19,7 @@ const {
   signUpWithPassword,
 } = vi.hoisted(() => ({
   acceptPendingFamilyInvite: vi.fn(),
+  createFamilyInvite: vi.fn(),
   ensureProfile: vi.fn(),
   fetchCalendarEntries: vi.fn(),
   fetchDocuments: vi.fn(),
@@ -39,6 +41,7 @@ vi.mock('./lib/supabase', async () => {
     ...actual,
     supabaseConfigured: true,
     acceptPendingFamilyInvite,
+    createFamilyInvite,
     ensureProfile,
     fetchCalendarEntries,
     fetchDocuments,
@@ -68,10 +71,22 @@ function getAccountCard() {
   return within(accountCard as HTMLElement);
 }
 
+function getInviteForm() {
+  const inviteHeading = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' });
+  const inviteForm = inviteHeading.closest('form');
+
+  if (!inviteForm) {
+    throw new Error('Einladungsformular wurde nicht gefunden.');
+  }
+
+  return within(inviteForm as HTMLElement);
+}
+
 describe('App auth flow', () => {
   beforeEach(() => {
     window.history.replaceState({}, '', '/');
     acceptPendingFamilyInvite.mockReset();
+    createFamilyInvite.mockReset();
     ensureProfile.mockReset();
     fetchCalendarEntries.mockReset();
     fetchDocuments.mockReset();
@@ -94,6 +109,17 @@ describe('App auth flow', () => {
     fetchDocuments.mockResolvedValue([]);
     fetchFamilyMembers.mockResolvedValue([]);
     fetchFamilyInvites.mockResolvedValue([]);
+    createFamilyInvite.mockResolvedValue({
+      invite: {
+        id: 'invite-created',
+        familyId: 'family-created',
+        email: 'new@example.com',
+        role: 'familyuser',
+        createdAt: '2026-04-04T10:00:00.000Z',
+        acceptedAt: null,
+      },
+      emailSent: true,
+    });
   });
 
   it('shows the confirmation message after sign-up without crashing on form reset', async () => {
@@ -238,5 +264,67 @@ describe('App auth flow', () => {
 
     expect(screen.getByRole('heading', { level: 3, name: 'Familie & Rollen' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Einladung senden' })).toBeInTheDocument();
+  });
+
+  it('sends an invitation email for admins and shows the success message', async () => {
+    const user = userEvent.setup();
+
+    getCurrentSession.mockResolvedValue({
+      user: {
+        id: 'user-4',
+        email: 'admin@example.com',
+        user_metadata: {},
+      },
+    });
+    ensureProfile.mockResolvedValue({
+      id: 'user-4',
+      display_name: 'Admin',
+      email: 'admin@example.com',
+      role: 'admin',
+    });
+    fetchFamilyContext.mockResolvedValue({
+      familyId: 'family-4',
+      familyName: 'Familie Mail',
+      role: 'admin',
+    });
+    fetchFamilyMembers.mockResolvedValue([
+      {
+        id: 'user-4',
+        name: 'Admin',
+        email: 'admin@example.com',
+        role: 'admin',
+      },
+    ]);
+    createFamilyInvite.mockResolvedValue({
+      invite: {
+        id: 'invite-42',
+        familyId: 'family-4',
+        email: 'new@example.com',
+        role: 'familyuser',
+        createdAt: '2026-04-04T10:00:00.000Z',
+        acceptedAt: null,
+      },
+      emailSent: true,
+    });
+
+    render(<App />);
+
+    await screen.findByRole('heading', { level: 1, name: 'Familienplaner' });
+    await user.click(screen.getByRole('button', { name: 'Familie & Rollen' }));
+
+    const inviteForm = getInviteForm();
+
+    await user.type(inviteForm.getByPlaceholderText('E-Mail'), 'new@example.com');
+    await user.selectOptions(inviteForm.getByRole('combobox'), 'familyuser');
+    await user.click(inviteForm.getByRole('button', { name: 'Einladung senden' }));
+
+    expect(createFamilyInvite).toHaveBeenCalledWith(
+      'family-4',
+      'new@example.com',
+      'familyuser',
+      'user-4',
+    );
+    expect(await screen.findByText('new@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Wartet auf Registrierung oder nächsten Login')).toBeInTheDocument();
   });
 });

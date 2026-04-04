@@ -53,6 +53,7 @@ begin
   where lower(fi.email) = current_email
     and fi.accepted_at is null
   order by fi.created_at desc
+  for update
   limit 1;
 
   if pending_invite.id is null then
@@ -70,7 +71,13 @@ begin
 
   update public.family_invites
   set accepted_at = now()
-  where id = pending_invite.id;
+  where id = pending_invite.id
+    and lower(email) = current_email
+    and accepted_at is null;
+
+  if not found then
+    return;
+  end if;
 
   return query
   select pending_invite.id, pending_invite.family_id, pending_invite.role;
@@ -113,18 +120,17 @@ with check (
 );
 
 drop policy if exists "invitees and admins can update family invites" on public.family_invites;
-create policy "invitees and admins can update family invites"
+drop policy if exists "admins can update family invites" on public.family_invites;
+create policy "admins can update family invites"
 on public.family_invites
 for update
 using (
   public.is_family_owner(family_id)
   or public.is_family_admin(family_id)
-  or lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
 )
 with check (
   public.is_family_owner(family_id)
   or public.is_family_admin(family_id)
-  or lower(email) = lower(coalesce(auth.jwt() ->> 'email', ''))
 );
 
 drop policy if exists "owners and admins can add memberships" on public.family_members;
