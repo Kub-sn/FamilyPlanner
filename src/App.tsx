@@ -9,7 +9,12 @@ import {
   type UserRole,
 } from './lib/planner-data';
 import { humanizeAuthError } from './lib/auth-errors';
-import { clearAuthRedirectState, getAuthRedirectMessage } from './lib/auth-redirect';
+import {
+  clearAuthRedirectState,
+  getAuthRedirectError,
+  getAuthRedirectMessage,
+  getAuthRedirectMode,
+} from './lib/auth-redirect';
 import {
   buildCalendarMonth,
   CALENDAR_WEEKDAY_LABELS,
@@ -53,6 +58,7 @@ import {
   fetchTasks,
   fetchFamilyContext,
   getCurrentSession,
+  resetPasswordForEmail,
   uploadDocumentFile,
   signInWithPassword,
   signOutFromSupabase,
@@ -60,6 +66,7 @@ import {
   subscribeToAuthChanges,
   supabaseConfigured,
   removeFamilyInvite,
+  updatePassword,
   updateDocument,
   updateMealPrepared,
   updateShoppingItemChecked,
@@ -71,18 +78,20 @@ import {
 import { applyCloudCollections } from './lib/cloud-sync';
 
 type AuthStage = 'disabled' | 'loading' | 'signed-out' | 'onboarding' | 'authenticated';
-type AuthMode = 'sign-in' | 'sign-up';
+type AuthMode = 'sign-in' | 'sign-up' | 'forgot-password' | 'reset-password';
 
 type AuthDraft = {
   displayName: string;
   email: string;
   password: string;
+  confirmPassword: string;
 };
 
 const EMPTY_AUTH_DRAFT: AuthDraft = {
   displayName: '',
   email: '',
   password: '',
+  confirmPassword: '',
 };
 
 type AuthState = {
@@ -336,8 +345,11 @@ function AuthScreen({
           <p className="eyebrow">Supabase Auth</p>
           <h1>Familienplaner mit echten Benutzerkonten</h1>
           <p>
-            Melde dich an oder registriere dich. Danach legst du deine Familie an und nutzt die App
-            als `admin` oder `familyuser`.
+            {mode === 'forgot-password'
+              ? 'Fordere einen sicheren Link an, um dein Passwort zurückzusetzen.'
+              : mode === 'reset-password'
+                ? 'Lege jetzt ein neues Passwort für dein Konto fest.'
+                : 'Melde dich an oder registriere dich. Danach legst du deine Familie an und nutzt die App als `admin` oder `familyuser`.'}
           </p>
           <div className="auth-benefits">
             <span>Gemeinsame Familienfreigabe</span>
@@ -347,22 +359,24 @@ function AuthScreen({
         </div>
 
         <form className="auth-panel" autoComplete="off" onSubmit={(event) => void onSubmit(event)}>
-          <div className="mode-switch auth-mode-switch">
-            <button
-              type="button"
-              className={mode === 'sign-in' ? 'mode-button active' : 'mode-button'}
-              onClick={() => onModeChange('sign-in')}
-            >
-              Anmelden
-            </button>
-            <button
-              type="button"
-              className={mode === 'sign-up' ? 'mode-button active' : 'mode-button'}
-              onClick={() => onModeChange('sign-up')}
-            >
-              Registrieren
-            </button>
-          </div>
+          {mode === 'sign-in' || mode === 'sign-up' ? (
+            <div className="mode-switch auth-mode-switch">
+              <button
+                type="button"
+                className={mode === 'sign-in' ? 'mode-button active' : 'mode-button'}
+                onClick={() => onModeChange('sign-in')}
+              >
+                Anmelden
+              </button>
+              <button
+                type="button"
+                className={mode === 'sign-up' ? 'mode-button active' : 'mode-button'}
+                onClick={() => onModeChange('sign-up')}
+              >
+                Registrieren
+              </button>
+            </div>
+          ) : null}
 
           {mode === 'sign-up' ? (
             <input
@@ -373,29 +387,70 @@ function AuthScreen({
               onChange={(event) => onDraftChange('displayName', event.currentTarget.value)}
             />
           ) : null}
-          <input
-            name="email"
-            type="email"
-            placeholder="E-Mail"
-            autoComplete="off"
-            value={authDraft.email}
-            onChange={(event) => onDraftChange('email', event.currentTarget.value)}
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Passwort"
-            autoComplete="new-password"
-            value={authDraft.password}
-            onChange={(event) => onDraftChange('password', event.currentTarget.value)}
-          />
+          {mode !== 'reset-password' ? (
+            <input
+              name="email"
+              type="email"
+              placeholder="E-Mail"
+              autoComplete="off"
+              value={authDraft.email}
+              onChange={(event) => onDraftChange('email', event.currentTarget.value)}
+            />
+          ) : null}
+          {mode !== 'forgot-password' ? (
+            <input
+              name="password"
+              type="password"
+              placeholder={mode === 'reset-password' ? 'Neues Passwort' : 'Passwort'}
+              autoComplete="new-password"
+              value={authDraft.password}
+              onChange={(event) => onDraftChange('password', event.currentTarget.value)}
+            />
+          ) : null}
+          {mode === 'reset-password' ? (
+            <input
+              name="confirmPassword"
+              type="password"
+              placeholder="Passwort wiederholen"
+              autoComplete="new-password"
+              value={authDraft.confirmPassword}
+              onChange={(event) => onDraftChange('confirmPassword', event.currentTarget.value)}
+            />
+          ) : null}
 
           {error ? <p className="auth-feedback auth-error">{error}</p> : null}
           {message ? <p className="auth-feedback auth-message">{message}</p> : null}
 
           <button type="submit" className="auth-submit" disabled={busy}>
-            {busy ? 'Bitte warten…' : mode === 'sign-in' ? 'Jetzt anmelden' : 'Konto anlegen'}
+            {busy
+              ? 'Bitte warten…'
+              : mode === 'sign-in'
+                ? 'Jetzt anmelden'
+                : mode === 'sign-up'
+                  ? 'Konto anlegen'
+                  : mode === 'forgot-password'
+                    ? 'Reset-Link senden'
+                    : 'Passwort speichern'}
           </button>
+
+          {mode === 'sign-in' ? (
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => onModeChange('forgot-password')}
+            >
+              Passwort vergessen?
+            </button>
+          ) : null}
+          {mode === 'forgot-password' || mode === 'reset-password' ? (
+            <button
+              type="button"
+              className="secondary-action"
+              onClick={() => onModeChange('sign-in')}
+            >
+              Zurück zur Anmeldung
+            </button>
+          ) : null}
         </form>
       </section>
     </div>
@@ -2205,11 +2260,17 @@ export default function App() {
   const [redirectAuthMessage] = useState(() =>
     typeof window === 'undefined' ? null : getAuthRedirectMessage(window.location.href),
   );
+  const [redirectAuthError] = useState(() =>
+    typeof window === 'undefined' ? null : getAuthRedirectError(window.location.href),
+  );
+  const [redirectAuthMode] = useState<AuthMode | null>(() =>
+    typeof window === 'undefined' ? null : getAuthRedirectMode(window.location.href),
+  );
   const [activeTab, setActiveTab] = useState<TabId>('overview');
   const [plannerState, setPlannerState] = useState<PlannerState>(() => loadPlannerState());
   const [familyInvites, setFamilyInvites] = useState<SupabaseFamilyInvite[]>([]);
   const [authDraft, setAuthDraft] = useState<AuthDraft>(EMPTY_AUTH_DRAFT);
-  const [authMode, setAuthMode] = useState<AuthMode>('sign-in');
+  const [authMode, setAuthMode] = useState<AuthMode>(redirectAuthMode ?? 'sign-in');
   const [authBusy, setAuthBusy] = useState(false);
   const [authState, setAuthState] = useState<AuthState>({
     stage: supabaseConfigured ? 'loading' : 'disabled',
@@ -2345,7 +2406,7 @@ export default function App() {
           session: null,
           profile: null,
           family: null,
-          error: null,
+          error: redirectAuthError,
         }));
         return;
       }
@@ -2420,16 +2481,22 @@ export default function App() {
       disposed = true;
       unsubscribe();
     };
-  }, [redirectAuthMessage]);
+  }, [redirectAuthError, redirectAuthMessage]);
 
   const handleAuthSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formElement = event.currentTarget;
     const email = authDraft.email.trim();
     const password = authDraft.password.trim();
+    const confirmPassword = authDraft.confirmPassword.trim();
     const displayName = authDraft.displayName.trim();
 
-    if (!email || !password || (authMode === 'sign-up' && !displayName)) {
+    if (
+      (authMode === 'sign-in' && (!email || !password))
+      || (authMode === 'sign-up' && (!email || !password || !displayName))
+      || (authMode === 'forgot-password' && !email)
+      || (authMode === 'reset-password' && (!password || !confirmPassword))
+    ) {
       setAuthState((current) => ({
         ...current,
         error: 'Bitte alle erforderlichen Felder ausfüllen.',
@@ -2451,7 +2518,7 @@ export default function App() {
         if (error) {
           throw error;
         }
-      } else {
+      } else if (authMode === 'sign-up') {
         const { data, error } = await signUpWithPassword(email, password, displayName);
 
         if (error) {
@@ -2465,6 +2532,40 @@ export default function App() {
             message: 'Konto erstellt. Bitte bestätige jetzt die E-Mail und melde dich danach an.',
           }));
         }
+      } else if (authMode === 'forgot-password') {
+        const { error } = await resetPasswordForEmail(email);
+
+        if (error) {
+          throw error;
+        }
+
+        setAuthState((current) => ({
+          ...current,
+          stage: 'signed-out',
+          message: 'Wenn ein Konto mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen verschickt.',
+        }));
+        setAuthMode('sign-in');
+      } else {
+        if (password !== confirmPassword) {
+          throw new Error('Die neuen Passwörter stimmen nicht überein.');
+        }
+
+        const { error } = await updatePassword(password);
+
+        if (error) {
+          throw error;
+        }
+
+        if (typeof window !== 'undefined') {
+          window.history.replaceState({}, document.title, clearAuthRedirectState(window.location.href));
+        }
+
+        setAuthState((current) => ({
+          ...current,
+          error: null,
+          message: 'Passwort erfolgreich aktualisiert.',
+        }));
+        setAuthMode('sign-in');
       }
 
       setAuthDraft(EMPTY_AUTH_DRAFT);
@@ -2549,6 +2650,17 @@ export default function App() {
     }
   };
 
+  const handleAuthModeChange = (mode: AuthMode) => {
+    setAuthMode(mode);
+    setAuthDraft((current) => ({
+      ...EMPTY_AUTH_DRAFT,
+      email:
+        mode === 'forgot-password' || (mode === 'sign-in' && authMode === 'forgot-password')
+          ? current.email
+          : '',
+    }));
+  };
+
   if (authState.stage === 'loading') {
     return (
       <div className="auth-shell">
@@ -2576,10 +2688,7 @@ export default function App() {
           }))
         }
         onSubmit={handleAuthSubmit}
-        onModeChange={(mode) => {
-          setAuthMode(mode);
-          setAuthDraft(EMPTY_AUTH_DRAFT);
-        }}
+        onModeChange={handleAuthModeChange}
       />
     );
   }

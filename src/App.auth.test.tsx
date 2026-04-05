@@ -17,7 +17,9 @@ const {
   fetchTasks,
   getCurrentSession,
   removeFamilyInvite,
+  resetPasswordForEmail,
   signUpWithPassword,
+  updatePassword,
 } = vi.hoisted(() => ({
   acceptPendingFamilyInvite: vi.fn(),
   createFamilyInvite: vi.fn(),
@@ -33,7 +35,9 @@ const {
   fetchTasks: vi.fn(),
   getCurrentSession: vi.fn(),
   removeFamilyInvite: vi.fn(),
+  resetPasswordForEmail: vi.fn(),
   signUpWithPassword: vi.fn(),
+  updatePassword: vi.fn(),
 }));
 
 vi.mock('./lib/supabase', async () => {
@@ -56,8 +60,10 @@ vi.mock('./lib/supabase', async () => {
     fetchTasks,
     getCurrentSession,
     removeFamilyInvite,
+    resetPasswordForEmail,
     subscribeToAuthChanges: () => () => undefined,
     signUpWithPassword,
+    updatePassword,
   };
 });
 
@@ -102,7 +108,9 @@ describe('App auth flow', () => {
     fetchTasks.mockReset();
     getCurrentSession.mockReset();
     removeFamilyInvite.mockReset();
+    resetPasswordForEmail.mockReset();
     signUpWithPassword.mockReset();
+    updatePassword.mockReset();
 
     getCurrentSession.mockResolvedValue(null);
     fetchShoppingItems.mockResolvedValue([]);
@@ -125,6 +133,8 @@ describe('App auth flow', () => {
       emailSent: true,
     });
     removeFamilyInvite.mockResolvedValue(undefined);
+    resetPasswordForEmail.mockResolvedValue({ data: {}, error: null });
+    updatePassword.mockResolvedValue({ data: {}, error: null });
   });
 
   it('shows the confirmation message after sign-up without crashing on form reset', async () => {
@@ -153,6 +163,46 @@ describe('App auth flow', () => {
 
     expect(signUpWithPassword).toHaveBeenCalledWith('alex@example.com', 'supersecret', 'Alex');
     expect(screen.queryByText(/can't access property "reset"/i)).not.toBeInTheDocument();
+  });
+
+  it('requests a password reset email from the sign-in screen', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await screen.findByRole('heading', {
+      level: 1,
+      name: 'Familienplaner mit echten Benutzerkonten',
+    });
+
+    await user.type(screen.getByPlaceholderText('E-Mail'), 'alex@example.com');
+    await user.click(screen.getByRole('button', { name: 'Passwort vergessen?' }));
+    await user.click(screen.getByRole('button', { name: 'Reset-Link senden' }));
+
+    expect(resetPasswordForEmail).toHaveBeenCalledWith('alex@example.com');
+    expect(
+      await screen.findByText('Wenn ein Konto mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen verschickt.'),
+    ).toBeInTheDocument();
+  });
+
+  it('lets the user set a new password from a recovery link', async () => {
+    const user = userEvent.setup();
+
+    window.history.replaceState({}, '', '/#access_token=test-token&type=recovery');
+
+    render(<App />);
+
+    await screen.findByRole('heading', {
+      level: 1,
+      name: 'Familienplaner mit echten Benutzerkonten',
+    });
+
+    await user.type(screen.getByPlaceholderText('Neues Passwort'), 'supersecret2');
+    await user.type(screen.getByPlaceholderText('Passwort wiederholen'), 'supersecret2');
+    await user.click(screen.getByRole('button', { name: 'Passwort speichern' }));
+
+    expect(updatePassword).toHaveBeenCalledWith('supersecret2');
+    expect(await screen.findByText('Passwort erfolgreich aktualisiert.')).toBeInTheDocument();
   });
 
   it('accepts a pending invitation during session hydration', async () => {

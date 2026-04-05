@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { clearAuthRedirectState, getAuthRedirectMessage } from './auth-redirect';
+import {
+  clearAuthRedirectState,
+  getAuthRedirectError,
+  getAuthRedirectMessage,
+  getAuthRedirectMode,
+} from './auth-redirect';
 
 describe('auth redirect helpers', () => {
   it('detects a successful signup confirmation redirect', () => {
@@ -16,5 +21,21 @@ describe('auth redirect helpers', () => {
         'http://localhost:5173/?code=abc#access_token=test-token&type=signup',
       ),
     ).toBe('/');
+  });
+
+  it('detects a password recovery redirect', () => {
+    expect(
+      getAuthRedirectMode(
+        'http://localhost:5173/#access_token=test-token&type=recovery&expires_in=3600',
+      ),
+    ).toBe('reset-password');
+  });
+
+  it('humanizes expired auth redirect errors', () => {
+    expect(
+      getAuthRedirectError(
+        'http://localhost:5173/#error=access_denied&error_description=Email+link+is+invalid+or+has+expired',
+      ),
+    ).toBe('Der Bestätigungs- oder Wiederherstellungslink ist ungültig oder bereits abgelaufen. Bitte fordere einen neuen Link an.');
   });
 });

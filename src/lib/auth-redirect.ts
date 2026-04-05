@@ -9,6 +9,36 @@ function readParamFromUrl(param: string, url: URL) {
   return hashParams.get(param);
 }
 
+export function getAuthRedirectMode(href: string) {
+  const url = new URL(href);
+  const type = readParamFromUrl('type', url);
+  const accessToken = readParamFromUrl('access_token', url);
+  const tokenHash = readParamFromUrl('token_hash', url);
+
+  if (type === 'recovery' && (accessToken || tokenHash)) {
+    return 'reset-password' as const;
+  }
+
+  return null;
+}
+
+export function getAuthRedirectError(href: string) {
+  const url = new URL(href);
+  const description = readParamFromUrl('error_description', url);
+
+  if (!description) {
+    return null;
+  }
+
+  const normalizedDescription = description.replace(/\+/g, ' ').trim();
+
+  if (/invalid or has expired/i.test(normalizedDescription)) {
+    return 'Der Bestätigungs- oder Wiederherstellungslink ist ungültig oder bereits abgelaufen. Bitte fordere einen neuen Link an.';
+  }
+
+  return normalizedDescription;
+}
+
 export function getAuthRedirectMessage(href: string) {
   const url = new URL(href);
   const type = readParamFromUrl('type', url);

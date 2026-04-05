@@ -84,6 +84,42 @@ describe('auth email normalization', () => {
       },
     });
   });
+
+  it('uses the current origin for password reset emails', async () => {
+    const resetPasswordForEmailMock = vi.fn().mockResolvedValue({ data: {}, error: null });
+
+    createClientMock.mockReturnValue({
+      auth: {
+        resetPasswordForEmail: resetPasswordForEmailMock,
+      },
+    });
+
+    const { resetPasswordForEmail } = await import('./supabase');
+
+    await resetPasswordForEmail('Kubi.Y@Example.com ');
+
+    expect(resetPasswordForEmailMock).toHaveBeenCalledWith('kubi.y@example.com', {
+      redirectTo: window.location.origin,
+    });
+  });
+
+  it('updates the current user password', async () => {
+    const updateUserMock = vi.fn().mockResolvedValue({ data: {}, error: null });
+
+    createClientMock.mockReturnValue({
+      auth: {
+        updateUser: updateUserMock,
+      },
+    });
+
+    const { updatePassword } = await import('./supabase');
+
+    await updatePassword('new-super-secret');
+
+    expect(updateUserMock).toHaveBeenCalledWith({
+      password: 'new-super-secret',
+    });
+  });
 });
 
 describe('createFamilyInvite', () => {

@@ -306,6 +306,20 @@ export async function signUpWithPassword(
   });
 }
 
+export async function resetPasswordForEmail(email: string) {
+  const redirectTo = getAuthRedirectBaseUrl();
+
+  return requireSupabase().auth.resetPasswordForEmail(normalizeEmailAddress(email), {
+    ...(redirectTo ? { redirectTo } : {}),
+  });
+}
+
+export async function updatePassword(password: string) {
+  return requireSupabase().auth.updateUser({
+    password,
+  });
+}
+
 export async function signOutFromSupabase() {
   return requireSupabase().auth.signOut();
 }
