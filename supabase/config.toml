@@ -1,0 +1,2 @@
+[functions.send-family-invite]
+verify_jwt = false

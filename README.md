@@ -79,6 +79,7 @@ The app now stores its state persistently in Local Storage. In addition, Supabas
 
 1. Deploy the Edge Function:
    `supabase functions deploy send-family-invite`
+   Note: `supabase/config.toml` disables platform-level JWT prevalidation for this function so the function can validate the caller token itself.
 2. Set the required secrets in Supabase:
    `supabase secrets set RESEND_API_KEY=... FAMILY_INVITE_FROM_EMAIL=frey frey <noreply@your-domain.tld> INVITE_APP_URL=https://your-app-url`
 3. Use a verified sender address in Resend.
