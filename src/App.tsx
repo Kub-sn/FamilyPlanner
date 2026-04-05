@@ -2140,7 +2140,7 @@ function PlannerShell({
         ) : null}
 
         <section className={activeTab === 'family' && canManageFamily ? 'module is-visible' : 'module'}>
-          {cloudSync.message ? (
+          {cloudSync.message && cloudSync.message !== 'Alle Planer-Module sind mit Supabase synchronisiert.' ? (
             <p
               className={
                 cloudSync.phase === 'error'
@@ -2153,7 +2153,6 @@ function PlannerShell({
           ) : null}
           <div className="section-header">
             <h3>Familie & Rollen</h3>
-            <p>Admin verwaltet Mitglieder und Familyuser arbeitet im Alltag mit.</p>
           </div>
           <div className="module-layout role-layout">
             <article className="panel list-panel">
@@ -2165,7 +2164,7 @@ function PlannerShell({
                 {plannerState.members.length > 0 ? (
                   plannerState.members.map((member) => (
                     <li key={member.id}>
-                      <div>
+                      <div className="family-entry-copy">
                         <strong>{member.name}</strong>
                         <small>{member.email}</small>
                       </div>
@@ -2189,7 +2188,7 @@ function PlannerShell({
                 {familyInvites.length > 0 ? (
                   familyInvites.map((invite) => (
                     <li key={invite.id}>
-                      <div>
+                      <div className="family-entry-copy">
                         <strong>{invite.email}</strong>
                         <small>Wartet auf Registrierung oder nächsten Login</small>
                       </div>

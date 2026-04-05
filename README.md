@@ -73,6 +73,7 @@ The app now stores its state persistently in Local Storage. In addition, Supabas
 - After the invite is created, the app calls the Supabase Edge Function `send-family-invite` to send a real invitation email.
 - If a user signs up or signs in with the same email address, the invitation is accepted automatically during login.
 - For existing Supabase projects, also run `supabase/add-family-invites.sql`.
+- For existing Supabase projects, also run `supabase/allow-family-profile-reads.sql` so family members can see each other in the roles view.
 - For existing Supabase projects with document uploads, also run `supabase/add-document-uploads.sql`. The current script now also includes the update policy for editable document metadata.
 
 ### Configure Invite Emails
