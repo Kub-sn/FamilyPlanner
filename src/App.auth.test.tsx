@@ -16,6 +16,7 @@ const {
   fetchShoppingItems,
   fetchTasks,
   getCurrentSession,
+  removeFamilyInvite,
   signUpWithPassword,
 } = vi.hoisted(() => ({
   acceptPendingFamilyInvite: vi.fn(),
@@ -31,6 +32,7 @@ const {
   fetchShoppingItems: vi.fn(),
   fetchTasks: vi.fn(),
   getCurrentSession: vi.fn(),
+  removeFamilyInvite: vi.fn(),
   signUpWithPassword: vi.fn(),
 }));
 
@@ -53,6 +55,7 @@ vi.mock('./lib/supabase', async () => {
     fetchShoppingItems,
     fetchTasks,
     getCurrentSession,
+    removeFamilyInvite,
     subscribeToAuthChanges: () => () => undefined,
     signUpWithPassword,
   };
@@ -98,6 +101,7 @@ describe('App auth flow', () => {
     fetchShoppingItems.mockReset();
     fetchTasks.mockReset();
     getCurrentSession.mockReset();
+    removeFamilyInvite.mockReset();
     signUpWithPassword.mockReset();
 
     getCurrentSession.mockResolvedValue(null);
@@ -120,6 +124,7 @@ describe('App auth flow', () => {
       },
       emailSent: true,
     });
+    removeFamilyInvite.mockResolvedValue(undefined);
   });
 
   it('shows the confirmation message after sign-up without crashing on form reset', async () => {
@@ -326,5 +331,56 @@ describe('App auth flow', () => {
     );
     expect(await screen.findByText('new@example.com')).toBeInTheDocument();
     expect(screen.getByText('Wartet auf Registrierung oder nächsten Login')).toBeInTheDocument();
+  });
+
+  it('allows admins to withdraw a pending invitation', async () => {
+    const user = userEvent.setup();
+
+    getCurrentSession.mockResolvedValue({
+      user: {
+        id: 'user-5',
+        email: 'admin@example.com',
+        user_metadata: {},
+      },
+    });
+    ensureProfile.mockResolvedValue({
+      id: 'user-5',
+      display_name: 'Admin',
+      email: 'admin@example.com',
+      role: 'admin',
+    });
+    fetchFamilyContext.mockResolvedValue({
+      familyId: 'family-5',
+      familyName: 'Familie Test',
+      role: 'admin',
+    });
+    fetchFamilyMembers.mockResolvedValue([
+      {
+        id: 'user-5',
+        name: 'Admin',
+        email: 'admin@example.com',
+        role: 'admin',
+      },
+    ]);
+    fetchFamilyInvites.mockResolvedValue([
+      {
+        id: 'invite-open',
+        familyId: 'family-5',
+        email: 'open@example.com',
+        role: 'familyuser',
+        createdAt: '2026-04-04T10:00:00.000Z',
+        acceptedAt: null,
+      },
+    ]);
+
+    render(<App />);
+
+    await screen.findByRole('heading', { level: 1, name: 'Familienplaner' });
+    await user.click(screen.getByRole('button', { name: 'Familie & Rollen' }));
+    await user.click(screen.getByRole('button', { name: 'Einladung für open@example.com zurückziehen' }));
+
+    expect(removeFamilyInvite).toHaveBeenCalledWith('invite-open');
+    expect(await screen.findByText('Einladung wurde zurückgezogen.')).toBeInTheDocument();
+    expect(screen.queryByText('open@example.com')).not.toBeInTheDocument();
   });
 });

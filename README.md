@@ -69,6 +69,7 @@ The app now stores its state persistently in Local Storage. In addition, Supabas
 ## Family Invitations
 
 - Admins can create email invitations for additional family members.
+- Admins can also withdraw open invitations directly in the UI.
 - After the invite is created, the app calls the Supabase Edge Function `send-family-invite` to send a real invitation email.
 - If a user signs up or signs in with the same email address, the invitation is accepted automatically during login.
 - For existing Supabase projects, also run `supabase/add-family-invites.sql`.

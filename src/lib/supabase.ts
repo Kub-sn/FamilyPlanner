@@ -453,6 +453,31 @@ export async function fetchFamilyInvites(familyId: string): Promise<SupabaseFami
   }));
 }
 
+export async function removeFamilyInvite(inviteId: string) {
+  const client = requireSupabase();
+  const normalizedInviteId = inviteId.trim();
+
+  if (!normalizedInviteId) {
+    throw new Error('Es wurde keine Einladung zum Zurueckziehen uebergeben.');
+  }
+
+  const { data, error } = await client
+    .from('family_invites')
+    .delete()
+    .eq('id', normalizedInviteId)
+    .is('accepted_at', null)
+    .select('id')
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error('Die Einladung konnte nicht mehr gefunden werden. Bitte aktualisiere die Ansicht.');
+  }
+}
+
 function mapFamilyInvite(invite: FamilyInviteRow): SupabaseFamilyInvite {
   return {
     id: invite.id,
@@ -488,10 +513,24 @@ async function extractEdgeFunctionErrorMessage(error: EdgeFunctionErrorLike) {
 }
 
 async function triggerFamilyInviteEmail(client: SupabaseClient, inviteId: string) {
+  const {
+    data: { session },
+    error: sessionError,
+  } = await client.auth.getSession();
+
+  if (sessionError || !session?.access_token) {
+    throw new Error('Die Einladungs-E-Mail konnte nicht gesendet werden, weil keine gueltige Anmeldung gefunden wurde. Bitte erneut anmelden und noch einmal versuchen.');
+  }
+
+  client.functions.setAuth(session.access_token);
+
   const { error } = await client.functions.invoke('send-family-invite', {
     body: {
       inviteId,
       appUrl: window.location.origin,
+    },
+    headers: {
+      Authorization: `Bearer ${session.access_token}`,
     },
   });
 

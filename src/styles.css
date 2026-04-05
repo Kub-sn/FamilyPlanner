@@ -859,6 +859,14 @@ button {
   padding: 0.65rem 0.9rem;
 }
 
+.invite-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 .document-toolbar {
   display: grid;
   gap: 1rem;

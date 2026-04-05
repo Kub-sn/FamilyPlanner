@@ -59,6 +59,7 @@ import {
   signUpWithPassword,
   subscribeToAuthChanges,
   supabaseConfigured,
+  removeFamilyInvite,
   updateDocument,
   updateMealPrepared,
   updateShoppingItemChecked,
@@ -485,6 +486,7 @@ function PlannerShell({
     total: number;
     currentName: string;
   } | null>(null);
+  const [pendingInviteActionId, setPendingInviteActionId] = useState<string | null>(null);
   const [calendarViewDate, setCalendarViewDate] = useState(() => getMonthStart(new Date()));
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(() => toCalendarDateKey(new Date()));
 
@@ -638,6 +640,17 @@ function PlannerShell({
     );
     setSelectedDocumentFiles(nextFiles);
     setIsDocumentDropActive(false);
+        {cloudSync.message ? (
+          <p
+            className={
+              cloudSync.phase === 'error'
+                ? 'auth-feedback auth-error module-feedback'
+                : 'auth-feedback auth-message module-feedback'
+            }
+          >
+            {cloudSync.message}
+          </p>
+        ) : null}
   };
 
   const handleDocumentInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -835,6 +848,30 @@ function PlannerShell({
         phase: 'error',
         message: humanizeAuthError(error),
       });
+    }
+  };
+
+  const handleRemoveInvite = async (inviteId: string) => {
+    if (!canManageFamily) {
+      return;
+    }
+
+    setPendingInviteActionId(inviteId);
+
+    try {
+      await removeFamilyInvite(inviteId);
+      setFamilyInvites((current) => current.filter((invite) => invite.id !== inviteId));
+      setCloudSync({
+        phase: 'ready',
+        message: 'Einladung wurde zurückgezogen.',
+      });
+    } catch (error) {
+      setCloudSync({
+        phase: 'error',
+        message: humanizeAuthError(error),
+      });
+    } finally {
+      setPendingInviteActionId((current) => (current === inviteId ? null : current));
     }
   };
 
@@ -2048,6 +2085,17 @@ function PlannerShell({
         ) : null}
 
         <section className={activeTab === 'family' && canManageFamily ? 'module is-visible' : 'module'}>
+          {cloudSync.message ? (
+            <p
+              className={
+                cloudSync.phase === 'error'
+                  ? 'auth-feedback auth-error module-feedback'
+                  : 'auth-feedback auth-message module-feedback'
+              }
+            >
+              {cloudSync.message}
+            </p>
+          ) : null}
           <div className="section-header">
             <h3>Familie & Rollen</h3>
             <p>Admin verwaltet Mitglieder und Familyuser arbeitet im Alltag mit.</p>
@@ -2090,7 +2138,20 @@ function PlannerShell({
                         <strong>{invite.email}</strong>
                         <small>Wartet auf Registrierung oder nächsten Login</small>
                       </div>
-                      <span className="chip alt">{invite.role}</span>
+                      <div className="invite-actions">
+                        <span className="chip alt">{invite.role}</span>
+                        {canManageFamily ? (
+                          <button
+                            type="button"
+                            className="ghost-toggle"
+                            disabled={pendingInviteActionId === invite.id}
+                            aria-label={`Einladung für ${invite.email} zurückziehen`}
+                            onClick={() => void handleRemoveInvite(invite.id)}
+                          >
+                            {pendingInviteActionId === invite.id ? 'Wird entfernt…' : 'Zurückziehen'}
+                          </button>
+                        ) : null}
+                      </div>
                     </li>
                   ))
                 ) : (

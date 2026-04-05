@@ -133,6 +133,15 @@ with check (
   or public.is_family_admin(family_id)
 );
 
+drop policy if exists "admins can delete family invites" on public.family_invites;
+create policy "admins can delete family invites"
+on public.family_invites
+for delete
+using (
+  public.is_family_owner(family_id)
+  or public.is_family_admin(family_id)
+);
+
 drop policy if exists "owners and admins can add memberships" on public.family_members;
 create policy "owners and admins can add memberships"
 on public.family_members
