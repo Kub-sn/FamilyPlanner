@@ -1,9 +1,10 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
   acceptPendingFamilyInvite,
+  fetchRegistrationGate,
   createFamilyInvite,
   deleteDocument,
   deleteCurrentAccount,
@@ -24,12 +25,14 @@ const {
   signInWithPassword,
   signUpWithPassword,
   subscribeToAuthChanges,
+  updateFamilyRegistrationSetting,
   updatePassword,
 } = vi.hoisted(() => {
   let authChangeListener: ((session: unknown) => void) | null = null;
 
   return {
     acceptPendingFamilyInvite: vi.fn(),
+    fetchRegistrationGate: vi.fn(),
     createFamilyInvite: vi.fn(),
     deleteDocument: vi.fn(),
     deleteCurrentAccount: vi.fn(),
@@ -56,6 +59,7 @@ const {
         authChangeListener = null;
       };
     },
+    updateFamilyRegistrationSetting: vi.fn(),
     updatePassword: vi.fn(),
   };
 });
@@ -67,6 +71,7 @@ vi.mock('./lib/supabase', async () => {
     ...actual,
     supabaseConfigured: true,
     acceptPendingFamilyInvite,
+    fetchRegistrationGate,
     createFamilyInvite,
     deleteDocument,
     deleteCurrentAccount,
@@ -86,6 +91,7 @@ vi.mock('./lib/supabase', async () => {
     signInWithPassword,
     subscribeToAuthChanges,
     signUpWithPassword,
+    updateFamilyRegistrationSetting,
     updatePassword,
   };
 });
@@ -121,10 +127,22 @@ function getInviteForm() {
   return within(inviteForm as HTMLElement);
 }
 
+function getConfigCard() {
+  const configHeading = screen.getByRole('heading', { level: 4, name: 'Konfiguration' });
+  const configCard = configHeading.closest('article');
+
+  if (!configCard) {
+    throw new Error('Konfigurationskarte wurde nicht gefunden.');
+  }
+
+  return within(configCard as HTMLElement);
+}
+
 describe('App auth flow', () => {
   beforeEach(() => {
     window.history.replaceState({}, '', '/');
     acceptPendingFamilyInvite.mockReset();
+    fetchRegistrationGate.mockReset();
     createFamilyInvite.mockReset();
     deleteDocument.mockReset();
     ensureProfile.mockReset();
@@ -143,6 +161,7 @@ describe('App auth flow', () => {
     deleteCurrentAccount.mockReset();
     signInWithPassword.mockReset();
     signUpWithPassword.mockReset();
+    updateFamilyRegistrationSetting.mockReset();
     updatePassword.mockReset();
 
     getCurrentSession.mockResolvedValue(null);
@@ -170,6 +189,18 @@ describe('App auth flow', () => {
     removeFamilyInvite.mockResolvedValue(undefined);
     resetPasswordForEmail.mockResolvedValue({ data: {}, error: null });
     signInWithPassword.mockResolvedValue({ data: {}, error: null });
+    fetchRegistrationGate.mockResolvedValue({
+      allowed: true,
+      hasPendingInvite: false,
+      hasOpenRegistration: true,
+      hasExistingFamilies: true,
+    });
+    updateFamilyRegistrationSetting.mockImplementation(async (_familyId: string, allowOpenRegistration: boolean) => ({
+      familyId: 'family-default',
+      familyName: 'Familie Test',
+      role: 'admin',
+      allowOpenRegistration,
+    }));
     updatePassword.mockResolvedValue({ data: {}, error: null });
   });
 
@@ -211,6 +242,36 @@ describe('App auth flow', () => {
 
     expect(signUpWithPassword).toHaveBeenCalledWith('alex@example.com', 'supersecret', 'Alex');
     expect(screen.queryByText(/can't access property "reset"/i)).not.toBeInTheDocument();
+  });
+
+  it('blocks sign-up when registration is restricted to invitations', async () => {
+    const user = userEvent.setup();
+
+    fetchRegistrationGate.mockResolvedValue({
+      allowed: false,
+      hasPendingInvite: false,
+      hasOpenRegistration: false,
+      hasExistingFamilies: true,
+    });
+
+    render(<App />);
+
+    await screen.findByRole('heading', {
+      level: 1,
+      name: 'Frey Frey',
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Registrieren' }));
+    await user.type(screen.getByPlaceholderText('Anzeigename'), 'Alex');
+    await user.type(screen.getByPlaceholderText('E-Mail'), 'alex@example.com');
+    await user.type(screen.getByPlaceholderText('Passwort'), 'supersecret');
+    await user.click(screen.getByRole('button', { name: 'Konto anlegen' }));
+
+    expect(fetchRegistrationGate).toHaveBeenCalledWith('alex@example.com');
+    expect(signUpWithPassword).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText('Registrierung ist derzeit nur per Einladung moeglich. Bitte lass dir zuerst eine Einladung schicken.'),
+    ).toBeInTheDocument();
   });
 
   it('requests a password reset email from the sign-in screen', async () => {
@@ -512,6 +573,73 @@ describe('App auth flow', () => {
 
     expect(screen.getByRole('heading', { level: 4, name: 'Mitglieder & Rollen' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Einladung senden' })).toBeInTheDocument();
+  });
+
+  it('lets admins switch registration between open and invite-only in the configuration card', async () => {
+    const user = userEvent.setup();
+
+    getCurrentSession.mockResolvedValue({
+      user: {
+        id: 'user-config',
+        email: 'admin@example.com',
+        user_metadata: {},
+      },
+    });
+    ensureProfile.mockResolvedValue({
+      id: 'user-config',
+      display_name: 'Admin',
+      email: 'admin@example.com',
+      role: 'admin',
+    });
+    fetchFamilyContext.mockResolvedValue({
+      familyId: 'family-config',
+      familyName: 'Familie Konfig',
+      role: 'admin',
+      allowOpenRegistration: true,
+    });
+    fetchFamilyMembers.mockResolvedValue([
+      {
+        id: 'user-config',
+        name: 'Admin',
+        email: 'admin@example.com',
+        role: 'admin',
+      },
+    ]);
+    updateFamilyRegistrationSetting
+      .mockResolvedValueOnce({
+        familyId: 'family-config',
+        familyName: 'Familie Konfig',
+        role: 'admin',
+        allowOpenRegistration: false,
+      })
+      .mockResolvedValueOnce({
+        familyId: 'family-config',
+        familyName: 'Familie Konfig',
+        role: 'admin',
+        allowOpenRegistration: true,
+      });
+
+    render(<App />);
+
+    await expectPlannerShellHeading();
+    await user.click(screen.getByRole('button', { name: 'Familie & Rollen' }));
+
+    const configCard = getConfigCard();
+    const toggle = configCard.getByRole('checkbox', { name: 'Freie Registrierung erlauben' });
+
+    expect(toggle).toBeChecked();
+    expect(configCard.getByText('Neue Nutzer koennen sich aktuell auch ohne Einladung registrieren.')).toBeInTheDocument();
+
+    await user.click(toggle);
+
+    expect(updateFamilyRegistrationSetting).toHaveBeenNthCalledWith(1, 'family-config', false);
+    await waitFor(() => expect(toggle).not.toBeChecked());
+    expect(configCard.getByText('Neue Nutzer koennen sich aktuell nur per Einladung registrieren.')).toBeInTheDocument();
+
+    await user.click(toggle);
+
+    expect(updateFamilyRegistrationSetting).toHaveBeenNthCalledWith(2, 'family-config', true);
+    await waitFor(() => expect(toggle).toBeChecked());
   });
 
   it('asks for confirmation before deleting the account and returns to sign-in afterwards', async () => {

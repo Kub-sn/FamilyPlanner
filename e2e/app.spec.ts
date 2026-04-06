@@ -146,6 +146,197 @@ async function mockSupabasePasswordRecovery(page: Page) {
   });
 }
 
+async function mockSupabaseRegistrationControls(page: Page) {
+  const adminSession = {
+    access_token: 'admin-access-token',
+    refresh_token: 'admin-refresh-token',
+    expires_in: 3600,
+    token_type: 'bearer',
+    user: {
+      id: 'user-admin',
+      email: 'admin@example.com',
+      user_metadata: {},
+    },
+  };
+  const state = {
+    allowOpenRegistration: true,
+    currentSession: null as typeof adminSession | null,
+  };
+
+  const parseRequestJson = (route: Route) => {
+    const rawBody = route.request().postData();
+
+    if (!rawBody) {
+      return {} as Record<string, unknown>;
+    }
+
+    return JSON.parse(rawBody) as Record<string, unknown>;
+  };
+
+  await page.route(`${supabaseBaseUrl}/auth/v1/**`, async (route: Route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+
+    if (url.pathname.endsWith('/auth/v1/user')) {
+      await route.fulfill({
+        status: state.currentSession ? 200 : 401,
+        contentType: 'application/json',
+        body: JSON.stringify(state.currentSession?.user ?? { error: 'Unauthorized' }),
+      });
+      return;
+    }
+
+    if (url.pathname.endsWith('/auth/v1/token')) {
+      const grantType = url.searchParams.get('grant_type');
+
+      if (grantType === 'password') {
+        const payload = parseRequestJson(route);
+
+        if (String(payload.email || '').toLowerCase() === 'admin@example.com') {
+          state.currentSession = adminSession;
+          await route.fulfill({
+            status: 200,
+            contentType: 'application/json',
+            body: JSON.stringify(adminSession),
+          });
+          return;
+        }
+      }
+
+      if (grantType === 'refresh_token' && state.currentSession) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(state.currentSession),
+        });
+        return;
+      }
+    }
+
+    if (url.pathname.endsWith('/auth/v1/signup')) {
+      const payload = parseRequestJson(route);
+      const email = String(payload.email || '').toLowerCase();
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          user: {
+            id: 'user-signup',
+            email,
+            user_metadata: payload.data ?? {},
+          },
+          session: null,
+        }),
+      });
+      return;
+    }
+
+    if (url.pathname.endsWith('/auth/v1/logout')) {
+      state.currentSession = null;
+      await route.fulfill({
+        status: 204,
+        body: '',
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({}),
+    });
+  });
+
+  await page.route(`${supabaseBaseUrl}/rest/v1/**`, async (route: Route) => {
+    const request = route.request();
+    const url = new URL(request.url());
+    const path = url.pathname;
+    const select = url.searchParams.get('select') ?? '';
+    const acceptsObject = request.headers().accept?.includes('application/vnd.pgrst.object+json');
+
+    if (path.endsWith('/rpc/get_registration_gate')) {
+      const payload = parseRequestJson(route);
+      const targetEmail = String(payload.target_email || '').toLowerCase();
+      const allowed = state.allowOpenRegistration || targetEmail === 'invited@example.com';
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            registration_allowed: allowed,
+            pending_invite: targetEmail === 'invited@example.com',
+            open_registration_available: state.allowOpenRegistration,
+            has_existing_families: true,
+          },
+        ]),
+      });
+      return;
+    }
+
+    const table = path.split('/').pop();
+    let body: unknown = [];
+
+    if (table === 'profiles' && acceptsObject) {
+      body = {
+        id: 'user-admin',
+        display_name: 'Admin',
+        email: 'admin@example.com',
+        role: 'admin',
+      };
+    } else if (table === 'profiles') {
+      body = [
+        {
+          id: 'user-admin',
+          display_name: 'Admin',
+          email: 'admin@example.com',
+        },
+      ];
+    } else if (table === 'family_members' && (acceptsObject || select.includes('family:families'))) {
+      body = {
+        family_id: 'family-1',
+        role: 'admin',
+        family: {
+          id: 'family-1',
+          name: 'Familie Test',
+          allow_open_registration: state.allowOpenRegistration,
+        },
+      };
+    } else if (table === 'family_members') {
+      body = [
+        {
+          user_id: 'user-admin',
+          role: 'admin',
+        },
+      ];
+    } else if (table === 'families' && request.method() === 'PATCH') {
+      const payload = parseRequestJson(route);
+
+      state.allowOpenRegistration = Boolean(payload.allow_open_registration);
+      body = {
+        id: 'family-1',
+        name: 'Familie Test',
+        allow_open_registration: state.allowOpenRegistration,
+      };
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(body),
+    });
+  });
+
+  await page.route(`${supabaseBaseUrl}/functions/v1/**`, async (route: Route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({}),
+    });
+  });
+}
+
 test('shows the planner shell and lets the user open the shopping module', async ({ page }) => {
   await page.goto('/');
 
@@ -303,4 +494,62 @@ test('asks for confirmation before deleting the account and lets the user cancel
   await expect(page.getByRole('dialog')).toBeHidden();
   await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Account löschen' })).toBeVisible();
+});
+
+test('lets admins switch registration to invite-only and back again', async ({ page }) => {
+  await mockSupabaseRegistrationControls(page);
+
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+  await page.getByPlaceholder('E-Mail').fill('admin@example.com');
+  await page.getByPlaceholder('Passwort').fill('supersecret');
+  await page.getByRole('button', { name: 'Jetzt anmelden' }).click();
+
+  await expect(page.getByText('Familie Test', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Familie & Rollen' }).click();
+
+  const registrationToggle = page.getByRole('checkbox', { name: 'Freie Registrierung erlauben' });
+
+  await expect(registrationToggle).toBeChecked();
+  await registrationToggle.click();
+  await expect(registrationToggle).not.toBeChecked();
+  await expect(page.getByText('Neue Nutzer koennen sich aktuell nur per Einladung registrieren.')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Abmelden' }).click();
+  await expect(page.getByRole('button', { name: 'Jetzt anmelden' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Registrieren' }).click();
+  await page.getByPlaceholder('Anzeigename').fill('Outsider');
+  await page.getByPlaceholder('E-Mail').fill('outsider@example.com');
+  await page.getByPlaceholder('Passwort').fill('supersecret');
+  await page.getByRole('button', { name: 'Konto anlegen' }).click();
+
+  await expect(
+    page.getByText('Registrierung ist derzeit nur per Einladung moeglich. Bitte lass dir zuerst eine Einladung schicken.'),
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Anmelden' }).click();
+  await page.getByPlaceholder('E-Mail').fill('admin@example.com');
+  await page.getByPlaceholder('Passwort').fill('supersecret');
+  await page.getByRole('button', { name: 'Jetzt anmelden' }).click();
+
+  await expect(page.getByText('Familie Test', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Familie & Rollen' }).click();
+  await registrationToggle.click();
+  await expect(registrationToggle).toBeChecked();
+  await expect(page.getByText('Neue Nutzer koennen sich aktuell auch ohne Einladung registrieren.')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Abmelden' }).click();
+  await expect(page.getByRole('button', { name: 'Jetzt anmelden' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Registrieren' }).click();
+  await page.getByPlaceholder('Anzeigename').fill('Outsider');
+  await page.getByPlaceholder('E-Mail').fill('outsider@example.com');
+  await page.getByPlaceholder('Passwort').fill('supersecret');
+  await page.getByRole('button', { name: 'Konto anlegen' }).click();
+
+  await expect(
+    page.getByText('Konto erstellt. Bitte bestätige jetzt die E-Mail und melde dich danach an.'),
+  ).toBeVisible();
 });

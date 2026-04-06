@@ -39,6 +39,7 @@ import { loadPlannerState, savePlannerState } from './lib/storage';
 import {
   acceptPendingFamilyInvite,
   createCalendarEntry,
+  fetchRegistrationGate,
   createDocument,
   deleteCurrentAccount,
   createFamilyInvite,
@@ -67,6 +68,7 @@ import {
   subscribeToAuthChanges,
   supabaseConfigured,
   removeFamilyInvite,
+  updateFamilyRegistrationSetting,
   updatePassword,
   updateDocument,
   updateMealPrepared,
@@ -623,6 +625,7 @@ function PlannerShell({
   setCloudSync: setCloudSyncState,
   onSignOut,
   onDeleteAccount,
+  onUpdateFamilyRegistration,
 }: {
   activeTab: TabId;
   setActiveTab: (tab: TabId) => void;
@@ -635,6 +638,7 @@ function PlannerShell({
   setCloudSync: React.Dispatch<React.SetStateAction<CloudSyncState>>;
   onSignOut: () => Promise<void>;
   onDeleteAccount: () => Promise<void>;
+  onUpdateFamilyRegistration: (allowOpenRegistration: boolean) => Promise<SupabaseFamilyContext>;
 }) {
   const [selectedDocumentFiles, setSelectedDocumentFiles] = useState<File[]>([]);
   const [documentSelectionErrors, setDocumentSelectionErrors] = useState<string[]>([]);
@@ -651,6 +655,7 @@ function PlannerShell({
     currentName: string;
   } | null>(null);
   const [pendingInviteActionId, setPendingInviteActionId] = useState<string | null>(null);
+  const [registrationConfigBusy, setRegistrationConfigBusy] = useState(false);
   const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] = useState(false);
   const [deleteAccountBusy, setDeleteAccountBusy] = useState(false);
   const [calendarViewDate, setCalendarViewDate] = useState(() => getMonthStart(new Date()));
@@ -665,6 +670,7 @@ function PlannerShell({
 
   const effectiveRole = authState.profile?.role ?? activeMember?.role ?? 'familyuser';
   const canManageFamily = effectiveRole === 'admin';
+  const allowOpenRegistration = authState.family?.allowOpenRegistration ?? true;
   const openTasks = useMemo(
     () => plannerState.tasks.filter((task) => !task.done).length,
     [plannerState.tasks],
@@ -1067,6 +1073,31 @@ function PlannerShell({
       });
     } finally {
       setPendingInviteActionId((current) => (current === inviteId ? null : current));
+    }
+  };
+
+  const handleRegistrationAccessChange = async (nextValue: boolean) => {
+    if (!authState.family || !canManageFamily) {
+      return;
+    }
+
+    setRegistrationConfigBusy(true);
+
+    try {
+      const updatedFamily = await onUpdateFamilyRegistration(nextValue);
+      setCloudSync({
+        phase: 'ready',
+        message: updatedFamily.allowOpenRegistration
+          ? 'Freie Registrierung wurde aktiviert.'
+          : 'Registrierung per Einladung wurde aktiviert.',
+      });
+    } catch (error) {
+      setCloudSync({
+        phase: 'error',
+        message: humanizeAuthError(error),
+      });
+    } finally {
+      setRegistrationConfigBusy(false);
     }
   };
 
@@ -2360,21 +2391,54 @@ function PlannerShell({
               </ul>
             </article>
 
-            <form className="panel form-panel" onSubmit={(event) => void handleAddMember(event)}>
-              <h4>Familienmitglied einladen</h4>
-              <input name="email" placeholder="E-Mail" disabled={!canManageFamily} />
-              <select name="role" defaultValue="familyuser" disabled={!canManageFamily}>
-                <option value="familyuser">familyuser</option>
-                <option value="admin">admin</option>
-              </select>
-              <button type="submit" disabled={!canManageFamily}>
-                {canManageFamily ? 'Einladung senden' : 'Nur Admin kann Einladungen senden'}
-              </button>
-              <small>
-                Die Einladung wird per E-Mail verschickt. Sobald sich der Nutzer mit derselben
-                E-Mail registriert oder anmeldet, wird die Familienzuordnung automatisch uebernommen.
-              </small>
-            </form>
+            <div className="family-management-stack">
+              <form className="panel form-panel" onSubmit={(event) => void handleAddMember(event)}>
+                <h4>Familienmitglied einladen</h4>
+                <input name="email" placeholder="E-Mail" disabled={!canManageFamily} />
+                <select name="role" defaultValue="familyuser" disabled={!canManageFamily}>
+                  <option value="familyuser">familyuser</option>
+                  <option value="admin">admin</option>
+                </select>
+                <button type="submit" disabled={!canManageFamily}>
+                  {canManageFamily ? 'Einladung senden' : 'Nur Admin kann Einladungen senden'}
+                </button>
+                <small>
+                  Die Einladung wird per E-Mail verschickt. Sobald sich der Nutzer mit derselben
+                  E-Mail registriert oder anmeldet, wird die Familienzuordnung automatisch uebernommen.
+                </small>
+              </form>
+
+              <article className="panel form-panel family-config-panel">
+                <div className="panel-heading">
+                  <h4>Konfiguration</h4>
+                  <span className={allowOpenRegistration ? 'chip' : 'chip alt'}>
+                    {allowOpenRegistration ? 'Offen' : 'Nur Einladung'}
+                  </span>
+                </div>
+                <label className="family-config-toggle">
+                  <div className="family-config-toggle-copy">
+                    <strong>Freie Registrierung erlauben</strong>
+                    <small>
+                      Wenn du das deaktivierst, koennen neue Konten nur noch mit einer offenen
+                      Einladung erstellt werden.
+                    </small>
+                  </div>
+                  <input
+                    type="checkbox"
+                    aria-label="Freie Registrierung erlauben"
+                    name="allow-open-registration"
+                    checked={allowOpenRegistration}
+                    disabled={!canManageFamily || registrationConfigBusy}
+                    onChange={(event) => void handleRegistrationAccessChange(event.currentTarget.checked)}
+                  />
+                </label>
+                <p className="family-config-note">
+                  {allowOpenRegistration
+                    ? 'Neue Nutzer koennen sich aktuell auch ohne Einladung registrieren.'
+                    : 'Neue Nutzer koennen sich aktuell nur per Einladung registrieren.'}
+                </p>
+              </article>
+            </div>
           </div>
         </section>
 
@@ -2759,6 +2823,12 @@ export default function App() {
           throw error;
         }
       } else if (authMode === 'sign-up') {
+        const registrationGate = await fetchRegistrationGate(email);
+
+        if (!registrationGate.allowed) {
+          throw new Error('Registrierung ist derzeit nur per Einladung moeglich. Bitte lass dir zuerst eine Einladung schicken.');
+        }
+
         const { data, error } = await signUpWithPassword(email, password, displayName);
 
         if (error) {
@@ -2918,6 +2988,29 @@ export default function App() {
     }
   };
 
+  const handleUpdateFamilyRegistration = async (allowOpenRegistration: boolean) => {
+    if (!authState.family) {
+      throw new Error('Es wurde keine Familie geladen.');
+    }
+
+    const updatedFamily = await updateFamilyRegistrationSetting(
+      authState.family.familyId,
+      allowOpenRegistration,
+    );
+
+    setAuthState((current) => ({
+      ...current,
+      family: current.family
+        ? {
+            ...current.family,
+            allowOpenRegistration: updatedFamily.allowOpenRegistration,
+          }
+        : current.family,
+    }));
+
+    return updatedFamily;
+  };
+
   const handleAuthModeChange = (mode: AuthMode) => {
     if (mode !== 'reset-password' && typeof window !== 'undefined' && authMode === 'reset-password') {
       window.history.replaceState({}, document.title, clearAuthRedirectState(window.location.href));
@@ -2992,6 +3085,7 @@ export default function App() {
       setCloudSync={setCloudSync}
       onSignOut={handleSignOut}
       onDeleteAccount={handleDeleteAccount}
+      onUpdateFamilyRegistration={handleUpdateFamilyRegistration}
     />
   );
 }

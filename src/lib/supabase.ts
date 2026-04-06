@@ -27,6 +27,14 @@ export type SupabaseFamilyContext = {
   familyId: string;
   familyName: string;
   role: UserRole;
+  allowOpenRegistration: boolean;
+};
+
+export type SupabaseRegistrationGate = {
+  allowed: boolean;
+  hasPendingInvite: boolean;
+  hasOpenRegistration: boolean;
+  hasExistingFamilies: boolean;
 };
 
 export type SupabaseFamilyInvite = {
@@ -102,6 +110,13 @@ type FamilyInviteRow = {
   role: UserRole;
   created_at: string;
   accepted_at: string | null;
+};
+
+type RegistrationGateRow = {
+  registration_allowed: boolean;
+  pending_invite: boolean;
+  open_registration_available: boolean;
+  has_existing_families: boolean;
 };
 
 type EdgeFunctionErrorLike = Error & {
@@ -400,7 +415,7 @@ export async function fetchFamilyContext(
   const client = requireSupabase();
   const { data, error } = await client
     .from('family_members')
-    .select('family_id, role, family:families(id, name)')
+    .select('family_id, role, family:families(id, name, allow_open_registration)')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
@@ -419,6 +434,59 @@ export async function fetchFamilyContext(
     familyId: String(data.family_id),
     familyName: String(family.name),
     role: data.role as UserRole,
+    allowOpenRegistration: family.allow_open_registration !== false,
+  };
+}
+
+export async function fetchRegistrationGate(email: string): Promise<SupabaseRegistrationGate> {
+  const client = requireSupabase();
+  const normalizedEmail = normalizeEmailAddress(email);
+
+  const { data, error } = await client.rpc('get_registration_gate', {
+    target_email: normalizedEmail,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  const gate = (Array.isArray(data) ? data[0] : data) as RegistrationGateRow | null;
+
+  if (!gate) {
+    throw new Error('Der Registrierungsstatus konnte nicht geladen werden. Bitte versuche es erneut.');
+  }
+
+  return {
+    allowed: gate.registration_allowed,
+    hasPendingInvite: gate.pending_invite,
+    hasOpenRegistration: gate.open_registration_available,
+    hasExistingFamilies: gate.has_existing_families,
+  };
+}
+
+export async function updateFamilyRegistrationSetting(
+  familyId: string,
+  allowOpenRegistration: boolean,
+): Promise<SupabaseFamilyContext> {
+  const client = requireSupabase();
+  const { data, error } = await client
+    .from('families')
+    .update({
+      allow_open_registration: allowOpenRegistration,
+    })
+    .eq('id', familyId)
+    .select('id, name, allow_open_registration')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    familyId: String(data.id),
+    familyName: String(data.name),
+    role: 'admin',
+    allowOpenRegistration: data.allow_open_registration !== false,
   };
 }
 
@@ -735,6 +803,7 @@ export async function bootstrapFamilyForUser(user: User, familyName: string) {
     familyId: String(family.id),
     familyName: String(family.name),
     role: 'admin' as const,
+    allowOpenRegistration: true,
   };
 }
 

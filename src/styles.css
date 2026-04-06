@@ -631,6 +631,12 @@ button {
   grid-template-columns: 1.1fr 0.9fr;
 }
 
+.family-management-stack {
+  display: grid;
+  gap: 1rem;
+  align-self: start;
+}
+
 .form-panel,
 .list-panel,
 .masonry-panel {
@@ -640,6 +646,52 @@ button {
 .form-panel {
   display: grid;
   gap: 0.75rem;
+}
+
+.family-config-panel {
+  gap: 1rem;
+}
+
+.family-config-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(24, 52, 47, 0.12);
+  background: rgba(246, 239, 226, 0.56);
+}
+
+.family-config-toggle-copy {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.family-config-toggle-copy strong {
+  font-size: 0.98rem;
+}
+
+.family-config-toggle-copy small,
+.family-config-note {
+  line-height: 1.55;
+}
+
+.family-config-toggle input[type='checkbox'] {
+  width: 3.2rem;
+  height: 1.9rem;
+  margin: 0;
+  accent-color: #18342f;
+  cursor: pointer;
+}
+
+.family-config-toggle input[type='checkbox']:disabled {
+  cursor: not-allowed;
+}
+
+.family-config-note {
+  margin: 0;
+  color: rgba(24, 52, 47, 0.82);
 }
 
 .document-form-panel {

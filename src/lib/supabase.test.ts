@@ -33,6 +33,15 @@ function buildDeleteInviteBuilder(result: { data: unknown; error: unknown }) {
   };
 }
 
+function buildFamilyUpdateBuilder(result: { data: unknown; error: unknown }) {
+  return {
+    update: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue(result),
+  };
+}
+
 describe('auth email normalization', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -460,5 +469,70 @@ describe('removeFamilyInvite', () => {
     await expect(removeFamilyInvite('invite-missing')).rejects.toThrow(
       'Die Einladung konnte nicht mehr gefunden werden. Bitte aktualisiere die Ansicht.',
     );
+  });
+});
+
+describe('registration controls', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'publishable-key');
+  });
+
+  it('checks the registration gate with a normalized email address', async () => {
+    const rpcMock = vi.fn().mockResolvedValue({
+      data: [
+        {
+          registration_allowed: false,
+          pending_invite: false,
+          open_registration_available: false,
+          has_existing_families: true,
+        },
+      ],
+      error: null,
+    });
+
+    createClientMock.mockReturnValue({
+      rpc: rpcMock,
+    });
+
+    const { fetchRegistrationGate } = await import('./supabase');
+    const gate = await fetchRegistrationGate(' New.User@Example.com ');
+
+    expect(rpcMock).toHaveBeenCalledWith('get_registration_gate', {
+      target_email: 'new.user@example.com',
+    });
+    expect(gate).toEqual({
+      allowed: false,
+      hasPendingInvite: false,
+      hasOpenRegistration: false,
+      hasExistingFamilies: true,
+    });
+  });
+
+  it('updates the family registration setting and maps the response', async () => {
+    const familyUpdateBuilder = buildFamilyUpdateBuilder({
+      data: {
+        id: 'family-1',
+        name: 'Familie Test',
+        allow_open_registration: false,
+      },
+      error: null,
+    });
+
+    createClientMock.mockReturnValue({
+      from: vi.fn().mockReturnValue(familyUpdateBuilder),
+    });
+
+    const { updateFamilyRegistrationSetting } = await import('./supabase');
+    const family = await updateFamilyRegistrationSetting('family-1', false);
+
+    expect(family).toEqual({
+      familyId: 'family-1',
+      familyName: 'Familie Test',
+      role: 'admin',
+      allowOpenRegistration: false,
+    });
   });
 });
