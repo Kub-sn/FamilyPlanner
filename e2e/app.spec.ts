@@ -149,12 +149,11 @@ async function mockSupabasePasswordRecovery(page: Page) {
 test('shows the planner shell and lets the user open the shopping module', async ({ page }) => {
   await page.goto('/');
 
-  const plannerHeading = page.getByRole('heading', { name: 'Frey Frey' });
-  const authHeading = page.getByRole('heading', { name: 'Frey Frey mit echten Benutzerkonten' });
+  const brandHeading = page.getByRole('heading', { name: 'Frey Frey' }).first();
 
-  await expect(plannerHeading.or(authHeading)).toBeVisible();
+  await expect(brandHeading).toBeVisible();
 
-  if (await authHeading.isVisible()) {
+  if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
     await expect(page.getByRole('button', { name: 'Jetzt anmelden' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Registrieren' })).toBeVisible();
     return;
@@ -179,7 +178,7 @@ test('lets the user complete the password reset flow and sign in afterwards', as
     '/auth/reset-password#access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLXJlY292ZXJ5IiwiZW1haWwiOiJhbGV4QGV4YW1wbGUuY29tIiwiZXhwIjo0MTAyNDQ0ODAwfQ.signature&refresh_token=refresh-token-recovery&expires_in=3600&token_type=bearer&type=recovery',
   );
 
-  await expect(page.getByRole('heading', { name: 'Frey Frey mit echten Benutzerkonten' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
   await expect(page.getByPlaceholder('Neues Passwort')).toBeVisible();
   await expect(page.getByPlaceholder('Passwort wiederholen')).toBeVisible();
 
@@ -204,7 +203,7 @@ test('lets the user request a password reset email from the sign-in screen', asy
 
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: 'Frey Frey mit echten Benutzerkonten' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
 
   await page.getByPlaceholder('E-Mail').fill('alex@example.com');
   await page.getByRole('button', { name: 'Passwort vergessen?' }).click();
@@ -218,12 +217,76 @@ test('lets the user request a password reset email from the sign-in screen', asy
   await expect(page.getByRole('button', { name: 'Jetzt anmelden' })).toBeVisible();
 });
 
+test('reveals the auth password field with the eye button', async ({ page }) => {
+  await mockSupabaseAuth(page);
+
+  await page.goto('/');
+
+  const passwordInput = page.getByPlaceholder('Passwort');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+  await expect(passwordInput).toHaveAttribute('type', 'password');
+
+  await page.getByRole('button', { name: 'Passwort anzeigen' }).click();
+  await expect(passwordInput).toHaveAttribute('type', 'text');
+
+  await page.getByRole('button', { name: 'Passwort verbergen' }).click();
+  await expect(passwordInput).toHaveAttribute('type', 'password');
+});
+
+test('keeps auth screens usable on mobile widths', async ({ page }) => {
+  await mockSupabaseAuth(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  await page.goto('/');
+
+  const authCard = page.locator('.auth-card').first();
+  const authCopy = page.locator('.auth-copy').first();
+  const authPanel = page.locator('.auth-panel').first();
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Jetzt anmelden' })).toBeVisible();
+
+  const assertMobileLayout = async () => {
+    const [cardBox, copyBox, panelBox, widths] = await Promise.all([
+      authCard.boundingBox(),
+      authCopy.boundingBox(),
+      authPanel.boundingBox(),
+      page.evaluate(() => ({
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+      })),
+    ]);
+
+    expect(cardBox).not.toBeNull();
+    expect(copyBox).not.toBeNull();
+    expect(panelBox).not.toBeNull();
+
+    expect(widths.scrollWidth).toBeLessThanOrEqual(widths.clientWidth + 1);
+    expect(Math.abs((copyBox as NonNullable<typeof copyBox>).x - (panelBox as NonNullable<typeof panelBox>).x)).toBeLessThanOrEqual(2);
+    expect((panelBox as NonNullable<typeof panelBox>).y).toBeGreaterThan((copyBox as NonNullable<typeof copyBox>).y + 40);
+    expect((cardBox as NonNullable<typeof cardBox>).width).toBeLessThanOrEqual(widths.clientWidth);
+  };
+
+  await assertMobileLayout();
+
+  await page.getByRole('button', { name: 'Registrieren' }).click();
+  await expect(page.getByPlaceholder('Anzeigename')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Konto anlegen' })).toBeVisible();
+  await assertMobileLayout();
+
+  await page.getByRole('button', { name: 'Anmelden' }).click();
+  await page.getByRole('button', { name: 'Passwort vergessen?' }).click();
+  await expect(page.getByRole('button', { name: 'Reset-Link senden' })).toBeVisible();
+  await assertMobileLayout();
+});
+
 test('asks for confirmation before deleting the account and lets the user cancel', async ({ page }) => {
   await mockSupabaseAuth(page);
 
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: 'Frey Frey mit echten Benutzerkonten' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
 
   await page.getByPlaceholder('E-Mail').fill('alex@example.com');
   await page.getByPlaceholder('Passwort').fill('supersecret2');

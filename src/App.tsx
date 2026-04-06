@@ -316,6 +316,112 @@ function BrandHeading({
   );
 }
 
+function AuthInput({
+  field,
+  inputName,
+  type = 'text',
+  placeholder,
+  autoComplete,
+  value,
+  onChange,
+  allowStoredValues = false,
+}: {
+  field: keyof AuthDraft;
+  inputName: string;
+  type?: 'text' | 'email';
+  placeholder: string;
+  autoComplete: string;
+  value: string;
+  onChange: (value: string) => void;
+  allowStoredValues?: boolean;
+}) {
+  return (
+    <input
+      name={inputName}
+      type={type}
+      placeholder={placeholder}
+      autoComplete={autoComplete}
+      value={value}
+      data-auth-field={field}
+      data-lpignore={allowStoredValues ? undefined : 'true'}
+      data-1p-ignore={allowStoredValues ? undefined : 'true'}
+      onChange={(event) => onChange(event.currentTarget.value)}
+    />
+  );
+}
+
+function PasswordField({
+  field,
+  inputName,
+  placeholder,
+  autoComplete,
+  value,
+  onChange,
+}: {
+  field: keyof AuthDraft;
+  inputName: string;
+  placeholder: string;
+  autoComplete: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  return (
+    <div className="password-field">
+      <input
+        name={inputName}
+        type={isVisible ? 'text' : 'password'}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        value={value}
+        data-auth-field={field}
+        data-lpignore="true"
+        data-1p-ignore="true"
+        onChange={(event) => onChange(event.currentTarget.value)}
+      />
+      <button
+        type="button"
+        className="password-toggle"
+        aria-label={isVisible ? `${placeholder} verbergen` : `${placeholder} anzeigen`}
+        aria-pressed={isVisible}
+        onClick={() => setIsVisible((current) => !current)}
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            d="M1.5 12s3.8-6 10.5-6 10.5 6 10.5 6-3.8 6-10.5 6S1.5 12 1.5 12Z"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
+          <circle
+            cx="12"
+            cy="12"
+            r="3.2"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="1.8"
+          />
+          {isVisible ? null : (
+            <path
+              d="M4 20 20 4"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1.8"
+            />
+          )}
+        </svg>
+      </button>
+    </div>
+  );
+}
+
 function AuthScreen({
   mode,
   busy,
@@ -335,27 +441,28 @@ function AuthScreen({
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onModeChange: (mode: AuthMode) => void;
 }) {
+  const authFormAutocomplete = 'on';
+  const emailAutocomplete = mode === 'sign-up' ? 'email' : 'username';
+
   return (
     <div className="auth-shell">
       <section className="auth-card auth-card-wide">
         <div className="auth-copy auth-copy-editorial">
-          <p className="eyebrow">Supabase Auth</p>
-          <BrandHeading text="Frey Frey mit echten Benutzerkonten" className="brand-lockup-auth" />
-          <p>
-            {mode === 'forgot-password'
-              ? 'Fordere einen sicheren Link an, um dein Passwort zurückzusetzen.'
-              : mode === 'reset-password'
-                ? 'Lege jetzt ein neues Passwort für dein Konto fest.'
-                : 'Melde dich an oder registriere dich. Danach legst du deine Familie an und nutzt die App als `admin` oder `familyuser`.'}
-          </p>
-          <div className="auth-benefits auth-benefits-editorial">
-            <span>Gemeinsame Familienfreigabe</span>
-            <span>Rollen mit `admin` und `familyuser`</span>
-            <span>Vorbereitung für Cloud-Sync und Android</span>
-          </div>
+          <BrandHeading text="Frey Frey" className="brand-lockup-auth" />
+          {mode === 'forgot-password' ? (
+            <p>Fordere einen sicheren Link an, um dein Passwort zurückzusetzen.</p>
+          ) : null}
+          {mode === 'reset-password' ? (
+            <p>Lege jetzt ein neues Passwort für dein Konto fest.</p>
+          ) : null}
         </div>
 
-        <form className="auth-panel auth-panel-editorial" autoComplete="off" onSubmit={(event) => void onSubmit(event)}>
+        <form className="auth-panel auth-panel-editorial" autoComplete={authFormAutocomplete} onSubmit={(event) => void onSubmit(event)}>
+          <div className="auth-autofill-decoys" aria-hidden="true">
+            <input tabIndex={-1} autoComplete="username" defaultValue="" />
+            <input tabIndex={-1} type="password" autoComplete="current-password" defaultValue="" />
+          </div>
+
           {mode === 'sign-in' || mode === 'sign-up' ? (
             <div className="mode-switch auth-mode-switch">
               <button
@@ -376,42 +483,45 @@ function AuthScreen({
           ) : null}
 
           {mode === 'sign-up' ? (
-            <input
-              name="displayName"
+            <AuthInput
+              field="displayName"
+              inputName="frey-profile-name"
               placeholder="Anzeigename"
               autoComplete="off"
               value={authDraft.displayName}
-              onChange={(event) => onDraftChange('displayName', event.currentTarget.value)}
+              onChange={(value) => onDraftChange('displayName', value)}
             />
           ) : null}
           {mode !== 'reset-password' ? (
-            <input
-              name="email"
+            <AuthInput
+              field="email"
+              inputName="email"
               type="email"
               placeholder="E-Mail"
-              autoComplete="off"
+              autoComplete={emailAutocomplete}
               value={authDraft.email}
-              onChange={(event) => onDraftChange('email', event.currentTarget.value)}
+              onChange={(value) => onDraftChange('email', value)}
+              allowStoredValues
             />
           ) : null}
           {mode !== 'forgot-password' ? (
-            <input
-              name="password"
-              type="password"
+            <PasswordField
+              field="password"
+              inputName="frey-secret-key"
               placeholder={mode === 'reset-password' ? 'Neues Passwort' : 'Passwort'}
               autoComplete="new-password"
               value={authDraft.password}
-              onChange={(event) => onDraftChange('password', event.currentTarget.value)}
+              onChange={(value) => onDraftChange('password', value)}
             />
           ) : null}
           {mode === 'reset-password' ? (
-            <input
-              name="confirmPassword"
-              type="password"
+            <PasswordField
+              field="confirmPassword"
+              inputName="frey-secret-key-confirmation"
               placeholder="Passwort wiederholen"
               autoComplete="new-password"
               value={authDraft.confirmPassword}
-              onChange={(event) => onDraftChange('confirmPassword', event.currentTarget.value)}
+              onChange={(value) => onDraftChange('confirmPassword', value)}
             />
           ) : null}
 

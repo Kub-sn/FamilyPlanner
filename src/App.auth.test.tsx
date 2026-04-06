@@ -184,13 +184,20 @@ describe('App auth flow', () => {
 
     await screen.findByRole('heading', {
       level: 1,
-      name: 'Frey Frey mit echten Benutzerkonten',
+      name: 'Frey Frey',
     });
 
     const brandImage = container.querySelector('.brand-lockup-auth .brand-mark-image');
 
     expect(brandImage).not.toBeNull();
     expect(brandImage?.getAttribute('src')).toBe('/freyLogo.svg');
+    expect(screen.queryByText('Supabase Auth')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Melde dich an oder registriere dich. Danach legst du deine Familie an und nutzt die App als `admin` oder `familyuser`.'),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText('Gemeinsame Familienfreigabe')).not.toBeInTheDocument();
+    expect(screen.queryByText('Rollen mit `admin` und `familyuser`')).not.toBeInTheDocument();
+    expect(screen.queryByText('Vorbereitung für Cloud-Sync und Android')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Registrieren' }));
     await user.type(screen.getByPlaceholderText('Anzeigename'), 'Alex');
@@ -213,7 +220,7 @@ describe('App auth flow', () => {
 
     await screen.findByRole('heading', {
       level: 1,
-      name: 'Frey Frey mit echten Benutzerkonten',
+      name: 'Frey Frey',
     });
 
     await user.type(screen.getByPlaceholderText('E-Mail'), 'alex@example.com');
@@ -224,6 +231,80 @@ describe('App auth flow', () => {
     expect(
       await screen.findByText('Wenn ein Konto mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen verschickt.'),
     ).toBeInTheDocument();
+  });
+
+  it('renders auth inputs empty with autofill decoys present', async () => {
+    const user = userEvent.setup();
+
+    const { container } = render(<App />);
+
+    await screen.findByRole('heading', {
+      level: 1,
+      name: 'Frey Frey',
+    });
+
+    const emailInput = screen.getByPlaceholderText('E-Mail');
+    const passwordInput = screen.getByPlaceholderText('Passwort');
+
+    expect(emailInput).toHaveValue('');
+    expect(passwordInput).toHaveValue('');
+    expect(container.querySelector('.auth-autofill-decoys')).not.toBeNull();
+    expect(emailInput).toHaveAttribute('name', 'email');
+    expect(emailInput).toHaveAttribute('autocomplete', 'username');
+    expect(passwordInput).toHaveAttribute('name', 'frey-secret-key');
+    expect(passwordInput).toHaveAttribute('autocomplete', 'new-password');
+
+    await user.click(emailInput);
+    await user.type(emailInput, 'alex@example.com');
+    await user.click(passwordInput);
+    await user.type(passwordInput, 'supersecret');
+
+    expect(emailInput).toHaveValue('alex@example.com');
+    expect(passwordInput).toHaveValue('supersecret');
+  });
+
+  it('keeps browser email suggestions available in sign-up mode', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await screen.findByRole('heading', {
+      level: 1,
+      name: 'Frey Frey',
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Registrieren' }));
+
+    const emailInput = screen.getByPlaceholderText('E-Mail');
+    const authForm = emailInput.closest('form');
+
+    expect(authForm).not.toBeNull();
+    expect(authForm).toHaveAttribute('autocomplete', 'on');
+    expect(emailInput).toHaveAttribute('name', 'email');
+    expect(emailInput).toHaveAttribute('autocomplete', 'email');
+  });
+
+  it('toggles the auth password field visibility from the eye button', async () => {
+    const user = userEvent.setup();
+
+    render(<App />);
+
+    await screen.findByRole('heading', {
+      level: 1,
+      name: 'Frey Frey',
+    });
+
+    const passwordInput = screen.getByPlaceholderText('Passwort');
+
+    expect(passwordInput).toHaveAttribute('type', 'password');
+
+    await user.click(screen.getByRole('button', { name: 'Passwort anzeigen' }));
+
+    expect(passwordInput).toHaveAttribute('type', 'text');
+
+    await user.click(screen.getByRole('button', { name: 'Passwort verbergen' }));
+
+    expect(passwordInput).toHaveAttribute('type', 'password');
   });
 
   it('lets the user set a new password from a recovery link', async () => {
@@ -242,10 +323,8 @@ describe('App auth flow', () => {
 
     await screen.findByRole('heading', {
       level: 1,
-      name: 'Frey Frey mit echten Benutzerkonten',
+      name: 'Frey Frey',
     });
-
-    expect(screen.queryByRole('heading', { level: 1, name: 'Frey Frey' })).not.toBeInTheDocument();
 
     await user.type(screen.getByPlaceholderText('Neues Passwort'), 'supersecret2');
     await user.type(screen.getByPlaceholderText('Passwort wiederholen'), 'supersecret2');
@@ -302,7 +381,7 @@ describe('App auth flow', () => {
 
     await screen.findByRole('heading', {
       level: 1,
-      name: 'Frey Frey mit echten Benutzerkonten',
+      name: 'Frey Frey',
     });
 
     await user.type(screen.getByPlaceholderText('Neues Passwort'), 'supersecret2');
@@ -485,7 +564,7 @@ describe('App auth flow', () => {
     expect(deleteCurrentAccount).toHaveBeenCalledTimes(1);
     expect(await screen.findByRole('heading', {
       level: 1,
-      name: 'Frey Frey mit echten Benutzerkonten',
+      name: 'Frey Frey',
     })).toBeInTheDocument();
     expect(screen.getByText('Dein Konto wurde gelöscht.')).toBeInTheDocument();
   });
