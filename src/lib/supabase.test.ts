@@ -431,6 +431,58 @@ describe('createFamilyInvite', () => {
   });
 });
 
+describe('bootstrapFamilyForUser', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'publishable-key');
+  });
+
+  it('creates a new family through the bootstrap rpc and keeps the creator as familyuser', async () => {
+    const rpcMock = vi.fn().mockResolvedValue({
+      data: [
+        {
+          family_id: 'family-boot',
+          family_name: 'Familie Boot',
+          role: 'familyuser',
+          allow_open_registration: true,
+          is_owner: true,
+        },
+      ],
+      error: null,
+    });
+
+    createClientMock.mockReturnValue({
+      rpc: rpcMock,
+    });
+
+    const { bootstrapFamilyForUser } = await import('./supabase');
+    const result = await bootstrapFamilyForUser(
+      {
+        id: 'user-boot',
+        app_metadata: {},
+        user_metadata: {},
+        aud: 'authenticated',
+        created_at: '2026-04-06T10:00:00.000Z',
+      } as never,
+      'Familie Boot',
+    );
+
+    expect(rpcMock).toHaveBeenCalledWith('bootstrap_family_for_current_user', {
+      target_family_name: 'Familie Boot',
+    });
+    expect(result).toEqual({
+      familyId: 'family-boot',
+      familyName: 'Familie Boot',
+      role: 'familyuser',
+      allowOpenRegistration: true,
+      isOwner: true,
+      ownerUserId: 'user-boot',
+    });
+  });
+});
+
 describe('removeFamilyInvite', () => {
   beforeEach(() => {
     vi.resetModules();

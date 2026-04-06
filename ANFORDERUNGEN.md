@@ -1,0 +1,43 @@
+# Anforderungen
+
+- [ ] bei dokumente erfassen: 
+  - [ ] die inputs komplett löschen
+  - [ ] status, dokument kategorie linkzumdoku komplett aus db löschen
+  - [ ] bei bearbeiten nur name, alles andere entfernen
+  - [ ] bei filter status auch entfernen
+  - [ ] status a-z im filter auch entfernen als auswahlmöglichkeit
+  - [ ] optional bei datei hochladen entfernen
+  - [ ] 1 dokumente zu 1 dokument machen
+
+- [ ] weitere rolle: familien admin, da bei neuanmeldung und neue familie der user die rolle admin bekommt.
+
+- [ ] google calendar einbinden
+  - [ ] Google Cloud Projekt: Du musst ein Projekt in der Google Cloud Console erstellen und die API dort aktivieren.
+  - [ ] API-Integration: Wenn deine App Termine erstellen, bearbeiten oder löschen soll, nutzt du die Google Calendar API. Hierfür benötigst du OAuth 2.0 für die Nutzer-Anmeldung.
+
+- [ ] essenplan:
+  - [ ] Kalender einbauen mit sichtbarkeit von zwei wochen
+  - [ ] bonus: auswahl zwischen monat, woche, zwei wochen,
+  - [ ] gericht eintragen über den kalender
+    - [ ] dialog mit feldern, gerichtname und rezept
+    - [ ] man kann soviele gerichte eintragen pro tag wie man möchte
+
+- [ ] notizen:
+  - [ ] nichts soll required sein
+  - [ ] wenn keine notizen vorhanden, dann soll in dem bereich wo diese wären stehen: keine Notizen vorhanden
+  - [ ] fehlermeldung soll angezeigt werden wenn ich gar nichts reinschreibe
+  - [ ] in das textfield buttons hinzufügen für bolt, kursiv, checkliste, aufzählungen, textfarben, hintergrundfarbe(optional)
+  
+- [ ] todo
+  - [ ] kanban clone mit todo, in arbeit, erledigt
+  - [ ] pro task
+    - [ ]  fälligkeitsdatum (wenn dieser bald ist, dann farbe orange, wenn erreicht oder überschritten farbe rot)
+    - [ ]  subtasks
+
+- [ ] einkauf
+  - [ ] liste erstellen, datum sollte dabei stehen
+  - [ ] pro item buttons für löschen und bearbeiten UND einkaufsliste show oder sowas wo dann alles mit checkboxen gelistet ist
+  - [ ] dann pro item dialog
+  - [ ] darin kann ich mehrere artikel hintereinander hinzufügen
+
+

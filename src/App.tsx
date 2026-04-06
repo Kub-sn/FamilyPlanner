@@ -238,6 +238,25 @@ function getRoleChipClass(role: UserRole) {
     : 'chip role-chip role-chip-member';
 }
 
+function isFamilyOwnerMember(memberId: string, family: SupabaseFamilyContext | null) {
+  return Boolean(family?.ownerUserId && family.ownerUserId === memberId);
+}
+
+function renderFamilyStatusBadges({
+  role,
+  isOwner,
+}: {
+  role: UserRole;
+  isOwner?: boolean;
+}) {
+  return (
+    <div className="family-status-badges">
+      {isOwner ? <span className="chip owner-status-badge">Gründerstatus</span> : null}
+      <span className={getRoleChipClass(role)}>{getRoleLabel(role)}</span>
+    </div>
+  );
+}
+
 function canPreviewDocument(document: DocumentItem) {
   const kind = getDocumentKind(document);
 
@@ -697,6 +716,8 @@ function PlannerShell({
 
   const effectiveRole = authState.profile?.role ?? activeMember?.role ?? 'familyuser';
   const canManageFamily = effectiveRole === 'admin';
+  const canViewFamily = Boolean(authState.family);
+  const canInviteFamilyMembers = canManageFamily || authState.family?.isOwner === true;
   const allowOpenRegistration = authState.family?.allowOpenRegistration ?? true;
   const openTasks = useMemo(
     () => plannerState.tasks.filter((task) => !task.done).length,
@@ -715,8 +736,8 @@ function PlannerShell({
     [plannerState.members],
   );
   const visibleTabs = useMemo(
-    () => tabs.filter((tab) => tab.id !== 'family' || canManageFamily),
-    [canManageFamily],
+    () => tabs.filter((tab) => tab.id !== 'family' || canViewFamily),
+    [canViewFamily],
   );
   const documentStatusOptions = useMemo(
     () =>
@@ -818,10 +839,10 @@ function PlannerShell({
   };
 
   useEffect(() => {
-    if (!canManageFamily && activeTab === 'family') {
+    if (!canViewFamily && activeTab === 'family') {
       setActiveTab('overview');
     }
-  }, [activeTab, canManageFamily, setActiveTab]);
+  }, [activeTab, canViewFamily, setActiveTab]);
 
   useEffect(() => {
     if (!cloudSync.message || cloudSync.phase === 'loading') {
@@ -1046,17 +1067,20 @@ function PlannerShell({
     if (
       !authState.family ||
       !authState.profile ||
+      !canInviteFamilyMembers ||
       !email ||
       (role !== 'admin' && role !== 'familyuser')
     ) {
       return;
     }
 
+    const inviteRole = canManageFamily ? role : 'familyuser';
+
     try {
       const result = await createFamilyInvite(
         authState.family.familyId,
         email,
-        role,
+        inviteRole,
         authState.profile.id,
       );
 
@@ -1080,7 +1104,7 @@ function PlannerShell({
   };
 
   const handleRemoveInvite = async (inviteId: string) => {
-    if (!canManageFamily) {
+    if (!canInviteFamilyMembers) {
       return;
     }
 
@@ -1613,11 +1637,23 @@ function PlannerShell({
             <div className="account-meta-row">
               <span className="chip">{adminCount} Admin</span>
               {authState.profile ? (
-                <span className={getRoleChipClass(authState.profile.role)}>
-                  {getRoleLabel(authState.profile.role)}
-                </span>
+                renderFamilyStatusBadges({
+                  role: authState.profile.role,
+                  isOwner: authState.family?.isOwner,
+                })
               ) : null}
             </div>
+            {authState.profile ? (
+              <small className="family-permission-note">
+                {authState.family?.isOwner && authState.profile.role !== 'admin'
+                  ? 'Du bist Familiengründer. Du kannst Mitglieder einladen, aber keine Konfiguration oder Admin-Rollen verwalten.'
+                  : authState.profile.role === 'admin' && authState.family?.isOwner
+                    ? 'Du bist Familiengründer und Admin. Du verwaltest Einladungen, Admin-Rollen und die Familien-Konfiguration.'
+                    : authState.profile.role === 'admin'
+                      ? 'Du bist Admin. Du verwaltest Einladungen, Admin-Rollen und die Familien-Konfiguration.'
+                      : 'Du bist Familienmitglied ohne Verwaltungsrechte.'}
+              </small>
+            ) : null}
           </div>
           {authState.profile ? (
             <div className="account-identity">
@@ -2351,7 +2387,7 @@ function PlannerShell({
           </div>
         ) : null}
 
-        <section className={activeTab === 'family' && canManageFamily ? 'module is-visible' : 'module'}>
+        <section className={activeTab === 'family' && canViewFamily ? 'module is-visible' : 'module'}>
           <div className="module-layout role-layout">
             <article className="panel list-panel">
               <div className="panel-heading">
@@ -2365,7 +2401,10 @@ function PlannerShell({
                         <strong>{member.name}</strong>
                         <small>{member.email}</small>
                       </div>
-                      <span className={getRoleChipClass(member.role)}>{getRoleLabel(member.role)}</span>
+                      {renderFamilyStatusBadges({
+                        role: member.role,
+                        isOwner: isFamilyOwnerMember(member.id, authState.family),
+                      })}
                     </li>
                   ))
                 ) : (
@@ -2390,7 +2429,7 @@ function PlannerShell({
                         <span className={getRoleChipClass(invite.role)}>{getRoleLabel(invite.role)}</span>
                       </div>
                       <div className="invite-card-actions">
-                        {canManageFamily ? (
+                        {canInviteFamilyMembers ? (
                           <button
                             type="button"
                             className="ghost-toggle"
@@ -2411,51 +2450,65 @@ function PlannerShell({
             <div className="family-management-stack">
               <form className="panel form-panel" onSubmit={(event) => void handleAddMember(event)}>
                 <h4>Familienmitglied einladen</h4>
-                <input name="email" placeholder="E-Mail" disabled={!canManageFamily} />
+                <p className="family-management-note">
+                  {canManageFamily
+                    ? 'Admins verwalten Einladungen, Admin-Rollen und die Familien-Konfiguration.'
+                    : canInviteFamilyMembers
+                      ? 'Familiengründer können Mitglieder einladen. Die Konfiguration und Admin-Rollen bleiben nur für Admins sichtbar.'
+                      : 'Nur Familiengründer oder Admins können Einladungen für diese Familie verwalten.'}
+                </p>
+                <input name="email" placeholder="E-Mail" disabled={!canInviteFamilyMembers} />
                 <select name="role" defaultValue="familyuser" disabled={!canManageFamily}>
                   <option value="familyuser">familyuser</option>
-                  <option value="admin">admin</option>
+                  {canManageFamily ? <option value="admin">admin</option> : null}
                 </select>
-                <button type="submit" disabled={!canManageFamily}>
-                  {canManageFamily ? 'Einladung senden' : 'Nur Admin kann Einladungen senden'}
+                <button type="submit" disabled={!canInviteFamilyMembers}>
+                  {canInviteFamilyMembers
+                    ? 'Einladung senden'
+                    : 'Nur Familiengruender oder Admin kann Einladungen senden'}
                 </button>
                 <small>
                   Die Einladung wird per E-Mail verschickt. Sobald sich der Nutzer mit derselben
                   E-Mail registriert oder anmeldet, wird die Familienzuordnung automatisch uebernommen.
                 </small>
+                {!canManageFamily && canInviteFamilyMembers ? (
+                  <small>Als Familiengründer kannst du Mitglieder einladen, aber keine Admin-Rolle vergeben.</small>
+                ) : null}
               </form>
 
-              <article className="panel form-panel family-config-panel">
-                <div className="panel-heading">
-                  <h4>Konfiguration</h4>
-                  <span className={allowOpenRegistration ? 'chip' : 'chip alt'}>
-                    {allowOpenRegistration ? 'Offen' : 'Nur Einladung'}
-                  </span>
-                </div>
-                <label className="family-config-toggle">
-                  <div className="family-config-toggle-copy">
-                    <strong>Freie Registrierung erlauben</strong>
-                    <small>
-                      Wenn du das deaktivierst, koennen neue Konten nur noch mit einer offenen
-                      Einladung erstellt werden.
-                    </small>
+              {canManageFamily ? (
+                <article className="panel form-panel family-config-panel">
+                  <div className="panel-heading">
+                    <h4>Konfiguration</h4>
+                    <span className={allowOpenRegistration ? 'chip' : 'chip alt'}>
+                      {allowOpenRegistration ? 'Offen' : 'Nur Einladung'}
+                    </span>
                   </div>
-                  <input
-                    type="checkbox"
-                    className="app-switch"
-                    aria-label="Freie Registrierung erlauben"
-                    name="allow-open-registration"
-                    checked={allowOpenRegistration}
-                    disabled={!canManageFamily || registrationConfigBusy}
-                    onChange={(event) => void handleRegistrationAccessChange(event.currentTarget.checked)}
-                  />
-                </label>
-                <p className="family-config-note">
-                  {allowOpenRegistration
-                    ? 'Neue Nutzer koennen sich aktuell auch ohne Einladung registrieren.'
-                    : 'Neue Nutzer koennen sich aktuell nur per Einladung registrieren.'}
-                </p>
-              </article>
+                  <label className="family-config-toggle">
+                    <div className="family-config-toggle-copy">
+                      <strong>Freie Registrierung erlauben</strong>
+                      <small>
+                        Wenn du das deaktivierst, koennen neue Konten nur noch mit einer offenen
+                        Einladung erstellt werden.
+                      </small>
+                    </div>
+                    <input
+                      type="checkbox"
+                      className="app-switch"
+                      aria-label="Freie Registrierung erlauben"
+                      name="allow-open-registration"
+                      checked={allowOpenRegistration}
+                      disabled={registrationConfigBusy}
+                      onChange={(event) => void handleRegistrationAccessChange(event.currentTarget.checked)}
+                    />
+                  </label>
+                  <p className="family-config-note">
+                    {allowOpenRegistration
+                      ? 'Neue Nutzer koennen sich aktuell auch ohne Einladung registrieren.'
+                      : 'Neue Nutzer koennen sich aktuell nur per Einladung registrieren.'}
+                  </p>
+                </article>
+              ) : null}
             </div>
           </div>
         </section>
@@ -2507,11 +2560,23 @@ function PlannerShell({
             <div className="account-meta-row">
               <span className="chip">{adminCount} Admin</span>
               {authState.profile ? (
-                <span className={getRoleChipClass(authState.profile.role)}>
-                  {getRoleLabel(authState.profile.role)}
-                </span>
+                renderFamilyStatusBadges({
+                  role: authState.profile.role,
+                  isOwner: authState.family?.isOwner,
+                })
               ) : null}
             </div>
+            {authState.profile ? (
+              <small className="family-permission-note">
+                {authState.family?.isOwner && authState.profile.role !== 'admin'
+                  ? 'Du bist Familiengründer. Du kannst Mitglieder einladen, aber keine Konfiguration oder Admin-Rollen verwalten.'
+                  : authState.profile.role === 'admin' && authState.family?.isOwner
+                    ? 'Du bist Familiengründer und Admin. Du verwaltest Einladungen, Admin-Rollen und die Familien-Konfiguration.'
+                    : authState.profile.role === 'admin'
+                      ? 'Du bist Admin. Du verwaltest Einladungen, Admin-Rollen und die Familien-Konfiguration.'
+                      : 'Du bist Familienmitglied ohne Verwaltungsrechte.'}
+              </small>
+            ) : null}
           </div>
           {authState.profile ? (
             <div className="account-identity">

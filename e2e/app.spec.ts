@@ -14,6 +14,19 @@ const recoverySession = {
 };
 
 async function mockSupabaseAuth(page: Page) {
+  const state = {
+    pendingInvites: [
+      {
+        id: 'invite-open',
+        family_id: 'family-1',
+        email: 'open@example.com',
+        role: 'familyuser',
+        created_at: '2026-04-06T10:00:00.000Z',
+        accepted_at: null,
+      },
+    ],
+  };
+
   await page.route(`${supabaseBaseUrl}/auth/v1/**`, async (route: Route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -86,6 +99,7 @@ async function mockSupabaseAuth(page: Page) {
         family: {
           id: 'family-1',
           name: 'Familie Test',
+          owner_user_id: 'user-recovery',
         },
       };
     } else if (table === 'family_members') {
@@ -95,6 +109,15 @@ async function mockSupabaseAuth(page: Page) {
           role: 'familyuser',
         },
       ];
+    } else if (table === 'family_invites' && request.method() === 'DELETE') {
+      const inviteFilter = url.searchParams.get('id') ?? '';
+      const inviteId = inviteFilter.startsWith('eq.') ? inviteFilter.slice(3) : inviteFilter;
+      const removedInvite = state.pendingInvites.find((invite) => invite.id === inviteId) ?? null;
+
+      state.pendingInvites = state.pendingInvites.filter((invite) => invite.id !== inviteId);
+      body = removedInvite ? { id: removedInvite.id } : null;
+    } else if (table === 'family_invites') {
+      body = state.pendingInvites;
     }
 
     await route.fulfill({
@@ -494,6 +517,33 @@ test('asks for confirmation before deleting the account and lets the user cancel
   await expect(page.getByRole('dialog')).toBeHidden();
   await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Account löschen' })).toBeVisible();
+});
+
+test('lets a familyuser owner invite members but hides configuration controls', async ({ page }) => {
+  await mockSupabaseAuth(page);
+
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+
+  await page.getByPlaceholder('E-Mail').fill('alex@example.com');
+  await page.getByPlaceholder('Passwort').fill('supersecret2');
+  await page.getByRole('button', { name: 'Jetzt anmelden' }).click();
+
+  await expect(page.getByText('Familie Test', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Familie & Rollen' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Mitglieder & Rollen' })).toBeVisible();
+  await expect(page.getByText('Gründerstatus').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Einladung senden' })).toBeEnabled();
+  await expect(page.getByText('Familiengründer können Mitglieder einladen. Die Konfiguration und Admin-Rollen bleiben nur für Admins sichtbar.')).toBeVisible();
+  await expect(page.getByText('Du bist Familiengründer. Du kannst Mitglieder einladen, aber keine Konfiguration oder Admin-Rollen verwalten.').first()).toBeVisible();
+  await expect(page.getByText('Als Familiengründer kannst du Mitglieder einladen, aber keine Admin-Rolle vergeben.')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Einladung für open@example.com zurückziehen' })).toBeVisible();
+  await page.getByRole('button', { name: 'Einladung für open@example.com zurückziehen' }).click();
+  await expect(page.getByText('Einladung wurde zurückgezogen.')).toBeVisible();
+  await expect(page.getByText('open@example.com')).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Konfiguration' })).toHaveCount(0);
 });
 
 test('lets admins switch registration to invite-only and back again', async ({ page }) => {

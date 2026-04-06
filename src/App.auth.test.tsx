@@ -428,6 +428,7 @@ describe('App auth flow', () => {
       familyId: 'family-1',
       familyName: 'Familie Test',
       role: 'familyuser',
+      isOwner: false,
     });
     fetchFamilyMembers.mockResolvedValue([
       {
@@ -507,7 +508,78 @@ describe('App auth flow', () => {
 
     expect(acceptPendingFamilyInvite).toHaveBeenCalledWith('user-1', 'mia@example.com');
     expect(getAccountCard().getByText('Familie Test')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Familie & Rollen' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Familie & Rollen' })).toBeInTheDocument();
+  });
+
+  it('lets family owners invite members without seeing the configuration card', async () => {
+    const user = userEvent.setup();
+
+    getCurrentSession.mockResolvedValue({
+      user: {
+        id: 'user-family-1',
+        email: 'mia@example.com',
+        user_metadata: {},
+      },
+    });
+    ensureProfile.mockResolvedValue({
+      id: 'user-family-1',
+      display_name: 'Mia',
+      email: 'mia@example.com',
+      role: 'familyuser',
+    });
+    fetchFamilyContext.mockResolvedValue({
+      familyId: 'family-1',
+      familyName: 'Familie Test',
+      role: 'familyuser',
+      allowOpenRegistration: false,
+      isOwner: true,
+    });
+    fetchFamilyMembers.mockResolvedValue([
+      {
+        id: 'user-admin',
+        name: 'Kubi',
+        email: 'admin@example.com',
+        role: 'admin',
+      },
+      {
+        id: 'user-family-1',
+        name: 'Mia',
+        email: 'mia@example.com',
+        role: 'familyuser',
+      },
+    ]);
+    fetchFamilyInvites.mockResolvedValue([
+      {
+        id: 'invite-owner-1',
+        familyId: 'family-1',
+        email: 'open@example.com',
+        role: 'familyuser',
+        createdAt: '2026-04-06T10:00:00.000Z',
+        acceptedAt: null,
+      },
+    ]);
+
+    render(<App />);
+
+    await expectPlannerShellHeading();
+    await user.click(screen.getByRole('button', { name: 'Familie & Rollen' }));
+
+    expect(screen.getByRole('heading', { level: 4, name: 'Mitglieder & Rollen' })).toBeInTheDocument();
+    expect(getAccountCard().getByText('Gründerstatus')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 4, name: 'Konfiguration' })).not.toBeInTheDocument();
+    expect(getInviteForm().getByRole('button', { name: 'Einladung senden' })).toBeEnabled();
+    expect(getInviteForm().queryByRole('option', { name: 'admin' })).not.toBeInTheDocument();
+    expect(screen.getAllByText('Gründerstatus').length).toBeGreaterThan(0);
+    expect(screen.getByText('Familiengründer können Mitglieder einladen. Die Konfiguration und Admin-Rollen bleiben nur für Admins sichtbar.')).toBeInTheDocument();
+    expect(
+      screen.getAllByText('Du bist Familiengründer. Du kannst Mitglieder einladen, aber keine Konfiguration oder Admin-Rollen verwalten.').length,
+    ).toBeGreaterThan(0);
+    expect(screen.getByText('Als Familiengründer kannst du Mitglieder einladen, aber keine Admin-Rolle vergeben.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Einladung für open@example.com zurückziehen' }));
+
+    expect(removeFamilyInvite).toHaveBeenCalledWith('invite-owner-1');
+    expect(await screen.findByText('Einladung wurde zurückgezogen.')).toBeInTheDocument();
+    expect(screen.queryByText('open@example.com')).not.toBeInTheDocument();
   });
 
   it('shows a success message after a signup confirmation redirect', async () => {
@@ -584,6 +656,7 @@ describe('App auth flow', () => {
 
     expect(screen.getByRole('heading', { level: 4, name: 'Mitglieder & Rollen' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Einladung senden' })).toBeInTheDocument();
+    expect(getAccountCard().getByText('Du bist Admin. Du verwaltest Einladungen, Admin-Rollen und die Familien-Konfiguration.')).toBeInTheDocument();
     expect(screen.queryByText('Keine offenen Einladungen')).not.toBeInTheDocument();
     expect(getConfigCard().getByRole('checkbox', { name: 'Freie Registrierung erlauben' })).toHaveClass('app-switch');
   });

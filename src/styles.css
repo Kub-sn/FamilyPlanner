@@ -428,8 +428,22 @@ button {
   gap: 0.45rem;
 }
 
+.family-status-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
 .account-meta-row .chip {
   width: fit-content;
+}
+
+.family-permission-note {
+  display: block;
+  margin-top: 0.1rem;
+  color: rgba(251, 244, 236, 0.76);
+  line-height: 1.5;
 }
 
 .panel-heading-tight {
@@ -717,6 +731,15 @@ button {
   color: #9a4b29;
 }
 
+.owner-status-badge {
+  border: 1px solid rgba(180, 120, 35, 0.18);
+  background: linear-gradient(135deg, rgba(221, 179, 87, 0.16), rgba(253, 244, 221, 0.92));
+  color: #825c18;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
 .module-layout {
   display: grid;
   grid-template-columns: minmax(280px, 340px) 1fr;
@@ -779,8 +802,14 @@ button {
 }
 
 .family-config-toggle-copy small,
-.family-config-note {
+.family-config-note,
+.family-management-note {
   line-height: 1.55;
+}
+
+.family-management-note {
+  margin: -0.1rem 0 0;
+  color: rgba(24, 52, 47, 0.72);
 }
 
 .app-switch {
@@ -1205,6 +1234,15 @@ button {
 .family-entry-copy {
   display: grid;
   gap: 0.2rem;
+}
+
+.role-layout .document-list > li {
+  align-items: center;
+}
+
+.role-layout .family-status-badges {
+  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .family-entry-copy strong,

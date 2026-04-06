@@ -28,6 +28,8 @@ export type SupabaseFamilyContext = {
   familyName: string;
   role: UserRole;
   allowOpenRegistration: boolean;
+  isOwner?: boolean;
+  ownerUserId?: string;
 };
 
 export type SupabaseRegistrationGate = {
@@ -117,6 +119,14 @@ type RegistrationGateRow = {
   pending_invite: boolean;
   open_registration_available: boolean;
   has_existing_families: boolean;
+};
+
+type BootstrappedFamilyRow = {
+  family_id: string;
+  family_name: string;
+  role: UserRole;
+  allow_open_registration: boolean;
+  is_owner?: boolean;
 };
 
 type EdgeFunctionErrorLike = Error & {
@@ -415,7 +425,7 @@ export async function fetchFamilyContext(
   const client = requireSupabase();
   const { data, error } = await client
     .from('family_members')
-    .select('family_id, role, family:families(id, name, allow_open_registration)')
+    .select('family_id, role, family:families(id, name, allow_open_registration, owner_user_id)')
     .eq('user_id', userId)
     .limit(1)
     .maybeSingle();
@@ -435,6 +445,8 @@ export async function fetchFamilyContext(
     familyName: String(family.name),
     role: data.role as UserRole,
     allowOpenRegistration: family.allow_open_registration !== false,
+    isOwner: family.owner_user_id === userId,
+    ownerUserId: String(family.owner_user_id),
   };
 }
 
@@ -767,43 +779,31 @@ export async function bootstrapFamilyForUser(user: User, familyName: string) {
     throw new Error('Bitte einen Familiennamen eingeben.');
   }
 
-  const { data: family, error: familyError } = await client
-    .from('families')
-    .insert({
-      name: normalizedFamilyName,
-      owner_user_id: user.id,
-    })
-    .select('id, name')
-    .single();
-
-  if (familyError) {
-    throw familyError;
+  if (!user.id) {
+    throw new Error('Die Familiengruendung erfordert eine aktive Anmeldung.');
   }
 
-  const { error: membershipError } = await client.from('family_members').insert({
-    family_id: family.id,
-    user_id: user.id,
-    role: 'admin',
+  const { data, error } = await client.rpc('bootstrap_family_for_current_user', {
+    target_family_name: normalizedFamilyName,
   });
 
-  if (membershipError) {
-    throw membershipError;
+  if (error) {
+    throw error;
   }
 
-  const { error: profileError } = await client
-    .from('profiles')
-    .update({ role: 'admin' })
-    .eq('id', user.id);
+  const family = (Array.isArray(data) ? data[0] : data) as BootstrappedFamilyRow | null;
 
-  if (profileError) {
-    throw profileError;
+  if (!family) {
+    throw new Error('Die Familie konnte nicht erstellt werden. Bitte versuche es erneut.');
   }
 
   return {
-    familyId: String(family.id),
-    familyName: String(family.name),
-    role: 'admin' as const,
-    allowOpenRegistration: true,
+    familyId: String(family.family_id),
+    familyName: String(family.family_name),
+    role: family.role,
+    allowOpenRegistration: family.allow_open_registration !== false,
+    isOwner: family.is_owner !== false,
+    ownerUserId: user.id,
   };
 }
 
