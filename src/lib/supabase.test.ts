@@ -120,6 +120,46 @@ describe('auth email normalization', () => {
       password: 'new-super-secret',
     });
   });
+
+  it('invokes the delete account edge function with the refreshed auth token', async () => {
+    const refreshSessionMock = vi.fn().mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'fresh-access-token-delete',
+        },
+      },
+      error: null,
+    });
+    const getSessionMock = vi.fn();
+    const signOutMock = vi.fn().mockResolvedValue({ error: null });
+    const invokeMock = vi.fn().mockResolvedValue({ data: { success: true }, error: null });
+    const setAuthMock = vi.fn();
+
+    createClientMock.mockReturnValue({
+      auth: {
+        refreshSession: refreshSessionMock,
+        getSession: getSessionMock,
+        signOut: signOutMock,
+      },
+      functions: {
+        setAuth: setAuthMock,
+        invoke: invokeMock,
+      },
+    });
+
+    const { deleteCurrentAccount } = await import('./supabase');
+
+    await deleteCurrentAccount();
+
+    expect(setAuthMock).toHaveBeenCalledWith('fresh-access-token-delete');
+    expect(invokeMock).toHaveBeenCalledWith('delete-own-account', {
+      headers: {
+        Authorization: 'Bearer fresh-access-token-delete',
+      },
+    });
+    expect(signOutMock).toHaveBeenCalledWith({ scope: 'local' });
+    expect(getSessionMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('createFamilyInvite', () => {

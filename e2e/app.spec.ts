@@ -40,6 +40,14 @@ async function mockSupabaseAuth(page: Page) {
       }
     }
 
+    if (url.pathname.endsWith('/auth/v1/logout')) {
+      await route.fulfill({
+        status: 204,
+        body: '',
+      });
+      return;
+    }
+
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -95,6 +103,25 @@ async function mockSupabaseAuth(page: Page) {
       body: JSON.stringify(body),
     });
   });
+
+  await page.route(`${supabaseBaseUrl}/functions/v1/**`, async (route: Route) => {
+    const url = new URL(route.request().url());
+
+    if (url.pathname.endsWith('/functions/v1/delete-own-account')) {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({}),
+    });
+  });
 }
 
 async function mockSupabasePasswordRecovery(page: Page) {
@@ -122,8 +149,8 @@ async function mockSupabasePasswordRecovery(page: Page) {
 test('shows the planner shell and lets the user open the shopping module', async ({ page }) => {
   await page.goto('/');
 
-  const plannerHeading = page.getByRole('heading', { name: 'Familienplaner' });
-  const authHeading = page.getByRole('heading', { name: 'Familienplaner mit echten Benutzerkonten' });
+  const plannerHeading = page.getByRole('heading', { name: 'Frey Frey' });
+  const authHeading = page.getByRole('heading', { name: 'Frey Frey mit echten Benutzerkonten' });
 
   await expect(plannerHeading.or(authHeading)).toBeVisible();
 
@@ -133,19 +160,15 @@ test('shows the planner shell and lets the user open the shopping module', async
     return;
   }
 
-  await expect(
-    page.getByText(
-      /Demo-Modus ohne Supabase-Synchronisierung\.|Lokal aktiv\. F(?:uer|ür) Synchronisierung bitte mit Supabase anmelden\./,
-    ),
-  ).toBeVisible();
+  await expect(page.getByText('Demo-Modus')).toBeVisible();
   await page.getByRole('button', { name: 'Einkauf' }).click();
-  await expect(page.getByRole('heading', { name: 'Einkaufsliste' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Neuen Artikel hinzufügen' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Artikel speichern' })).toBeVisible();
   await page.getByRole('button', { name: 'Notizen' }).click();
-  await expect(page.getByRole('heading', { name: 'Notizen' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Neue Notiz' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Notiz speichern' })).toBeVisible();
   await page.getByRole('button', { name: 'Essensplan' }).click();
-  await expect(page.getByRole('heading', { name: 'Essensplan' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Gericht eintragen' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Gericht speichern' })).toBeVisible();
 });
 
@@ -156,7 +179,7 @@ test('lets the user complete the password reset flow and sign in afterwards', as
     '/auth/reset-password#access_token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLXJlY292ZXJ5IiwiZW1haWwiOiJhbGV4QGV4YW1wbGUuY29tIiwiZXhwIjo0MTAyNDQ0ODAwfQ.signature&refresh_token=refresh-token-recovery&expires_in=3600&token_type=bearer&type=recovery',
   );
 
-  await expect(page.getByRole('heading', { name: 'Familienplaner mit echten Benutzerkonten' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Frey Frey mit echten Benutzerkonten' })).toBeVisible();
   await expect(page.getByPlaceholder('Neues Passwort')).toBeVisible();
   await expect(page.getByPlaceholder('Passwort wiederholen')).toBeVisible();
 
@@ -172,8 +195,8 @@ test('lets the user complete the password reset flow and sign in afterwards', as
   await page.getByPlaceholder('Passwort').fill('supersecret2');
   await page.getByRole('button', { name: 'Jetzt anmelden' }).click();
 
-  await expect(page.getByRole('heading', { name: 'Familienplaner' })).toBeVisible();
-  await expect(page.getByText('Familie Test')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+  await expect(page.getByText('Familie Test', { exact: true }).first()).toBeVisible();
 });
 
 test('lets the user request a password reset email from the sign-in screen', async ({ page }) => {
@@ -181,7 +204,7 @@ test('lets the user request a password reset email from the sign-in screen', asy
 
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: 'Familienplaner mit echten Benutzerkonten' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Frey Frey mit echten Benutzerkonten' })).toBeVisible();
 
   await page.getByPlaceholder('E-Mail').fill('alex@example.com');
   await page.getByRole('button', { name: 'Passwort vergessen?' }).click();
@@ -193,4 +216,28 @@ test('lets the user request a password reset email from the sign-in screen', asy
     page.getByText('Wenn ein Konto mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen verschickt.'),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: 'Jetzt anmelden' })).toBeVisible();
+});
+
+test('asks for confirmation before deleting the account and lets the user cancel', async ({ page }) => {
+  await mockSupabaseAuth(page);
+
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey mit echten Benutzerkonten' })).toBeVisible();
+
+  await page.getByPlaceholder('E-Mail').fill('alex@example.com');
+  await page.getByPlaceholder('Passwort').fill('supersecret2');
+  await page.getByRole('button', { name: 'Jetzt anmelden' }).click();
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Account löschen' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByText('Bist du sicher?')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ja, Account löschen' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Abbrechen' }).click();
+  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Account löschen' })).toBeVisible();
 });
