@@ -42,6 +42,8 @@ import {
   createCalendarEntry,
   fetchRegistrationGate,
   createDocument,
+  deleteFamily,
+  deleteFamilyMemberAccount,
   deleteCurrentAccount,
   createFamilyInvite,
   createMeal,
@@ -149,6 +151,21 @@ type DocumentPreviewState = {
   name: string;
   url: string;
   kind: 'image' | 'pdf';
+};
+
+type PendingMemberDeletionState = {
+  familyId: string;
+  familyName: string;
+  memberId: string;
+  memberName: string;
+  memberEmail: string;
+};
+
+type PendingFamilyDeletionState = {
+  familyId: string;
+  familyName: string;
+  memberCount: number;
+  isCurrentFamily: boolean;
 };
 
 const DOCUMENT_SORT_OPTIONS: Array<{ value: DocumentSortOption; label: string }> = [
@@ -746,6 +763,8 @@ function PlannerShell({
   setCloudSync: setCloudSyncState,
   onSignOut,
   onDeleteAccount,
+  onDeleteFamily,
+  onDeleteFamilyMemberAccount,
   onUpdateFamilyRegistration,
 }: {
   activeTab: TabId;
@@ -759,6 +778,8 @@ function PlannerShell({
   setCloudSync: React.Dispatch<React.SetStateAction<CloudSyncState>>;
   onSignOut: () => Promise<void>;
   onDeleteAccount: () => Promise<void>;
+  onDeleteFamily: (familyId: string) => Promise<void>;
+  onDeleteFamilyMemberAccount: (familyId: string, memberUserId: string) => Promise<void>;
   onUpdateFamilyRegistration: (allowOpenRegistration: boolean) => Promise<SupabaseFamilyContext>;
 }) {
   const [selectedDocumentFiles, setSelectedDocumentFiles] = useState<File[]>([]);
@@ -784,6 +805,10 @@ function PlannerShell({
   const [selectedInviteFamilyId, setSelectedInviteFamilyId] = useState<string | null>(null);
   const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] = useState(false);
   const [deleteAccountBusy, setDeleteAccountBusy] = useState(false);
+  const [pendingMemberDeletion, setPendingMemberDeletion] = useState<PendingMemberDeletionState | null>(null);
+  const [memberDeletionBusy, setMemberDeletionBusy] = useState(false);
+  const [pendingFamilyDeletion, setPendingFamilyDeletion] = useState<PendingFamilyDeletionState | null>(null);
+  const [familyDeletionBusy, setFamilyDeletionBusy] = useState(false);
   const [calendarViewDate, setCalendarViewDate] = useState(() => getMonthStart(new Date()));
   const [selectedCalendarDate, setSelectedCalendarDate] = useState(() => toCalendarDateKey(new Date()));
 
@@ -1359,6 +1384,83 @@ function PlannerShell({
       });
     } finally {
       setDeleteAccountBusy(false);
+    }
+  };
+
+  const handleConfirmMemberDeletion = async () => {
+    if (!pendingMemberDeletion) {
+      return;
+    }
+
+    setMemberDeletionBusy(true);
+
+    try {
+      await onDeleteFamilyMemberAccount(pendingMemberDeletion.familyId, pendingMemberDeletion.memberId);
+
+      setAdminFamilyDirectory((current) =>
+        current.map((family) =>
+          family.familyId === pendingMemberDeletion.familyId
+            ? {
+                ...family,
+                members: family.members.filter((member) => member.id !== pendingMemberDeletion.memberId),
+              }
+            : family,
+        ),
+      );
+      setSelectedAdminFamilyId(pendingMemberDeletion.familyId);
+
+      if (authState.family?.familyId === pendingMemberDeletion.familyId) {
+        updateState((current) => ({
+          ...current,
+          members: current.members.filter((member) => member.id !== pendingMemberDeletion.memberId),
+        }));
+      }
+
+      setCloudSync({
+        phase: 'ready',
+        message: `${pendingMemberDeletion.memberName} wurde inklusive Supabase-Konto gelöscht.`,
+      });
+      setPendingMemberDeletion(null);
+    } catch (error) {
+      setCloudSync({
+        phase: 'error',
+        message: humanizeAuthError(error),
+      });
+    } finally {
+      setMemberDeletionBusy(false);
+    }
+  };
+
+  const handleConfirmFamilyDeletion = async () => {
+    if (!pendingFamilyDeletion) {
+      return;
+    }
+
+    setFamilyDeletionBusy(true);
+
+    try {
+      await onDeleteFamily(pendingFamilyDeletion.familyId);
+
+      setAdminFamilyDirectory((current) =>
+        current.filter((family) => family.familyId !== pendingFamilyDeletion.familyId),
+      );
+      setSelectedAdminFamilyId((current) =>
+        current === pendingFamilyDeletion.familyId ? null : current,
+      );
+      setCloudSync({
+        phase: 'ready',
+        message: pendingFamilyDeletion.isCurrentFamily
+          ? `Die Familie ${pendingFamilyDeletion.familyName} wurde gelöscht. Deine Sitzung wurde beendet.`
+          : `Die Familie ${pendingFamilyDeletion.familyName} wurde gelöscht.`,
+      });
+      setPendingFamilyDeletion(null);
+    } catch (error) {
+      setCloudSync({
+        phase: 'error',
+        message: humanizeAuthError(error),
+      });
+    } finally {
+      setFamilyDeletionBusy(false);
     }
   };
 
@@ -2694,10 +2796,26 @@ function PlannerShell({
                                 {selectedAdminFamily.members.filter((member) => member.role === 'admin').length} Admin · {selectedAdminFamily.members.length} Mitglieder
                               </small>
                             </div>
-                            <div className="family-status-badges">
+                            <div className="family-directory-summary-actions">
                               <span className={selectedAdminFamily.allowOpenRegistration ? 'chip' : 'chip alt'}>
                                 {selectedAdminFamily.allowOpenRegistration ? 'Offene Registrierung' : 'Nur Einladung'}
                               </span>
+                              <button
+                                type="button"
+                                className="secondary-action danger-action"
+                                aria-label={`Familie ${selectedAdminFamily.familyName} löschen`}
+                                onClick={() =>
+                                  setPendingFamilyDeletion({
+                                    familyId: selectedAdminFamily.familyId,
+                                    familyName: selectedAdminFamily.familyName,
+                                    memberCount: selectedAdminFamily.members.length,
+                                    isCurrentFamily:
+                                      authState.family?.familyId === selectedAdminFamily.familyId,
+                                  })
+                                }
+                              >
+                                Familie löschen
+                              </button>
                             </div>
                           </div>
                           <ul className="document-list family-directory-members">
@@ -2707,7 +2825,27 @@ function PlannerShell({
                                   <strong>{member.name}</strong>
                                   <small>{member.email}</small>
                                 </div>
-                                {renderFamilyStatusBadges({ role: member.role, isOwner: member.isOwner })}
+                                <div className="family-directory-member-actions">
+                                  {renderFamilyStatusBadges({ role: member.role, isOwner: member.isOwner })}
+                                  {!member.isOwner && member.id !== authState.profile?.id ? (
+                                    <button
+                                      type="button"
+                                      className="ghost-toggle danger-action"
+                                      aria-label={`Mitglied ${member.email || member.name} aus ${selectedAdminFamily.familyName} löschen`}
+                                      onClick={() =>
+                                        setPendingMemberDeletion({
+                                          familyId: selectedAdminFamily.familyId,
+                                          familyName: selectedAdminFamily.familyName,
+                                          memberId: member.id,
+                                          memberName: member.name,
+                                          memberEmail: member.email,
+                                        })
+                                      }
+                                    >
+                                      Mitglied löschen
+                                    </button>
+                                  ) : null}
+                                </div>
                               </li>
                             ))}
                           </ul>
@@ -2718,7 +2856,7 @@ function PlannerShell({
                 </article>
               ) : null}
 
-              {canManageFamily ? (
+              {canManageFamily && authState.family ? (
                 <article className="panel form-panel family-config-panel">
                   <div className="panel-heading">
                     <h4>Konfiguration</h4>
@@ -2794,6 +2932,69 @@ function PlannerShell({
                   onClick={() => void handleConfirmAccountDeletion()}
                 >
                   {deleteAccountBusy ? 'Wird gelöscht…' : 'Ja, Account löschen'}
+                </button>
+              </div>
+            </section>
+          </div>
+        ) : null}
+
+        {pendingMemberDeletion ? (
+          <div className="modal-backdrop" role="presentation">
+            <section className="modal-card" role="dialog" aria-modal="true" aria-labelledby="delete-member-title">
+              <h3 id="delete-member-title">Mitglied wirklich löschen?</h3>
+              <p className="modal-note danger-note">
+                {pendingMemberDeletion.memberName} wird aus {pendingMemberDeletion.familyName} entfernt und der zugehörige Supabase-Account wird dauerhaft gelöscht.
+              </p>
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="secondary-action"
+                  disabled={memberDeletionBusy}
+                  onClick={() => setPendingMemberDeletion(null)}
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action danger-action"
+                  disabled={memberDeletionBusy}
+                  onClick={() => void handleConfirmMemberDeletion()}
+                >
+                  {memberDeletionBusy ? 'Wird gelöscht…' : 'Mitglied endgültig löschen'}
+                </button>
+              </div>
+            </section>
+          </div>
+        ) : null}
+
+        {pendingFamilyDeletion ? (
+          <div className="modal-backdrop" role="presentation">
+            <section className="modal-card" role="dialog" aria-modal="true" aria-labelledby="delete-family-title">
+              <h3 id="delete-family-title">Familie wirklich löschen?</h3>
+              <p className="modal-note danger-note">
+                {pendingFamilyDeletion.familyName} mit {pendingFamilyDeletion.memberCount} Mitgliedern, Einladungen und Familiendaten wird dauerhaft gelöscht. Bereits vorhandene Benutzerkonten bleiben bestehen.
+              </p>
+              {pendingFamilyDeletion.isCurrentFamily ? (
+                <p className="modal-note danger-note">
+                  Weil dies deine aktuell geöffnete Familie ist, wirst du danach aus der App abgemeldet.
+                </p>
+              ) : null}
+              <div className="modal-actions">
+                <button
+                  type="button"
+                  className="secondary-action"
+                  disabled={familyDeletionBusy}
+                  onClick={() => setPendingFamilyDeletion(null)}
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action danger-action"
+                  disabled={familyDeletionBusy}
+                  onClick={() => void handleConfirmFamilyDeletion()}
+                >
+                  {familyDeletionBusy ? 'Wird gelöscht…' : 'Familie endgültig löschen'}
                 </button>
               </div>
             </section>
@@ -3424,6 +3625,47 @@ export default function App() {
     }
   };
 
+  const handleDeleteFamilyMember = async (familyId: string, memberUserId: string) => {
+    await deleteFamilyMemberAccount(familyId, memberUserId);
+  };
+
+  const handleDeleteFamily = async (familyId: string) => {
+    await deleteFamily(familyId);
+
+    if (authState.family?.familyId !== familyId) {
+      return;
+    }
+
+    setPlannerState(defaultPlannerState);
+    setFamilyInvites([]);
+
+    try {
+      const { error } = await signOutFromSupabase();
+
+      if (error) {
+        throw error;
+      }
+    } catch {
+      // The family is already deleted. Fall back to a local signed-out state.
+    }
+
+    if (typeof window !== 'undefined') {
+      window.history.replaceState({}, document.title, clearAuthRedirectState(window.location.href));
+    }
+
+    blocksSessionHydrationAfterRecovery.current = false;
+    setAuthMode('sign-in');
+    setAuthDraft(EMPTY_AUTH_DRAFT);
+    setAuthState({
+      stage: 'signed-out',
+      session: null,
+      profile: null,
+      family: null,
+      error: null,
+      message: 'Die Familie wurde gelöscht. Bitte melde dich erneut an.',
+    });
+  };
+
   const handleUpdateFamilyRegistration = async (allowOpenRegistration: boolean) => {
     if (!authState.family) {
       throw new Error('Es wurde keine Familie geladen.');
@@ -3522,6 +3764,8 @@ export default function App() {
         setCloudSync={setCloudSync}
         onSignOut={handleSignOut}
         onDeleteAccount={handleDeleteAccount}
+        onDeleteFamily={handleDeleteFamily}
+        onDeleteFamilyMemberAccount={handleDeleteFamilyMember}
         onUpdateFamilyRegistration={handleUpdateFamilyRegistration}
       />
     </>

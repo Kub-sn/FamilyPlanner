@@ -7,6 +7,8 @@ const {
   fetchRegistrationGate,
   createFamilyInvite,
   deleteDocument,
+  deleteFamily,
+  deleteFamilyMemberAccount,
   deleteCurrentAccount,
   emitAuthChange,
   ensureProfile,
@@ -36,6 +38,8 @@ const {
     fetchRegistrationGate: vi.fn(),
     createFamilyInvite: vi.fn(),
     deleteDocument: vi.fn(),
+    deleteFamily: vi.fn(),
+    deleteFamilyMemberAccount: vi.fn(),
     deleteCurrentAccount: vi.fn(),
     emitAuthChange: (session: unknown) => authChangeListener?.(session),
     ensureProfile: vi.fn(),
@@ -76,6 +80,8 @@ vi.mock('./lib/supabase', async () => {
     fetchRegistrationGate,
     createFamilyInvite,
     deleteDocument,
+    deleteFamily,
+    deleteFamilyMemberAccount,
     deleteCurrentAccount,
     ensureProfile,
     fetchAdminFamilyDirectory,
@@ -159,6 +165,8 @@ describe('App auth flow', () => {
     fetchRegistrationGate.mockReset();
     createFamilyInvite.mockReset();
     deleteDocument.mockReset();
+    deleteFamily.mockReset();
+    deleteFamilyMemberAccount.mockReset();
     ensureProfile.mockReset();
     fetchAdminFamilyDirectory.mockReset();
     fetchCalendarEntries.mockReset();
@@ -201,6 +209,8 @@ describe('App auth flow', () => {
       emailSent: true,
     });
     deleteDocument.mockResolvedValue(undefined);
+    deleteFamily.mockResolvedValue(undefined);
+    deleteFamilyMemberAccount.mockResolvedValue(undefined);
     deleteCurrentAccount.mockResolvedValue(undefined);
     removeFamilyInvite.mockResolvedValue(undefined);
     resetPasswordForEmail.mockResolvedValue({ data: {}, error: null });
@@ -813,16 +823,201 @@ describe('App auth flow', () => {
     expect(getConfigCard().getByRole('checkbox', { name: 'Freie Registrierung erlauben' })).toHaveClass('app-switch');
 
     const directoryCard = getAdminDirectoryCard();
+    const familySwitcherButtons = directoryCard
+      .getAllByRole('button')
+      .filter((button) => button.classList.contains('family-directory-button'));
 
-    expect(directoryCard.getByRole('button', { name: /Familie Admin/i })).toBeInTheDocument();
-    expect(directoryCard.getByRole('button', { name: /Familie Zweig/i })).toBeInTheDocument();
+    expect(familySwitcherButtons).toHaveLength(2);
+    expect(familySwitcherButtons[0]).toHaveTextContent('Familie Admin');
+    expect(familySwitcherButtons[1]).toHaveTextContent('Familie Zweig');
     expect(directoryCard.getByText('admin@example.com')).toBeInTheDocument();
 
-    await user.click(directoryCard.getByRole('button', { name: /Familie Zweig/i }));
+    await user.click(familySwitcherButtons[1]);
 
     expect(directoryCard.getByText('lea@example.com')).toBeInTheDocument();
     expect(directoryCard.getByText('tom@example.com')).toBeInTheDocument();
     expect(directoryCard.queryByText('admin@example.com')).not.toBeInTheDocument();
+  });
+
+  it('lets admins delete a family member account from the all-families card', async () => {
+    const user = userEvent.setup();
+
+    getCurrentSession.mockResolvedValue({
+      user: {
+        id: 'user-admin-delete',
+        email: 'admin@example.com',
+        user_metadata: {},
+      },
+    });
+    ensureProfile.mockResolvedValue({
+      id: 'user-admin-delete',
+      display_name: 'Admin',
+      email: 'admin@example.com',
+      role: 'admin',
+    });
+    fetchFamilyContext.mockResolvedValue({
+      familyId: 'family-10',
+      familyName: 'Familie Kern',
+      role: 'admin',
+    });
+    fetchFamilyMembers.mockResolvedValue([
+      {
+        id: 'user-admin-delete',
+        name: 'Admin',
+        email: 'admin@example.com',
+        role: 'admin',
+      },
+    ]);
+    fetchAdminFamilyDirectory.mockResolvedValue([
+      {
+        familyId: 'family-10',
+        familyName: 'Familie Kern',
+        allowOpenRegistration: true,
+        ownerUserId: 'user-admin-delete',
+        members: [
+          {
+            id: 'user-admin-delete',
+            name: 'Admin',
+            email: 'admin@example.com',
+            role: 'admin',
+            isOwner: true,
+          },
+        ],
+      },
+      {
+        familyId: 'family-11',
+        familyName: 'Familie Zweig',
+        allowOpenRegistration: false,
+        ownerUserId: 'user-zweig-owner',
+        members: [
+          {
+            id: 'user-zweig-owner',
+            name: 'Lea Zweig',
+            email: 'lea@example.com',
+            role: 'familyuser',
+            isOwner: true,
+          },
+          {
+            id: 'user-zweig-member',
+            name: 'Tom Zweig',
+            email: 'tom@example.com',
+            role: 'familyuser',
+            isOwner: false,
+          },
+        ],
+      },
+    ]);
+
+    render(<App />);
+
+    await expectPlannerShellHeading();
+    await user.click(screen.getByRole('button', { name: 'Einstellungen' }));
+
+    const directoryCard = getAdminDirectoryCard();
+
+    await user.click(directoryCard.getByRole('button', { name: /Familie Zweig/i }));
+    await user.click(
+      directoryCard.getByRole('button', {
+        name: 'Mitglied tom@example.com aus Familie Zweig löschen',
+      }),
+    );
+
+    const deleteDialog = screen.getByRole('dialog');
+
+    expect(within(deleteDialog).getByText(/Tom Zweig wird aus Familie Zweig entfernt/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Mitglied endgültig löschen' }));
+
+    expect(deleteFamilyMemberAccount).toHaveBeenCalledWith('family-11', 'user-zweig-member');
+    expect(await screen.findByText('Tom Zweig wurde inklusive Supabase-Konto gelöscht.')).toBeInTheDocument();
+    expect(directoryCard.queryByText('tom@example.com')).not.toBeInTheDocument();
+  });
+
+  it('lets admins delete a family from the all-families card', async () => {
+    const user = userEvent.setup();
+
+    getCurrentSession.mockResolvedValue({
+      user: {
+        id: 'user-admin-family-delete',
+        email: 'admin@example.com',
+        user_metadata: {},
+      },
+    });
+    ensureProfile.mockResolvedValue({
+      id: 'user-admin-family-delete',
+      display_name: 'Admin',
+      email: 'admin@example.com',
+      role: 'admin',
+    });
+    fetchFamilyContext.mockResolvedValue({
+      familyId: 'family-20',
+      familyName: 'Familie Kern',
+      role: 'admin',
+    });
+    fetchFamilyMembers.mockResolvedValue([
+      {
+        id: 'user-admin-family-delete',
+        name: 'Admin',
+        email: 'admin@example.com',
+        role: 'admin',
+      },
+    ]);
+    fetchAdminFamilyDirectory.mockResolvedValue([
+      {
+        familyId: 'family-20',
+        familyName: 'Familie Kern',
+        allowOpenRegistration: true,
+        ownerUserId: 'user-admin-family-delete',
+        members: [
+          {
+            id: 'user-admin-family-delete',
+            name: 'Admin',
+            email: 'admin@example.com',
+            role: 'admin',
+            isOwner: true,
+          },
+        ],
+      },
+      {
+        familyId: 'family-21',
+        familyName: 'Familie Archiv',
+        allowOpenRegistration: false,
+        ownerUserId: 'user-archiv-owner',
+        members: [
+          {
+            id: 'user-archiv-owner',
+            name: 'Lea Archiv',
+            email: 'lea.archiv@example.com',
+            role: 'familyuser',
+            isOwner: true,
+          },
+        ],
+      },
+    ]);
+
+    render(<App />);
+
+    await expectPlannerShellHeading();
+    await user.click(screen.getByRole('button', { name: 'Einstellungen' }));
+
+    const directoryCard = getAdminDirectoryCard();
+
+    await user.click(directoryCard.getByRole('button', { name: /Familie Archiv/i }));
+    await user.click(
+      directoryCard.getByRole('button', {
+        name: 'Familie Familie Archiv löschen',
+      }),
+    );
+
+    const deleteDialog = screen.getByRole('dialog');
+
+    expect(within(deleteDialog).getByText(/Familie Archiv mit 1 Mitgliedern/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Familie endgültig löschen' }));
+
+    expect(deleteFamily).toHaveBeenCalledWith('family-21');
+    expect(await screen.findByText('Die Familie Familie Archiv wurde gelöscht.')).toBeInTheDocument();
+    expect(directoryCard.queryByRole('button', { name: /Familie Archiv/i })).not.toBeInTheDocument();
   });
 
   it('lets admins switch registration between open and invite-only in the configuration card', async () => {

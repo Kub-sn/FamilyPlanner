@@ -772,6 +772,38 @@ export async function deleteCurrentAccount() {
   await client.auth.signOut({ scope: 'local' });
 }
 
+export async function deleteFamilyMemberAccount(familyId: string, memberUserId: string) {
+  const client = requireSupabase();
+  const normalizedFamilyId = familyId.trim();
+  const normalizedMemberUserId = memberUserId.trim();
+
+  if (!normalizedFamilyId) {
+    throw new Error('Es wurde keine Familie zum Loeschen des Mitglieds uebergeben.');
+  }
+
+  if (!normalizedMemberUserId) {
+    throw new Error('Es wurde kein Mitglied zum Loeschen uebergeben.');
+  }
+
+  await invokeAuthenticatedEdgeFunction(client, 'delete-family-member', {
+    familyId: normalizedFamilyId,
+    memberUserId: normalizedMemberUserId,
+  });
+}
+
+export async function deleteFamily(familyId: string) {
+  const client = requireSupabase();
+  const normalizedFamilyId = familyId.trim();
+
+  if (!normalizedFamilyId) {
+    throw new Error('Es wurde keine Familie zum Loeschen uebergeben.');
+  }
+
+  await invokeAuthenticatedEdgeFunction(client, 'delete-family', {
+    familyId: normalizedFamilyId,
+  });
+}
+
 export async function createFamilyInvite(
   familyId: string,
   email: string,

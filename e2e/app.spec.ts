@@ -184,6 +184,48 @@ async function mockSupabaseRegistrationControls(page: Page) {
   const state = {
     allowOpenRegistration: true,
     currentSession: null as typeof adminSession | null,
+    families: [
+      {
+        family_id: 'family-2',
+        family_name: 'Familie Abendrot',
+        allow_open_registration: false,
+        owner_user_id: 'user-evening',
+        members: [
+          {
+            member_user_id: 'user-evening',
+            member_display_name: 'Lea Abendrot',
+            member_email: 'lea@example.com',
+            member_role: 'familyuser' as const,
+          },
+          {
+            member_user_id: 'user-evening-child',
+            member_display_name: 'Tom Abendrot',
+            member_email: 'tom.abendrot@example.com',
+            member_role: 'familyuser' as const,
+          },
+        ],
+      },
+      {
+        family_id: 'family-1',
+        family_name: 'Familie Test',
+        allow_open_registration: true,
+        owner_user_id: 'user-admin',
+        members: [
+          {
+            member_user_id: 'user-admin',
+            member_display_name: 'Admin',
+            member_email: 'admin@example.com',
+            member_role: 'admin' as const,
+          },
+          {
+            member_user_id: 'user-member',
+            member_display_name: 'Mia Test',
+            member_email: 'mia@example.com',
+            member_role: 'familyuser' as const,
+          },
+        ],
+      },
+    ],
     lastCreatedInvite: null as null | {
       id: string;
       family_id: string;
@@ -321,41 +363,24 @@ async function mockSupabaseRegistrationControls(page: Page) {
     }
 
     if (path.endsWith('/rpc/get_admin_family_directory')) {
+      const directoryRows = state.families.flatMap((family) =>
+        family.members.map((member) => ({
+          family_id: family.family_id,
+          family_name: family.family_name,
+          allow_open_registration:
+            family.family_id === 'family-1' ? state.allowOpenRegistration : family.allow_open_registration,
+          owner_user_id: family.owner_user_id,
+          member_user_id: member.member_user_id,
+          member_display_name: member.member_display_name,
+          member_email: member.member_email,
+          member_role: member.member_role,
+        })),
+      );
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
-          {
-            family_id: 'family-2',
-            family_name: 'Familie Abendrot',
-            allow_open_registration: false,
-            owner_user_id: 'user-evening',
-            member_user_id: 'user-evening',
-            member_display_name: 'Lea Abendrot',
-            member_email: 'lea@example.com',
-            member_role: 'familyuser',
-          },
-          {
-            family_id: 'family-1',
-            family_name: 'Familie Test',
-            allow_open_registration: state.allowOpenRegistration,
-            owner_user_id: 'user-admin',
-            member_user_id: 'user-admin',
-            member_display_name: 'Admin',
-            member_email: 'admin@example.com',
-            member_role: 'admin',
-          },
-          {
-            family_id: 'family-1',
-            family_name: 'Familie Test',
-            allow_open_registration: state.allowOpenRegistration,
-            owner_user_id: 'user-admin',
-            member_user_id: 'user-member',
-            member_display_name: 'Mia Test',
-            member_email: 'mia@example.com',
-            member_role: 'familyuser',
-          },
-        ]),
+        body: JSON.stringify(directoryRows),
       });
       return;
     }
@@ -434,6 +459,42 @@ async function mockSupabaseRegistrationControls(page: Page) {
   });
 
   await page.route(`${supabaseBaseUrl}/functions/v1/**`, async (route: Route) => {
+    const url = new URL(route.request().url());
+    const payload = parseRequestJson(route);
+
+    if (url.pathname.endsWith('/functions/v1/delete-family-member')) {
+      state.families = state.families.map((family) =>
+        family.family_id === String(payload.familyId || '')
+          ? {
+              ...family,
+              members: family.members.filter(
+                (member) => member.member_user_id !== String(payload.memberUserId || ''),
+              ),
+            }
+          : family,
+      );
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+      return;
+    }
+
+    if (url.pathname.endsWith('/functions/v1/delete-family')) {
+      state.families = state.families.filter(
+        (family) => family.family_id !== String(payload.familyId || ''),
+      );
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+      return;
+    }
+
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -770,4 +831,37 @@ test('lets admins switch registration to invite-only and back again', async ({ p
   await expect(
     page.getByText('Konto erstellt. Bitte bestätige jetzt die E-Mail und melde dich danach an.'),
   ).toBeVisible();
+});
+
+test('lets admins delete members and whole families from the all-families card', async ({ page }) => {
+  await mockSupabaseRegistrationControls(page);
+
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+  await page.getByPlaceholder('E-Mail').fill('admin@example.com');
+  await page.getByPlaceholder('Passwort').fill('supersecret');
+  await page.getByRole('button', { name: 'Jetzt anmelden' }).click();
+
+  await expect(page.getByText('Familie: Familie Test', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Einstellungen' }).click();
+
+  await page.getByRole('button', { name: /Familie Abendrot/i }).click();
+  await expect(page.getByText('tom.abendrot@example.com')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Mitglied tom.abendrot@example.com aus Familie Abendrot löschen' }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(page.getByText(/Tom Abendrot wird aus Familie Abendrot entfernt/i)).toBeVisible();
+  await page.getByRole('button', { name: 'Mitglied endgültig löschen' }).click();
+
+  await expect(page.getByText('Tom Abendrot wurde inklusive Supabase-Konto gelöscht.')).toBeVisible();
+  await expect(page.getByText('tom.abendrot@example.com')).toHaveCount(0);
+
+  await page.getByRole('button', { name: /Familie Abendrot/i }).click();
+  await page.getByRole('button', { name: 'Familie Familie Abendrot löschen' }).click();
+  await expect(page.getByText(/Familie Abendrot mit 1 Mitgliedern/i)).toBeVisible();
+  await page.getByRole('button', { name: 'Familie endgültig löschen' }).click();
+
+  await expect(page.getByText('Die Familie Familie Abendrot wurde gelöscht.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Familie Abendrot/i })).toHaveCount(0);
 });

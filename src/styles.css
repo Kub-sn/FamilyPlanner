@@ -1026,8 +1026,25 @@ button {
   margin-top: 0.1rem;
 }
 
+.family-directory-summary-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
 .family-directory-members {
   gap: 0.8rem;
+}
+
+.family-directory-member-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-left: auto;
 }
 
 .app-switch {
@@ -3701,7 +3718,9 @@ body::after,
   }
 
   .role-layout .family-status-badges,
-  .invite-card-actions {
+  .invite-card-actions,
+  .family-directory-member-actions,
+  .family-directory-summary-actions {
     width: 100%;
     margin-left: 0;
     justify-content: flex-start;
@@ -3723,6 +3742,11 @@ body::after,
   }
 
   .family-directory-summary .family-status-badges {
+    width: 100%;
+  }
+
+  .family-directory-member-actions .ghost-toggle,
+  .family-directory-summary-actions .danger-action {
     width: 100%;
   }
 

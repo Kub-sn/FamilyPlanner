@@ -169,6 +169,87 @@ describe('auth email normalization', () => {
     expect(signOutMock).toHaveBeenCalledWith({ scope: 'local' });
     expect(getSessionMock).not.toHaveBeenCalled();
   });
+
+  it('invokes the delete-family-member edge function with family and member ids', async () => {
+    const refreshSessionMock = vi.fn().mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'fresh-access-token-member-delete',
+        },
+      },
+      error: null,
+    });
+    const getSessionMock = vi.fn();
+    const invokeMock = vi.fn().mockResolvedValue({ data: { success: true }, error: null });
+    const setAuthMock = vi.fn();
+
+    createClientMock.mockReturnValue({
+      auth: {
+        refreshSession: refreshSessionMock,
+        getSession: getSessionMock,
+      },
+      functions: {
+        setAuth: setAuthMock,
+        invoke: invokeMock,
+      },
+    });
+
+    const { deleteFamilyMemberAccount } = await import('./supabase');
+
+    await deleteFamilyMemberAccount('family-77', 'user-77');
+
+    expect(setAuthMock).toHaveBeenCalledWith('fresh-access-token-member-delete');
+    expect(invokeMock).toHaveBeenCalledWith('delete-family-member', {
+      body: {
+        familyId: 'family-77',
+        memberUserId: 'user-77',
+      },
+      headers: {
+        Authorization: 'Bearer fresh-access-token-member-delete',
+      },
+    });
+    expect(getSessionMock).not.toHaveBeenCalled();
+  });
+
+  it('invokes the delete-family edge function with the selected family id', async () => {
+    const refreshSessionMock = vi.fn().mockResolvedValue({
+      data: {
+        session: {
+          access_token: 'fresh-access-token-family-delete',
+        },
+      },
+      error: null,
+    });
+    const getSessionMock = vi.fn();
+    const invokeMock = vi.fn().mockResolvedValue({ data: { success: true }, error: null });
+    const setAuthMock = vi.fn();
+
+    createClientMock.mockReturnValue({
+      auth: {
+        refreshSession: refreshSessionMock,
+        getSession: getSessionMock,
+      },
+      functions: {
+        setAuth: setAuthMock,
+        invoke: invokeMock,
+      },
+    });
+
+    const { deleteFamily } = await import('./supabase');
+
+    await deleteFamily('family-88');
+
+    expect(setAuthMock).toHaveBeenCalledWith('fresh-access-token-family-delete');
+    expect(invokeMock).toHaveBeenCalledWith('delete-family', {
+      body: {
+        familyId: 'family-88',
+      },
+      headers: {
+        Authorization: 'Bearer fresh-access-token-family-delete',
+      },
+    });
+    expect(getSessionMock).not.toHaveBeenCalled();
+  });
 });
 
 describe('createFamilyInvite', () => {
