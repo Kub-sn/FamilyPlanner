@@ -225,7 +225,7 @@ export default function App() {
     const loadCloudCollections = async () => {
       setCloudSync({
         phase: 'loading',
-        message: 'Alle Planer-Module werden aus Supabase geladen.',
+        message: 'Alle Planer-Daten werden geladen.',
         scope: 'global',
       });
 
@@ -264,7 +264,7 @@ export default function App() {
         setFamilyInvites(invites);
         setCloudSync({
           phase: 'ready',
-          message: 'Alle Planer-Module sind mit Supabase synchronisiert.',
+          message: 'Alle Planer-Daten sind synchronisiert.',
           scope: 'global',
         });
       } catch (error) {
@@ -295,7 +295,7 @@ export default function App() {
         profile: null,
         family: null,
         error: null,
-        message: 'Supabase ist noch nicht konfiguriert. Die App läuft im lokalen Demo-Modus.',
+        message: 'Die Online-Synchronisierung ist noch nicht eingerichtet. Die App läuft im lokalen Demo-Modus.',
       });
       return;
     }
@@ -375,7 +375,7 @@ export default function App() {
           session,
           profile: null,
           family: null,
-          error: `${humanizeAuthError(error)} Prüfe bitte .env und das SQL-Schema in Supabase.`,
+          error: `${humanizeAuthError(error)} Bitte prüfe die Einrichtung der Online-Synchronisierung.`,
         }));
       }
     };

@@ -749,7 +749,7 @@ export default function PlannerShell({
 
       setCloudSync({
         phase: 'ready',
-        message: `${pendingMemberDeletion.memberName} wurde inklusive Supabase-Konto gelöscht.`,
+        message: `${pendingMemberDeletion.memberName} wurde inklusive Konto gelöscht.`,
       });
       setPendingMemberDeletion(null);
     } catch (error) {
@@ -1131,7 +1131,7 @@ export default function PlannerShell({
     if (selectedFiles.length > 0 && !authState.family) {
       setCloudSync({
         phase: 'error',
-        message: 'Datei-Uploads sind nur mit Supabase-Anmeldung und Familienkonto verfügbar.',
+        message: 'Datei-Uploads sind nur verfügbar, wenn du angemeldet bist und zu einer Familie gehörst.',
       });
       return;
     }
@@ -1432,7 +1432,7 @@ export default function PlannerShell({
             )}
           >
             <p className="modal-note danger-note">
-              {pendingMemberDeletion.memberName} wird aus {pendingMemberDeletion.familyName} entfernt und der zugehörige Supabase-Account wird dauerhaft gelöscht.
+              {pendingMemberDeletion.memberName} wird aus {pendingMemberDeletion.familyName} entfernt und das zugehörige Konto wird dauerhaft gelöscht.
             </p>
           </ConfirmationDialog>
         ) : null}

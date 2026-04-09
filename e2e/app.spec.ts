@@ -854,7 +854,7 @@ test('lets admins delete members and whole families from the all-families card',
   await expect(page.getByText(/Tom Abendrot wird aus Familie Abendrot entfernt/i)).toBeVisible();
   await page.getByRole('button', { name: 'Mitglied endgültig löschen' }).click();
 
-  await expect(page.getByText('Tom Abendrot wurde inklusive Supabase-Konto gelöscht.')).toBeVisible();
+  await expect(page.getByText('Tom Abendrot wurde inklusive Konto gelöscht.')).toBeVisible();
   await expect(page.getByText('tom.abendrot@example.com')).toHaveCount(0);
 
   await page.getByRole('button', { name: /Familie Abendrot/i }).click();

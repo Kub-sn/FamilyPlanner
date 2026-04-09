@@ -20,6 +20,7 @@ describe('FamilyModule', () => {
             familyId: 'family-1',
             familyName: 'Familie Test',
             allowOpenRegistration: true,
+            ownerUserId: 'member-admin',
             members: [
               { id: 'member-admin', name: 'Alex Admin', email: 'alex@example.com', role: 'admin', isOwner: true },
             ],
@@ -50,6 +51,7 @@ describe('FamilyModule', () => {
           familyId: 'family-1',
           familyName: 'Familie Test',
           allowOpenRegistration: true,
+          ownerUserId: 'member-admin',
           members: [
             { id: 'member-admin', name: 'Alex Admin', email: 'alex@example.com', role: 'admin', isOwner: true },
           ],

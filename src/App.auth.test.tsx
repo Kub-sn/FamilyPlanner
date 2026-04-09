@@ -635,7 +635,7 @@ describe('App auth flow', () => {
 
     await expectPlannerShellHeading();
     await waitFor(() => expect(fetchFamilyInvites).toHaveBeenCalledWith('family-sync'));
-    expect(screen.queryByText('Alle Planer-Module sind mit Supabase synchronisiert.')).not.toBeInTheDocument();
+    expect(screen.queryByText('Alle Planer-Daten sind synchronisiert.')).not.toBeInTheDocument();
   });
 
   it('lets family owners invite members without seeing the configuration card', async () => {
@@ -929,7 +929,7 @@ describe('App auth flow', () => {
     await user.click(screen.getByRole('button', { name: 'Mitglied endgültig löschen' }));
 
     expect(deleteFamilyMemberAccount).toHaveBeenCalledWith('family-11', 'user-zweig-member');
-    expect(await screen.findByText('Tom Zweig wurde inklusive Supabase-Konto gelöscht.')).toBeInTheDocument();
+    expect(await screen.findByText('Tom Zweig wurde inklusive Konto gelöscht.')).toBeInTheDocument();
     expect(directoryCard.queryByText('tom@example.com')).not.toBeInTheDocument();
   });
 
