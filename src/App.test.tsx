@@ -1,6 +1,6 @@
-import { render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./lib/supabase', async () => {
   const actual = await vi.importActual<typeof import('./lib/supabase')>('./lib/supabase');
@@ -14,6 +14,11 @@ vi.mock('./lib/supabase', async () => {
 });
 
 import App from './App';
+
+afterEach(() => {
+  cleanup();
+  window.localStorage.clear();
+});
 
 function toDateInputValue(date: Date) {
   const year = date.getFullYear();
@@ -149,6 +154,27 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { level: 4, name: 'Gericht eintragen' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Gericht speichern' })).toBeInTheDocument();
+  });
+
+  it('keeps the active planner module after a reload without router state', async () => {
+    const user = userEvent.setup();
+    const firstRender = render(<App />);
+
+    const moduleNav = screen.getByRole('navigation', { name: 'Module' });
+
+    await user.click(within(moduleNav).getByRole('button', { name: 'Notizen' }));
+    expect(screen.getByRole('heading', { level: 4, name: 'Neue Notiz' })).toBeInTheDocument();
+
+    firstRender.unmount();
+    const secondRender = render(<App />);
+
+    const reloadedNotesHeading = screen.getByRole('heading', { level: 4, name: 'Neue Notiz' });
+    const reloadedNotesSection = reloadedNotesHeading.closest('section');
+    const reloadedOverviewSection = secondRender.container.querySelector('.overview-stack');
+
+    expect(reloadedNotesHeading).toBeInTheDocument();
+    expect(reloadedNotesSection).toHaveClass('is-visible');
+    expect(reloadedOverviewSection).not.toHaveClass('is-visible');
   });
 
   it('shows a navigable month view in the calendar module', async () => {

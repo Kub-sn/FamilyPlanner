@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { defaultPlannerState } from './planner-data';
-import { loadPlannerState } from './storage';
+import { loadActiveTab, loadPlannerState, saveActiveTab } from './storage';
 
 describe('loadPlannerState', () => {
   afterEach(() => {
@@ -30,5 +30,17 @@ describe('loadPlannerState', () => {
         text: 'Brotdose einpacken',
       },
     ]);
+  });
+
+  it('loads and saves the active tab when it is valid', () => {
+    saveActiveTab('family');
+
+    expect(loadActiveTab()).toBe('family');
+  });
+
+  it('ignores invalid stored active tabs', () => {
+    window.localStorage.setItem('family-planner-active-tab-v1', 'not-a-real-tab');
+
+    expect(loadActiveTab()).toBeNull();
   });
 });

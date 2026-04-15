@@ -755,6 +755,26 @@ test('lets a familyuser owner invite members but hides configuration controls', 
   await expect(page.getByRole('heading', { name: 'Konfiguration' })).toHaveCount(0);
 });
 
+test('keeps the selected planner section after a hard reload without app routing', async ({ page }) => {
+  await mockSupabaseRegistrationControls(page);
+
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' })).toBeVisible();
+  await page.getByPlaceholder('E-Mail').fill('admin@example.com');
+  await page.getByPlaceholder('Passwort').fill('supersecret');
+  await page.getByRole('button', { name: 'Jetzt anmelden' }).click();
+
+  await page.getByRole('button', { name: 'Einstellungen' }).click();
+  await expect(page.getByRole('heading', { name: 'Familienmitglieder' })).toBeVisible();
+
+  await page.reload();
+
+  await expect(page.getByRole('heading', { name: 'Familienmitglieder' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Alle Familien' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Lokale Daten zurücksetzen' })).toHaveCount(0);
+});
+
 test('keeps family settings cards usable on mobile widths', async ({ page }) => {
   await mockSupabaseRegistrationControls(page);
   await page.setViewportSize({ width: 390, height: 844 });

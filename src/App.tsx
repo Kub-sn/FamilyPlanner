@@ -8,7 +8,7 @@ import {
   getAuthRedirectMessage,
   getAuthRedirectMode,
 } from './lib/auth-redirect';
-import { loadPlannerState, savePlannerState } from './lib/storage';
+import { loadActiveTab, loadPlannerState, saveActiveTab, savePlannerState } from './lib/storage';
 import {
   acceptPendingFamilyInvite,
   bootstrapFamilyForUser,
@@ -66,7 +66,7 @@ export default function App() {
   const [redirectAuthMode] = useState<AuthMode | null>(() =>
     typeof window === 'undefined' ? null : getAuthRedirectMode(window.location.href),
   );
-  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [activeTab, setActiveTab] = useState<TabId>(() => loadActiveTab() ?? 'overview');
   const [plannerState, setPlannerState] = useState(() => loadPlannerState());
   const [familyInvites, setFamilyInvites] = useState<SupabaseFamilyInvite[]>([]);
   const [authDraft, setAuthDraft] = useState(EMPTY_AUTH_DRAFT);
@@ -120,6 +120,10 @@ export default function App() {
   useEffect(() => {
     savePlannerState(plannerState);
   }, [plannerState]);
+
+  useEffect(() => {
+    saveActiveTab(activeTab);
+  }, [activeTab]);
 
   useEffect(() => {
     if (!supabaseConfigured || authState.stage !== 'signed-out' || authMode !== 'sign-up') {

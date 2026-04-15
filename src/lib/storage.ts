@@ -1,6 +1,11 @@
-import { defaultPlannerState, type PlannerState } from './planner-data';
+import { defaultPlannerState, tabs, type PlannerState, type TabId } from './planner-data';
 
 const STORAGE_KEY = 'family-planner-state-v2';
+const ACTIVE_TAB_STORAGE_KEY = 'family-planner-active-tab-v1';
+
+function isTabId(value: unknown): value is TabId {
+  return typeof value === 'string' && tabs.some((tab) => tab.id === value);
+}
 
 function normalizePlannerState(state: PlannerState): PlannerState {
   return {
@@ -39,4 +44,26 @@ export function savePlannerState(state: PlannerState) {
   }
 
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+export function loadActiveTab(): TabId | null {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  const rawTab = window.localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
+
+  if (!rawTab) {
+    return null;
+  }
+
+  return isTabId(rawTab) ? rawTab : null;
+}
+
+export function saveActiveTab(tab: TabId) {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, tab);
 }
