@@ -1,5 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
-import type { TabId } from '../lib/planner-data';
+import type { DocumentItem, NoteItem, TabId } from '../lib/planner-data';
 import type {
   SupabaseFamilyContext,
   SupabaseProfile,
@@ -80,6 +80,9 @@ export type NoteDialogState = {
   text: string;
   isEditing: boolean;
 };
+
+export type PendingNoteDeletionState = Pick<NoteItem, 'id' | 'title'>;
+export type PendingDocumentDeletionState = DocumentItem;
 
 export type PendingMemberDeletionState = {
   familyId: string;

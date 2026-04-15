@@ -81,4 +81,42 @@ describe('PlannerShell', () => {
     expect(setPlannerState).toHaveBeenCalled();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  it('asks for confirmation before deleting a local note', async () => {
+    const user = userEvent.setup();
+    const setPlannerState = vi.fn();
+
+    render(
+      <PlannerShell
+        activeTab="notes"
+        setActiveTab={vi.fn()}
+        plannerState={plannerFixture}
+        setPlannerState={setPlannerState}
+        familyInvites={[]}
+        setFamilyInvites={vi.fn()}
+        authState={{ stage: 'signed-out', session: null, profile: null, family: null, error: null, message: null }}
+        cloudSync={cloudSyncFixture}
+        setCloudSync={vi.fn()}
+        onSignOut={vi.fn().mockResolvedValue(undefined)}
+        onDeleteAccount={vi.fn().mockResolvedValue(undefined)}
+        onDeleteFamily={vi.fn().mockResolvedValue(undefined)}
+        onDeleteFamilyMemberAccount={vi.fn().mockResolvedValue(undefined)}
+        onUpdateFamilyRegistration={vi.fn().mockResolvedValue({
+          familyId: 'family-1',
+          familyName: 'Familie Test',
+          role: 'admin',
+          ownerUserId: 'member-admin',
+          isOwner: true,
+          allowOpenRegistration: true,
+        })}
+      />,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Notiz Hinweis löschen' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'Löschen?' })).toBeInTheDocument();
+    expect(setPlannerState).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Löschen' }));
+    expect(setPlannerState).toHaveBeenCalled();
+  });
 });

@@ -134,6 +134,12 @@ for update
 using (public.is_family_member(family_id))
 with check (public.is_family_member(family_id));
 
+drop policy if exists "family members can delete notes" on public.notes;
+create policy "family members can delete notes"
+on public.notes
+for delete
+using (public.is_family_member(family_id));
+
 drop policy if exists "family members can read calendar events" on public.calendar_events;
 create policy "family members can read calendar events"
 on public.calendar_events

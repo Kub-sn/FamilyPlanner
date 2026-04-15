@@ -1083,6 +1083,15 @@ export async function updateNote(
   };
 }
 
+export async function deleteNote(noteId: string) {
+  const client = requireSupabase();
+  const { error } = await client.from('notes').delete().eq('id', noteId);
+
+  if (error) {
+    throw error;
+  }
+}
+
 export async function fetchCalendarEntries(familyId: string): Promise<CalendarItem[]> {
   const client = requireSupabase();
   const { data, error } = await client

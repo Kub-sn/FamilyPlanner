@@ -1356,6 +1356,12 @@ describe('App auth flow', () => {
     await user.click(screen.getByRole('button', { name: 'Dokumente' }));
     await user.click(screen.getByRole('button', { name: 'Dokument Arztbrief löschen' }));
 
+    expect(screen.getByRole('heading', { level: 3, name: 'Löschen?' })).toBeInTheDocument();
+    expect(screen.getByText('Dokument Arztbrief löschen?')).toBeInTheDocument();
+    expect(deleteDocument).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Löschen' }));
+
     expect(deleteDocument).toHaveBeenCalledWith('document-1', undefined);
     expect(screen.getByText('Dokument wurde gelöscht.')).toBeInTheDocument();
 

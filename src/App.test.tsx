@@ -144,6 +144,40 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Notiz speichern' })).toBeInTheDocument();
   });
 
+  it('allows deleting a note from the notes overview', async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    const moduleNav = screen.getByRole('navigation', { name: 'Module' });
+
+    await user.click(within(moduleNav).getByRole('button', { name: 'Notizen' }));
+
+    const notesHeading = screen.getByRole('heading', { level: 4, name: 'Neue Notiz' });
+    const notesForm = notesHeading.closest('form');
+
+    if (!notesForm) {
+      throw new Error('Notizformular wurde nicht gefunden.');
+    }
+
+    const form = within(notesForm);
+
+    await user.type(form.getByPlaceholderText('Titel'), 'Lösch mich');
+    await user.type(form.getByPlaceholderText('Inhalt'), 'Diese Notiz wird direkt wieder entfernt.');
+    await user.click(form.getByRole('button', { name: 'Notiz speichern' }));
+
+    expect(screen.getByRole('button', { name: 'Notiz Lösch mich öffnen' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Notiz Lösch mich löschen' }));
+
+    expect(screen.getByRole('heading', { level: 3, name: 'Löschen?' })).toBeInTheDocument();
+    expect(screen.getByText('Notiz Lösch mich löschen?')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Notiz Lösch mich öffnen' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Löschen' }));
+
+    expect(screen.queryByRole('button', { name: 'Notiz Lösch mich öffnen' })).not.toBeInTheDocument();
+  });
+
   it('allows switching to the meals module', async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -280,6 +314,10 @@ describe('App', () => {
       await addLocalDocument(user, createDocumentFile('Löschprobe.pdf', 'application/pdf'));
 
       await user.click(screen.getByRole('button', { name: 'Dokument Löschprobe löschen' }));
+      expect(screen.getByRole('heading', { level: 3, name: 'Löschen?' })).toBeInTheDocument();
+      expect(screen.getByText('Dokument Löschprobe löschen?')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Löschen' }));
 
       expect(screen.getByText('Dokument wurde gelöscht.')).toBeInTheDocument();
 

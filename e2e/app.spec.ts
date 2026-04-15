@@ -530,6 +530,11 @@ test('shows the planner shell and lets the user open the shopping module', async
   await expect(page.getByRole('dialog')).toBeVisible();
   await expect(page.getByText('Nicht vergessen.')).toBeVisible();
   await page.getByRole('button', { name: 'Abbrechen' }).click();
+  await page.getByRole('button', { name: 'Notiz Hinweis löschen' }).click();
+  await expect(page.getByRole('heading', { name: 'Löschen?' })).toBeVisible();
+  await expect(page.getByText('Notiz Hinweis löschen?')).toBeVisible();
+  await page.getByRole('button', { name: 'Löschen' }).click();
+  await expect(page.getByRole('button', { name: 'Notiz Hinweis öffnen' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Essensplan' }).click();
   await expect(page.getByRole('heading', { name: 'Gericht eintragen' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Gericht speichern' })).toBeVisible();
@@ -558,6 +563,18 @@ test('shows the upload-only documents module in a vertical stack', async ({ page
   expect(visibleDocumentsCardBox).not.toBeNull();
   expect(uploadCardBox!.height).toBeLessThanOrEqual(260);
   expect(visibleDocumentsCardBox!.y - (uploadCardBox!.y + uploadCardBox!.height)).toBeLessThanOrEqual(4);
+
+  await page.locator('input[type="file"][name="file"]').setInputFiles({
+    name: 'Loeschprobe.pdf',
+    mimeType: 'application/pdf',
+    buffer: Buffer.from('pdf-content'),
+  });
+  await page.getByRole('button', { name: 'Dokument speichern' }).click();
+  await page.getByRole('button', { name: 'Dokument Loeschprobe löschen' }).click();
+  await expect(page.getByRole('heading', { name: 'Löschen?' })).toBeVisible();
+  await expect(page.getByText('Dokument Loeschprobe löschen?')).toBeVisible();
+  await page.getByRole('button', { name: 'Löschen' }).click();
+  await expect(page.getByRole('button', { name: 'Dokument Loeschprobe löschen' })).toHaveCount(0);
 });
 
 test('keeps the document edit dialog free of horizontal scrolling for long names', async ({ page }) => {

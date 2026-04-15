@@ -1,3 +1,4 @@
+import { Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import type { PlannerState } from '../../lib/planner-data';
 
@@ -5,11 +6,13 @@ export function NotesModule({
   activeTab,
   notes,
   onAddNote,
+  onDeleteNote,
   onOpenNote,
 }: {
   activeTab: string;
   notes: PlannerState['notes'];
   onAddNote: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  onDeleteNote: (noteId: string) => Promise<void>;
   onOpenNote: (noteId: string) => void;
 }) {
   return (
@@ -24,16 +27,25 @@ export function NotesModule({
         <article className="panel masonry-panel">
           <div className="notes-grid">
             {notes.map((note) => (
-              <button
-                key={note.id}
-                type="button"
-                className="note-card note-card-button"
-                onClick={() => onOpenNote(note.id)}
-                aria-label={`Notiz ${note.title} öffnen`}
-              >
-                <h4>{note.title}</h4>
-                <p>{note.text}</p>
-              </button>
+              <article key={note.id} className="note-card">
+                <button
+                  type="button"
+                  className="secondary-action danger-action note-delete-button"
+                  aria-label={`Notiz ${note.title} löschen`}
+                  onClick={() => void onDeleteNote(note.id)}
+                >
+                  <Trash2 aria-hidden="true" size={16} strokeWidth={2.2} />
+                </button>
+                <button
+                  type="button"
+                  className="note-card-button note-open-button"
+                  onClick={() => onOpenNote(note.id)}
+                  aria-label={`Notiz ${note.title} öffnen`}
+                >
+                  <h4>{note.title}</h4>
+                  <p>{note.text}</p>
+                </button>
+              </article>
             ))}
           </div>
         </article>

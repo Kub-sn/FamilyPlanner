@@ -32,6 +32,7 @@ import {
   createNote,
   createShoppingItem,
   createTask,
+  deleteNote,
   deleteDocument,
   fetchAdminFamilyDirectory,
   removeFamilyInvite,
@@ -51,9 +52,11 @@ import type {
   CloudSyncState,
   DocumentEditState,
   DocumentFilterKind,
+  PendingDocumentDeletionState,
   DocumentPreviewState,
   DocumentSortOption,
   NoteDialogState,
+  PendingNoteDeletionState,
   PendingFamilyDeletionState,
   PendingMemberDeletionState,
 } from '../../app/types';
@@ -146,6 +149,10 @@ export default function PlannerShell({
   const [documentEditState, setDocumentEditState] = useState<DocumentEditState | null>(null);
   const [documentPreviewState, setDocumentPreviewState] = useState<DocumentPreviewState | null>(null);
   const [noteDialogState, setNoteDialogState] = useState<NoteDialogState | null>(null);
+  const [pendingNoteDeletion, setPendingNoteDeletion] = useState<PendingNoteDeletionState | null>(null);
+  const [noteDeletionBusy, setNoteDeletionBusy] = useState(false);
+  const [pendingDocumentDeletion, setPendingDocumentDeletion] = useState<PendingDocumentDeletionState | null>(null);
+  const [documentDeletionBusy, setDocumentDeletionBusy] = useState(false);
   const [documentUploadProgress, setDocumentUploadProgress] = useState<{
     completed: number;
     total: number;
@@ -594,20 +601,31 @@ export default function PlannerShell({
   };
 
   const handleDeleteDocument = async (document: DocumentItem) => {
+    setPendingDocumentDeletion(document);
+  };
+
+  const handleConfirmDocumentDeletion = async () => {
+    if (!pendingDocumentDeletion) {
+      return;
+    }
+
+    setDocumentDeletionBusy(true);
+
     try {
       if (authState.family) {
-        await deleteDocument(document.id, document.filePath || undefined);
+        await deleteDocument(pendingDocumentDeletion.id, pendingDocumentDeletion.filePath || undefined);
       } else {
-        revokeLocalDocumentLink(document);
+        revokeLocalDocumentLink(pendingDocumentDeletion);
       }
 
       updateState((current) => ({
         ...current,
-        documents: current.documents.filter((entry) => entry.id !== document.id),
+        documents: current.documents.filter((entry) => entry.id !== pendingDocumentDeletion.id),
       }));
 
-      setDocumentEditState((current) => (current?.id === document.id ? null : current));
-      setDocumentPreviewState((current) => (current?.id === document.id ? null : current));
+      setDocumentEditState((current) => (current?.id === pendingDocumentDeletion.id ? null : current));
+      setDocumentPreviewState((current) => (current?.id === pendingDocumentDeletion.id ? null : current));
+      setPendingDocumentDeletion(null);
 
       setCloudSync({
         phase: 'ready',
@@ -618,6 +636,8 @@ export default function PlannerShell({
         phase: 'error',
         message: humanizeAuthError(error),
       });
+    } finally {
+      setDocumentDeletionBusy(false);
     }
   };
 
@@ -993,6 +1013,52 @@ export default function PlannerShell({
     }
   };
 
+  const handleDeleteNote = async (noteId: string) => {
+    const note = plannerState.notes.find((entry) => entry.id === noteId);
+
+    if (!note) {
+      return;
+    }
+
+    setPendingNoteDeletion({
+      id: note.id,
+      title: note.title,
+    });
+  };
+
+  const handleConfirmNoteDeletion = async () => {
+    if (!pendingNoteDeletion) {
+      return;
+    }
+
+    setNoteDeletionBusy(true);
+
+    try {
+      if (authState.family) {
+        await deleteNote(pendingNoteDeletion.id);
+      }
+
+      updateState((current) => ({
+        ...current,
+        notes: current.notes.filter((note) => note.id !== pendingNoteDeletion.id),
+      }));
+      setNoteDialogState((current) => (current?.id === pendingNoteDeletion.id ? null : current));
+      setPendingNoteDeletion(null);
+
+      setCloudSync({
+        phase: 'ready',
+        message: 'Notiz wurde gelöscht.',
+      });
+    } catch (error) {
+      setCloudSync({
+        phase: 'error',
+        message: humanizeAuthError(error),
+      });
+    } finally {
+      setNoteDeletionBusy(false);
+    }
+  };
+
   const handleOpenNote = (noteId: string) => {
     const note = plannerState.notes.find((entry) => entry.id === noteId);
 
@@ -1341,6 +1407,7 @@ export default function PlannerShell({
           activeTab={activeTab}
           notes={plannerState.notes}
           onAddNote={handleAddNote}
+          onDeleteNote={handleDeleteNote}
           onOpenNote={handleOpenNote}
         />
 
@@ -1352,6 +1419,37 @@ export default function PlannerShell({
             onFieldChange={handleNoteDialogFieldChange}
             onSave={handleSaveNote}
           />
+        ) : null}
+
+        {pendingNoteDeletion ? (
+          <ConfirmationDialog
+            heading="Löschen?"
+            id="delete-note-title"
+            actions={(
+              <>
+                <button
+                  type="button"
+                  className="secondary-action"
+                  disabled={noteDeletionBusy}
+                  onClick={() => setPendingNoteDeletion(null)}
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action danger-action"
+                  disabled={noteDeletionBusy}
+                  onClick={() => void handleConfirmNoteDeletion()}
+                >
+                  {noteDeletionBusy ? 'Lösche…' : 'Löschen'}
+                </button>
+              </>
+            )}
+          >
+            <p className="modal-note danger-note">
+              Notiz {pendingNoteDeletion.title} löschen?
+            </p>
+          </ConfirmationDialog>
         ) : null}
 
         <CalendarModule
@@ -1419,6 +1517,37 @@ export default function PlannerShell({
             documentPreviewState={documentPreviewState}
             onClose={() => setDocumentPreviewState(null)}
           />
+        ) : null}
+
+        {pendingDocumentDeletion ? (
+          <ConfirmationDialog
+            heading="Löschen?"
+            id="delete-document-title"
+            actions={(
+              <>
+                <button
+                  type="button"
+                  className="secondary-action"
+                  disabled={documentDeletionBusy}
+                  onClick={() => setPendingDocumentDeletion(null)}
+                >
+                  Abbrechen
+                </button>
+                <button
+                  type="button"
+                  className="secondary-action danger-action"
+                  disabled={documentDeletionBusy}
+                  onClick={() => void handleConfirmDocumentDeletion()}
+                >
+                  {documentDeletionBusy ? 'Lösche…' : 'Löschen'}
+                </button>
+              </>
+            )}
+          >
+            <p className="modal-note danger-note">
+              Dokument {pendingDocumentDeletion.name} löschen?
+            </p>
+          </ConfirmationDialog>
         ) : null}
 
         <FamilyModule

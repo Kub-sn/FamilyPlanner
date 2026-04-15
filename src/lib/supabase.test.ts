@@ -51,6 +51,13 @@ function buildNoteUpdateBuilder(result: { data: unknown; error: unknown }) {
   };
 }
 
+function buildNoteDeleteBuilder(result: { error: unknown }) {
+  return {
+    delete: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockResolvedValue(result),
+  };
+}
+
 describe('auth email normalization', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -778,5 +785,19 @@ describe('note persistence', () => {
       title: 'Ferienplanung',
       text: 'Kompletter bearbeiteter Text',
     });
+  });
+
+  it('deletes a note by id', async () => {
+    const noteDeleteBuilder = buildNoteDeleteBuilder({
+      error: null,
+    });
+
+    createClientMock.mockReturnValue({
+      from: vi.fn().mockReturnValue(noteDeleteBuilder),
+    });
+
+    const { deleteNote } = await import('./supabase');
+
+    await expect(deleteNote('note-1')).resolves.toBeUndefined();
   });
 });

@@ -1920,13 +1920,13 @@ button {
 
 .note-card {
   break-inside: avoid;
+  position: relative;
   display: grid;
-  gap: 0.75rem;
   margin-bottom: 1rem;
-  padding: 1rem;
+  padding: 0;
   width: 100%;
   max-width: 100%;
-  max-height: 18rem;
+  max-height: 15rem;
   overflow: hidden;
   border-radius: 24px;
   background: rgba(255, 248, 239, 0.92);
@@ -1934,8 +1934,59 @@ button {
 
 .note-card-button {
   appearance: none;
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  background: transparent;
   text-align: left;
   cursor: pointer;
+}
+
+.note-open-button {
+  padding-top: 1.2rem;
+  padding-right: 4.3rem;
+}
+
+.note-open-button h4 {
+  padding-top: 0;
+  padding-right: 0;
+}
+
+.note-delete-button {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.35rem;
+  min-height: 2.35rem;
+  padding: 0.35rem;
+  margin-bottom: 0.6rem;
+  border-radius: 999px;
+  background: #db8e95;
+  color: #ffffff;
+  line-height: 1;
+}
+
+.note-delete-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.note-delete-button:hover {
+  background: #d27d85;
+  color: #ffffff;
+}
+
+@media (max-width: 560px) {
+  .note-open-button {
+    padding-top: 1.35rem;
+    padding-right: 4.75rem;
+  }
 }
 
 .note-card h4,
@@ -1965,9 +2016,9 @@ button {
   word-break: break-word;
   hyphens: auto;
   display: -webkit-box;
-  line-clamp: 8;
+  line-clamp: 5;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 8;
+  -webkit-line-clamp: 5;
   overflow: hidden;
   text-overflow: ellipsis;
 }
