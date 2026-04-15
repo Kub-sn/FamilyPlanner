@@ -5,6 +5,9 @@
 - Every functional change needs appropriate unit tests or a conscious justification for why none are meaningful.
 - Every relevant user flow change needs appropriate E2E tests or a conscious justification for why none are meaningful.
 - When adding or refactoring dialogs/modals, prefer reusing `src/components/planner/ModalDialog.tsx` whenever practical instead of creating bespoke dialog shells.
+- For all new UI styling and UI refactors, use Tailwind CSS by default.
+- Do not add or expand component styling in `src/styles.css` unless it is truly global, required for third-party/browser quirks, or cannot be expressed cleanly in Tailwind.
+- Keep Tailwind code readable: prefer consistent utility ordering and extract repeated utility groups into small reusable components when that improves maintainability.
 - After changes, always run `npm run test:unit` and `npm run test:e2e`.
 - If tests fail, fix the root cause in the code first instead of watering down the tests.
 - Then rerun the previously failing tests until they are green.

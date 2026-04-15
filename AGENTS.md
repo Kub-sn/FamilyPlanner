@@ -11,6 +11,9 @@
 - Every behavioral change requires unit tests or updated existing unit tests.
 - Every relevant user flow change requires E2E tests or updated existing E2E tests.
 - When adding or refactoring dialogs/modals, prefer reusing `src/components/planner/ModalDialog.tsx` whenever practical instead of creating bespoke dialog shells.
+- For all new UI styling and UI refactors, use Tailwind CSS by default.
+- Avoid adding or growing component-specific rules in `src/styles.css` unless the styling must stay global, is needed for third-party/browser quirks, or is not practical in Tailwind.
+- Keep Tailwind usage maintainable: use consistent utility ordering and extract repeated utility groups into reusable components or helpers when that makes the code clearer.
 - Standard tools:
   - Unit: Vitest + Testing Library
   - E2E: Playwright
