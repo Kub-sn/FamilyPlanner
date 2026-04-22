@@ -4,6 +4,20 @@ import type { PlannerState, UserRole } from '../../lib/planner-data';
 import type { AdminFamilyDirectoryFamily, SupabaseFamilyContext, SupabaseFamilyInvite, SupabaseProfile } from '../../lib/supabase';
 import { FamilyStatusBadges, getRoleChipClass, getRoleLabel, isFamilyOwnerMember } from './planner-shell-utils';
 
+function getMemberMonogram(name: string) {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2);
+
+  if (parts.length === 0) {
+    return 'FM';
+  }
+
+  return parts.map((part) => part[0]?.toUpperCase() ?? '').join('');
+}
+
 export function FamilyModule({
   activeTab,
   adminFamilyDirectory,
@@ -56,9 +70,7 @@ export function FamilyModule({
   onSetPendingMemberDeletion: (value: PendingMemberDeletionState) => void;
 }) {
   const canViewFamily = Boolean(authFamily);
-  const accountPanelClassName = canManageFamily
-    ? 'panel list-panel account-management-panel'
-    : 'panel list-panel account-management-panel family-account-panel';
+  const accountPanelClassName = 'panel list-panel account-management-panel family-account-panel';
   const invitePanel = (
     <form className="panel form-panel family-invite-panel" onSubmit={(event) => void onAddMember(event)}>
       <h4>Familienmitglied einladen</h4>
@@ -109,66 +121,118 @@ export function FamilyModule({
       </button>
     </article>
   ) : null;
+  const registrationPanel = canManageFamily && authFamily ? (
+    <article className="panel form-panel family-config-panel">
+      <div className="panel-heading">
+        <h4>Registrierungeinstellung</h4>
+        <span className={allowOpenRegistration ? 'chip' : 'chip alt'}>
+          {allowOpenRegistration ? 'Offen' : 'Nur Einladung'}
+        </span>
+      </div>
+      <label className="family-config-toggle">
+        <div className="family-config-toggle-copy">
+          <strong>Freie Registrierung erlauben</strong>
+          <small>
+            Wenn du das deaktivierst, koennen neue Konten nur noch mit einer offenen
+            Einladung erstellt werden.
+          </small>
+        </div>
+        <input
+          type="checkbox"
+          className="app-switch"
+          aria-label="Freie Registrierung erlauben"
+          name="allow-open-registration"
+          checked={allowOpenRegistration}
+          disabled={registrationConfigBusy}
+          onChange={(event) => void onRegistrationAccessChange(event.currentTarget.checked)}
+        />
+      </label>
+      <p className="family-config-note">
+        {allowOpenRegistration ? 'Neue Nutzer koennen sich aktuell auch ohne Einladung registrieren.' : null}
+      </p>
+    </article>
+  ) : null;
 
   return (
     <section className={activeTab === 'family' && canViewFamily ? 'module is-visible' : 'module'}>
       <div className="module-layout role-layout family-settings-layout">
-        <article className="panel list-panel family-members-panel">
-          <div className="panel-heading">
-            <h4>Familienmitglieder</h4>
-          </div>
-          <ul className="document-list">
-            {members.length > 0 ? (
-              members.map((member) => (
-                <li key={member.id}>
+        <div className="family-settings-top-row">
+          <article className="panel list-panel family-members-panel">
+            <div className="panel-heading family-members-panel-heading">
+              <div className="family-members-panel-copy">
+                <h4>Familienmitglieder</h4>
+                <p className="family-management-note family-members-intro">
+                  Jede Person steht in einer eigenen Zeile mit Rolle, E-Mail und Status, damit du sie im Desktop-Layout sofort unterscheiden kannst.
+                </p>
+              </div>
+              <span className="chip">{members.length}</span>
+            </div>
+            <ul className="family-member-list" aria-label="Familienmitglieder Liste">
+              {members.length > 0 ? (
+                members.map((member, index) => (
+                  <li key={member.id} className="family-member-card">
+                    <div className="family-member-main">
+                      <span className="family-member-avatar" aria-hidden="true">
+                        {getMemberMonogram(member.name)}
+                      </span>
+                      <div className="family-entry-copy family-member-copy">
+                        <div className="family-member-title-row">
+                          <strong>{member.name}</strong>
+                          <span className="family-member-slot">{authProfile?.id === member.id ? 'Du' : `Mitglied ${index + 1}`}</span>
+                        </div>
+                        <small>{member.email}</small>
+                      </div>
+                    </div>
+                    <div className="family-member-badges">
+                      <FamilyStatusBadges role={member.role} isOwner={isFamilyOwnerMember(member.id, authFamily)} />
+                    </div>
+                  </li>
+                ))
+              ) : (
+                <li className="family-member-card family-member-empty">
                   <div className="family-entry-copy">
-                    <strong>{member.name}</strong>
-                    <small>{member.email}</small>
-                  </div>
-                  <FamilyStatusBadges role={member.role} isOwner={isFamilyOwnerMember(member.id, authFamily)} />
-                </li>
-              ))
-            ) : (
-              <li>
-                <div className="family-entry-copy">
-                  <strong>Noch keine Mitglieder geladen</strong>
-                  <small>Nach Login und Familienzuordnung werden echte Mitglieder aus Supabase angezeigt.</small>
-                </div>
-              </li>
-            )}
-          </ul>
-          <div className="panel-heading panel-heading-tight family-inline-heading">
-            <h4>Offene Einladungen</h4>
-            <span className="chip">{familyInvites.length}</span>
-          </div>
-          {familyInvites.length > 0 ? (
-            <ul className="document-list compact invite-card-list">
-              {familyInvites.map((invite) => (
-                <li key={invite.id} className="invite-card-item">
-                  <div className="family-entry-copy invite-card-copy">
-                    <strong>{invite.email}</strong>
-                    <span className={getRoleChipClass(invite.role as UserRole)}>{getRoleLabel(invite.role as UserRole)}</span>
-                  </div>
-                  <div className="invite-card-actions">
-                    {canInviteFamilyMembers ? (
-                      <button
-                        type="button"
-                        className="ghost-toggle"
-                        disabled={pendingInviteActionId === invite.id}
-                        aria-label={`Einladung für ${invite.email} zurückziehen`}
-                        onClick={() => void onRemoveInvite(invite.id)}
-                      >
-                        {pendingInviteActionId === invite.id ? 'Wird entfernt…' : 'Zurückziehen'}
-                      </button>
-                    ) : null}
+                    <strong>Noch keine Mitglieder geladen</strong>
+                    <small>Nach Login und Familienzuordnung werden echte Mitglieder aus Supabase angezeigt.</small>
                   </div>
                 </li>
-              ))}
+              )}
             </ul>
-          ) : null}
-        </article>
+            <div className="panel-heading panel-heading-tight family-inline-heading">
+              <h4>Offene Einladungen</h4>
+              <span className="chip">{familyInvites.length}</span>
+            </div>
+            {familyInvites.length > 0 ? (
+              <ul className="document-list compact invite-card-list">
+                {familyInvites.map((invite) => (
+                  <li key={invite.id} className="invite-card-item">
+                    <div className="family-entry-copy invite-card-copy">
+                      <strong>{invite.email}</strong>
+                      <span className={getRoleChipClass(invite.role as UserRole)}>{getRoleLabel(invite.role as UserRole)}</span>
+                    </div>
+                    <div className="invite-card-actions">
+                      {canInviteFamilyMembers ? (
+                        <button
+                          type="button"
+                          className="ghost-toggle"
+                          disabled={pendingInviteActionId === invite.id}
+                          aria-label={`Einladung für ${invite.email} zurückziehen`}
+                          onClick={() => void onRemoveInvite(invite.id)}
+                        >
+                          {pendingInviteActionId === invite.id ? 'Wird entfernt…' : 'Zurückziehen'}
+                        </button>
+                      ) : null}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </article>
 
-        {canManageFamily ? invitePanel : <div className="family-secondary-stack">{invitePanel}{accountPanel}</div>}
+          <div className="family-secondary-stack">
+            {invitePanel}
+            {!canManageFamily ? accountPanel : null}
+          </div>
+        </div>
 
         {canManageFamily ? (
           <article className="panel list-panel admin-directory-panel">
@@ -267,39 +331,12 @@ export function FamilyModule({
           </article>
         ) : null}
 
-        {canManageFamily && authFamily ? (
-          <article className="panel form-panel family-config-panel">
-            <div className="panel-heading">
-              <h4>Registrierungeinstellung</h4>
-              <span className={allowOpenRegistration ? 'chip' : 'chip alt'}>
-                {allowOpenRegistration ? 'Offen' : 'Nur Einladung'}
-              </span>
-            </div>
-            <label className="family-config-toggle">
-              <div className="family-config-toggle-copy">
-                <strong>Freie Registrierung erlauben</strong>
-                <small>
-                  Wenn du das deaktivierst, koennen neue Konten nur noch mit einer offenen
-                  Einladung erstellt werden.
-                </small>
-              </div>
-              <input
-                type="checkbox"
-                className="app-switch"
-                aria-label="Freie Registrierung erlauben"
-                name="allow-open-registration"
-                checked={allowOpenRegistration}
-                disabled={registrationConfigBusy}
-                onChange={(event) => void onRegistrationAccessChange(event.currentTarget.checked)}
-              />
-            </label>
-            <p className="family-config-note">
-              {allowOpenRegistration ? 'Neue Nutzer koennen sich aktuell auch ohne Einladung registrieren.' : null}
-            </p>
-          </article>
+        {canManageFamily ? (
+          <div className="family-settings-bottom-row">
+            {registrationPanel}
+            {accountPanel}
+          </div>
         ) : null}
-
-        {canManageFamily ? accountPanel : null}
       </div>
     </section>
   );

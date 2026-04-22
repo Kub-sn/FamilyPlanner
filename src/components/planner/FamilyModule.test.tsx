@@ -70,6 +70,7 @@ describe('FamilyModule', () => {
 
     expect(screen.getAllByText('Alex Admin')).toHaveLength(2);
     expect(screen.getByText('neu@example.com')).toBeInTheDocument();
+    expect(screen.getByText('Jede Person steht in einer eigenen Zeile mit Rolle, E-Mail und Status, damit du sie im Desktop-Layout sofort unterscheiden kannst.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /zurückziehen/i }));
     await user.click(screen.getByLabelText('Freie Registrierung erlauben'));
     await user.click(screen.getByRole('button', { name: 'Account löschen' }));
@@ -117,15 +118,18 @@ describe('FamilyModule', () => {
     );
 
     const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.family-settings-layout');
+    const topRow = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.family-settings-top-row');
     const secondaryStack = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-secondary-stack');
     const invitePanel = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-invite-panel');
     const accountPanel = screen.getByRole('heading', { level: 4, name: 'Konto' }).closest('.family-account-panel');
 
     expect(settingsLayout).not.toBeNull();
+    expect(topRow).not.toBeNull();
     expect(secondaryStack).not.toBeNull();
     expect(invitePanel).not.toBeNull();
     expect(accountPanel).not.toBeNull();
-    expect(secondaryStack?.parentElement).toBe(settingsLayout);
+    expect(topRow?.parentElement).toBe(settingsLayout);
+    expect(secondaryStack?.parentElement).toBe(topRow);
     expect(invitePanel?.parentElement).toBe(secondaryStack);
     expect(accountPanel?.parentElement).toBe(secondaryStack);
   });
@@ -186,5 +190,108 @@ describe('FamilyModule', () => {
 
     expect(memberCard).not.toBeNull();
     expect(memberHeading?.querySelector('.family-status-badges')).not.toBeNull();
+  });
+
+  it('renders each family member in the settings overview as a separate card with a monogram and slot label', () => {
+    render(
+      <FamilyModule
+        activeTab="family"
+        adminFamilyDirectory={[]}
+        adminFamilyDirectoryBusy={false}
+        adminFamilyDirectoryError={null}
+        adminInviteFamilies={[]}
+        allowOpenRegistration
+        authFamily={authFixture.family}
+        authProfile={authFixture.profile}
+        canInviteFamilyMembers
+        canManageFamily={false}
+        familyInvites={[]}
+        members={plannerFixture.members}
+        pendingInviteActionId={null}
+        registrationConfigBusy={false}
+        selectedAdminFamily={null}
+        selectedInviteFamilyId={null}
+        onAddMember={vi.fn().mockResolvedValue(undefined)}
+        onOpenDeleteAccount={vi.fn()}
+        onRegistrationAccessChange={vi.fn().mockResolvedValue(undefined)}
+        onRemoveInvite={vi.fn().mockResolvedValue(undefined)}
+        onSelectAdminFamily={vi.fn()}
+        onSelectInviteFamily={vi.fn()}
+        onSetPendingFamilyDeletion={vi.fn()}
+        onSetPendingMemberDeletion={vi.fn()}
+      />,
+    );
+
+    const familyMemberCards = screen.getAllByRole('listitem').filter((item) => item.classList.contains('family-member-card'));
+    const firstCard = familyMemberCards[0];
+
+    expect(familyMemberCards).toHaveLength(plannerFixture.members.length);
+    expect(firstCard?.querySelector('.family-member-avatar')?.textContent).toBe('AA');
+    expect(screen.getByText('Du')).toBeInTheDocument();
+    expect(screen.getByText('Mitglied 2')).toBeInTheDocument();
+  });
+
+  it('places registration and account panels below the all-families panel for managers', () => {
+    render(
+      <FamilyModule
+        activeTab="family"
+        adminFamilyDirectory={[
+          {
+            familyId: 'family-1',
+            familyName: 'Familie Test',
+            allowOpenRegistration: true,
+            ownerUserId: 'member-admin',
+            members: [
+              { id: 'member-admin', name: 'Alex Admin', email: 'alex@example.com', role: 'admin', isOwner: true },
+            ],
+          },
+        ]}
+        adminFamilyDirectoryBusy={false}
+        adminFamilyDirectoryError={null}
+        adminInviteFamilies={[{ familyId: 'family-1', familyName: 'Familie Test' }]}
+        allowOpenRegistration
+        authFamily={authFixture.family}
+        authProfile={authFixture.profile}
+        canInviteFamilyMembers
+        canManageFamily
+        familyInvites={[]}
+        members={plannerFixture.members}
+        pendingInviteActionId={null}
+        registrationConfigBusy={false}
+        selectedAdminFamily={{
+          familyId: 'family-1',
+          familyName: 'Familie Test',
+          allowOpenRegistration: true,
+          ownerUserId: 'member-admin',
+          members: [
+            { id: 'member-admin', name: 'Alex Admin', email: 'alex@example.com', role: 'admin', isOwner: true },
+          ],
+        }}
+        selectedInviteFamilyId="family-1"
+        onAddMember={vi.fn().mockResolvedValue(undefined)}
+        onOpenDeleteAccount={vi.fn()}
+        onRegistrationAccessChange={vi.fn().mockResolvedValue(undefined)}
+        onRemoveInvite={vi.fn().mockResolvedValue(undefined)}
+        onSelectAdminFamily={vi.fn()}
+        onSelectInviteFamily={vi.fn()}
+        onSetPendingFamilyDeletion={vi.fn()}
+        onSetPendingMemberDeletion={vi.fn()}
+      />,
+    );
+
+    const topRow = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-settings-top-row');
+    const adminDirectoryPanel = screen.getByRole('heading', { level: 4, name: 'Alle Familien' }).closest('.admin-directory-panel');
+    const bottomRow = screen.getByRole('heading', { level: 4, name: 'Registrierungeinstellung' }).closest('.family-settings-bottom-row');
+    const configPanel = screen.getByRole('heading', { level: 4, name: 'Registrierungeinstellung' }).closest('.family-config-panel');
+    const accountPanel = screen.getByRole('heading', { level: 4, name: 'Konto' }).closest('.family-account-panel');
+
+    expect(topRow).not.toBeNull();
+    expect(adminDirectoryPanel).not.toBeNull();
+    expect(bottomRow).not.toBeNull();
+    expect(configPanel?.parentElement).toBe(bottomRow);
+    expect(accountPanel?.parentElement).toBe(bottomRow);
+    expect(topRow?.querySelector('.family-config-panel')).toBeNull();
+    expect(topRow?.querySelector('.family-account-panel')).toBeNull();
+    expect(adminDirectoryPanel?.nextElementSibling).toBe(bottomRow);
   });
 });

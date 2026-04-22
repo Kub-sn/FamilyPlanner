@@ -829,12 +829,20 @@ describe('App auth flow', () => {
     expect(getConfigCard().getByRole('checkbox', { name: 'Freie Registrierung erlauben' })).toHaveClass('app-switch');
 
     const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.family-settings-layout');
+    const topRow = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.family-settings-top-row');
+    const bottomRow = screen.getByRole('heading', { level: 4, name: 'Registrierungeinstellung' }).closest('.family-settings-bottom-row');
+    const secondaryStack = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-secondary-stack');
     const inviteForm = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('form');
     const configCard = getConfigCardElement();
 
     expect(settingsLayout).not.toBeNull();
-    expect(inviteForm?.parentElement).toBe(settingsLayout);
-    expect(configCard.parentElement).toBe(settingsLayout);
+    expect(topRow).not.toBeNull();
+    expect(bottomRow).not.toBeNull();
+    expect(secondaryStack).not.toBeNull();
+    expect(topRow?.parentElement).toBe(settingsLayout);
+    expect(bottomRow?.parentElement).toBe(settingsLayout);
+    expect(inviteForm?.parentElement).toBe(secondaryStack);
+    expect(configCard.parentElement).toBe(bottomRow);
 
     const directoryCard = getAdminDirectoryCard();
     const familySwitcherButtons = directoryCard

@@ -540,7 +540,7 @@ test('shows the planner shell and lets the user open the shopping module', async
   await expect(page.getByRole('button', { name: 'Gericht speichern' })).toBeVisible();
 });
 
-test('shows the upload-only documents module in a vertical stack', async ({ page }) => {
+test('shows the upload-only documents module with a larger capture card on desktop', async ({ page }) => {
   await page.goto('/');
 
   if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
@@ -561,8 +561,10 @@ test('shows the upload-only documents module in a vertical stack', async ({ page
 
   expect(uploadCardBox).not.toBeNull();
   expect(visibleDocumentsCardBox).not.toBeNull();
-  expect(uploadCardBox!.height).toBeLessThanOrEqual(260);
-  expect(visibleDocumentsCardBox!.y - (uploadCardBox!.y + uploadCardBox!.height)).toBeLessThanOrEqual(4);
+  expect(uploadCardBox!.width).toBeGreaterThanOrEqual(340);
+  expect(uploadCardBox!.height).toBeGreaterThanOrEqual(320);
+  expect(Math.abs(visibleDocumentsCardBox!.y - uploadCardBox!.y)).toBeLessThanOrEqual(24);
+  expect(visibleDocumentsCardBox!.x).toBeGreaterThan(uploadCardBox!.x + 40);
 
   await page.locator('input[type="file"][name="file"]').setInputFiles({
     name: 'Loeschprobe.pdf',
@@ -789,6 +791,10 @@ test('keeps the selected planner section after a hard reload without app routing
 
   await expect(page.getByRole('heading', { name: 'Familienmitglieder' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Alle Familien' })).toBeVisible();
+  await expect(page.getByText('Jede Person steht in einer eigenen Zeile mit Rolle, E-Mail und Status, damit du sie im Desktop-Layout sofort unterscheiden kannst.')).toBeVisible();
+  await expect(page.locator('.family-member-card').first()).toBeVisible();
+  await expect(page.locator('.family-member-card').first().locator('.family-member-avatar')).toContainText('A');
+  await expect(page.locator('.admin-directory-panel').locator('+ .family-settings-bottom-row')).toHaveCount(1);
   await expect(page.getByRole('button', { name: 'Lokale Daten zurücksetzen' })).toHaveCount(0);
 });
 
@@ -825,17 +831,23 @@ test('keeps family settings cards usable on mobile widths', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'Alle Familien' })).toBeVisible();
   await expect(page.locator('.mobile-account-card .family-permission-note')).toBeHidden();
 
-  const firstMemberCopy = page.locator('.role-layout .document-list').first().locator('li').first().locator('.family-entry-copy');
-  const firstMemberBadges = page.locator('.role-layout .document-list').first().locator('li').first().locator('.family-status-badges');
+  const memberCards = page.locator('.family-member-card');
+  const firstMemberCopy = memberCards.first().locator('.family-entry-copy');
+  const firstMemberBadges = memberCards.first().locator('.family-status-badges');
+  const firstMemberAvatar = memberCards.first().locator('.family-member-avatar');
+  const firstMemberSlot = memberCards.first().locator('.family-member-slot');
   const familyButtons = page.locator('.family-directory-button');
   const openInvitesHeading = page.getByRole('heading', { name: 'Offene Einladungen' });
   const openInvitesChip = openInvitesHeading.locator('..').locator('.chip');
   const allFamiliesHeading = page.getByRole('heading', { name: 'Alle Familien' });
   const allFamiliesChip = allFamiliesHeading.locator('..').locator('.chip');
+  const memberIntro = page.getByText('Jede Person steht in einer eigenen Zeile mit Rolle, E-Mail und Status, damit du sie im Desktop-Layout sofort unterscheiden kannst.');
 
-  const [memberCopyBox, memberBadgesBox, firstFamilyButtonBox, secondFamilyButtonBox, openInvitesHeadingBox, openInvitesChipBox, allFamiliesHeadingBox, allFamiliesChipBox, widths] = await Promise.all([
+  const [memberCopyBox, memberBadgesBox, firstMemberAvatarBox, firstMemberSlotBox, firstFamilyButtonBox, secondFamilyButtonBox, openInvitesHeadingBox, openInvitesChipBox, allFamiliesHeadingBox, allFamiliesChipBox, widths] = await Promise.all([
     firstMemberCopy.boundingBox(),
     firstMemberBadges.boundingBox(),
+    firstMemberAvatar.boundingBox(),
+    firstMemberSlot.boundingBox(),
     familyButtons.nth(0).boundingBox(),
     familyButtons.nth(1).boundingBox(),
     openInvitesHeading.boundingBox(),
@@ -850,12 +862,18 @@ test('keeps family settings cards usable on mobile widths', async ({ page }) => 
 
   expect(memberCopyBox).not.toBeNull();
   expect(memberBadgesBox).not.toBeNull();
+  expect(firstMemberAvatarBox).not.toBeNull();
+  expect(firstMemberSlotBox).not.toBeNull();
   expect(firstFamilyButtonBox).not.toBeNull();
   expect(secondFamilyButtonBox).not.toBeNull();
   expect(openInvitesHeadingBox).not.toBeNull();
   expect(openInvitesChipBox).not.toBeNull();
   expect(allFamiliesHeadingBox).not.toBeNull();
   expect(allFamiliesChipBox).not.toBeNull();
+  await expect(memberCards.first()).toBeVisible();
+  await expect(firstMemberAvatar).toContainText('A');
+  await expect(firstMemberSlot).toContainText('Du');
+  await expect(memberIntro).toBeVisible();
 
   expect(widths.scrollWidth).toBeLessThanOrEqual(widths.clientWidth + 1);
   expect((memberBadgesBox as NonNullable<typeof memberBadgesBox>).y).toBeGreaterThan(
