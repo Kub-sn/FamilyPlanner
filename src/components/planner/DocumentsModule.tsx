@@ -241,10 +241,7 @@ export function DocumentsModule({
               ))
             ) : (
               <li className="document-empty-state">
-                <div>
-                  <strong>Keine Dokumente gefunden</strong>
-                  <small>Prüfe Suche, Filter oder lege ein neues Dokument an.</small>
-                </div>
+                <span>Keine Dokumente vorhanden</span>
               </li>
             )}
           </ul>

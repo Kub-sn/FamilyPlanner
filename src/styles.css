@@ -1766,8 +1766,12 @@ button {
 }
 
 .document-empty-state {
-  min-height: 10rem;
+  min-height: auto;
   align-items: center;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0 !important;
 }
 
 .modal-backdrop {
@@ -3089,9 +3093,12 @@ select:focus-visible,
 .overview-empty-state,
 .calendar-empty-state,
 .document-empty-state {
-  min-height: 7rem;
-  padding: 0.8rem 0.2rem;
+  min-height: auto;
+  padding: 0.5rem 0;
   align-content: center;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .check-list li,
