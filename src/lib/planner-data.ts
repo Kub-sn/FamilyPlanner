@@ -47,10 +47,8 @@ export type MealItem = {
 export type DocumentItem = {
   id: string;
   name: string;
-  category: string;
-  status: string;
-  linkUrl: string;
   filePath: string;
+  url: string;
 };
 
 export type PlannerState = {

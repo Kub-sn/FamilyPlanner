@@ -75,6 +75,7 @@ The app now stores its state persistently in Local Storage. In addition, Supabas
 - For existing Supabase projects, also run `supabase/add-family-invites.sql`.
 - For existing Supabase projects, also run `supabase/allow-family-profile-reads.sql` so family members can see each other in the roles view.
 - For existing Supabase projects with document uploads, also run `supabase/add-document-uploads.sql`. The current script now also includes the update policy for editable document metadata.
+- If document name edits fail in existing projects, also run `supabase/2026-04-23-add-document-update-policy.sql`.
 
 ### Configure Invite Emails
 
@@ -124,6 +125,7 @@ npm run cap:android
 ```
 
 Note: You need Android Studio for the last step.
+If Android Studio or Gradle reports that `android/capacitor-cordova-android-plugins/cordova.variables.gradle` is missing, regenerate the Android platform files with `npm run cap:sync` and reopen the Android project.
 
 ## Run
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { humanizeAuthError } from './auth-errors';
+import { humanizeAuthError, isMissingSingleRowResultError } from './auth-errors';
 
 describe('humanizeAuthError', () => {
   it('returns the message from regular Error instances', () => {
@@ -27,5 +27,23 @@ describe('humanizeAuthError', () => {
     ).toBe(
       'Die Notiz konnte nicht gespeichert werden. Prüfe bitte, ob die Datenbank-Migration für Notiz-Bearbeitung bereits ausgeführt wurde.',
     );
+  });
+
+  it('detects the postgrest single-row coercion error for context-specific handling', () => {
+    expect(
+      isMissingSingleRowResultError({
+        message: 'Cannot coerce the result to a single JSON object',
+        details: 'The result contains 0 rows',
+      }),
+    ).toBe(true);
+  });
+
+  it('detects the postgrest single-row coercion error by code', () => {
+    expect(
+      isMissingSingleRowResultError({
+        code: 'PGRST116',
+        details: 'The result contains 0 rows',
+      }),
+    ).toBe(true);
   });
 });

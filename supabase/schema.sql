@@ -91,9 +91,6 @@ create table public.documents (
   id uuid primary key default gen_random_uuid(),
   family_id uuid not null references public.families(id) on delete cascade,
   name text not null,
-  category text not null,
-  status text not null,
-  link_url text,
   file_path text,
   created_at timestamptz not null default now()
 );

@@ -372,8 +372,6 @@ describe('App', () => {
 
     await user.clear(screen.getByLabelText('Dokumentname bearbeiten'));
     await user.type(screen.getByLabelText('Dokumentname bearbeiten'), 'Arztbrief 2026');
-    await user.clear(screen.getByLabelText('Dokumentstatus bearbeiten'));
-    await user.type(screen.getByLabelText('Dokumentstatus bearbeiten'), 'Aktuell');
     await user.click(screen.getByRole('button', { name: 'Änderungen speichern' }));
 
     const updatedCard = screen
@@ -382,9 +380,6 @@ describe('App', () => {
 
     expect(screen.getByText('Arztbrief 2026')).toBeInTheDocument();
     expect(updatedCard).not.toBeNull();
-    expect(
-      (updatedCard as HTMLLIElement).querySelector('.document-meta-line')?.textContent,
-    ).toContain('Aktuell');
     expect(screen.queryByRole('dialog', { name: 'Arztbrief' })).not.toBeInTheDocument();
   });
 
@@ -418,7 +413,7 @@ describe('App', () => {
     expect(documentCard).not.toBeNull();
     expect(
       (documentCard as HTMLLIElement).querySelector('.document-meta-line')?.textContent?.trim(),
-    ).toBe('PDF · Neu');
+    ).toBe('PDF');
     expect(within(documentCard as HTMLLIElement).queryByText('Dokument · PDF')).not.toBeInTheDocument();
   });
 

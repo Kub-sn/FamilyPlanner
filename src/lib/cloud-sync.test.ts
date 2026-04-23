@@ -51,10 +51,8 @@ describe('applyCloudCollections', () => {
         {
           id: 'document-cloud-1',
           name: 'Reisepass',
-          category: 'Behörden',
-          status: 'Vorhanden',
-          linkUrl: 'https://example.com/reisepass.pdf',
-          filePath: '',
+          filePath: 'documents/reisepass.pdf',
+          url: 'https://example.com/reisepass.pdf',
         },
       ],
     });

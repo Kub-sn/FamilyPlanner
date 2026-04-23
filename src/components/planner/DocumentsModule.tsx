@@ -18,8 +18,6 @@ export function DocumentsModule({
   documentSelectionErrors,
   documentSelectionSummary,
   documentSort,
-  documentStatusFilter,
-  documentStatusOptions,
   documentUploadProgress,
   isDocumentDropActive,
   selectedDocumentFiles,
@@ -33,7 +31,6 @@ export function DocumentsModule({
   onDocumentKindFilterChange,
   onDocumentSearchTermChange,
   onDocumentSortChange,
-  onDocumentStatusFilterChange,
   onOpenDocumentPreview,
   onRemoveSelectedDocumentFile,
   onStartDocumentEdit,
@@ -46,8 +43,6 @@ export function DocumentsModule({
   documentSelectionErrors: string[];
   documentSelectionSummary: string;
   documentSort: DocumentSortOption;
-  documentStatusFilter: string;
-  documentStatusOptions: string[];
   documentUploadProgress: { completed: number; total: number; currentName: string } | null;
   isDocumentDropActive: boolean;
   selectedDocumentFiles: File[];
@@ -61,7 +56,6 @@ export function DocumentsModule({
   onDocumentKindFilterChange: (value: DocumentFilterKind) => void;
   onDocumentSearchTermChange: (value: string) => void;
   onDocumentSortChange: (value: DocumentSortOption) => void;
-  onDocumentStatusFilterChange: (value: string) => void;
   onOpenDocumentPreview: (document: DocumentItem) => void;
   onRemoveSelectedDocumentFile: (file: File) => void;
   onStartDocumentEdit: (document: DocumentItem) => void;
@@ -161,18 +155,6 @@ export function DocumentsModule({
                 onChange={(event) => onDocumentSearchTermChange(event.currentTarget.value)}
               />
               <select
-                aria-label="Dokumentstatus filtern"
-                value={documentStatusFilter}
-                onChange={(event) => onDocumentStatusFilterChange(event.currentTarget.value)}
-              >
-                <option value="all">Alle Status</option>
-                {documentStatusOptions.map((statusOption) => (
-                  <option key={statusOption} value={statusOption}>
-                    {statusOption}
-                  </option>
-                ))}
-              </select>
-              <select
                 aria-label="Dokumenttyp filtern"
                 value={documentKindFilter}
                 onChange={(event) => onDocumentKindFilterChange(event.currentTarget.value as DocumentFilterKind)}
@@ -203,7 +185,7 @@ export function DocumentsModule({
                   <div>
                     <div className="document-entry-head">
                       {isPreviewableImage(document) ? (
-                        <img className="document-preview" src={document.linkUrl} alt={`Vorschau für ${document.name}`} />
+                        <img className="document-preview" src={document.url} alt={`Vorschau für ${document.name}`} />
                       ) : (
                         <span className="document-icon" aria-hidden="true">
                           {getDocumentIcon(document)}
@@ -223,12 +205,12 @@ export function DocumentsModule({
                     </div>
                   </div>
                   <div className="document-actions">
-                    {document.linkUrl ? (
-                      <a className="secondary-action document-action-button document-link-button document-open-button" href={document.linkUrl} target="_blank" rel="noreferrer">
-                        {document.filePath ? 'Datei öffnen' : 'Link öffnen'}
+                    {document.url ? (
+                      <a className="secondary-action document-action-button document-link-button document-open-button" href={document.url} target="_blank" rel="noreferrer">
+                        Datei öffnen
                       </a>
                     ) : null}
-                    {canPreviewDocument(document) && document.linkUrl ? (
+                    {canPreviewDocument(document) && document.url ? (
                       <button
                         type="button"
                         className="secondary-action document-action-button document-preview-button"

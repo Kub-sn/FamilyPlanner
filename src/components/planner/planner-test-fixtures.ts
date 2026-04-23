@@ -28,10 +28,8 @@ export const plannerFixture: PlannerState = {
     {
       id: 'document-1',
       name: 'Versicherung PDF',
-      category: 'Dokument',
-      status: 'Aktuell',
-      linkUrl: 'https://example.com/versicherung.pdf',
-      filePath: '',
+      filePath: 'documents/versicherung.pdf',
+      url: 'https://example.com/versicherung.pdf',
     },
   ],
 };
@@ -72,10 +70,7 @@ export const visibleTabsFixture: Array<{ id: TabId; label: string }> = [
 export const documentEditFixture: DocumentEditState = {
   id: 'document-1',
   name: 'Versicherung PDF',
-  category: 'Dokument',
-  status: 'Aktuell',
-  linkUrl: 'https://example.com/versicherung.pdf',
-  filePath: '',
+  filePath: 'documents/versicherung.pdf',
 };
 
 export const documentPreviewFixture: DocumentPreviewState = {

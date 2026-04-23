@@ -58,13 +58,9 @@ export function validateSelectedDocumentFiles(files: File[]) {
 
 export function resolveDocumentMetadata(input: {
   name: string;
-  category: string;
-  status: string;
   file?: File | null;
 }) {
   return {
     name: input.name || (input.file ? getDocumentNameFromFile(input.file) : 'Dokument'),
-    category: input.category || 'Dokument',
-    status: input.status || 'Neu',
   };
 }

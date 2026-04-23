@@ -26,10 +26,8 @@ describe('document upload helpers', () => {
   it('derives defaults for uploaded files', () => {
     const file = new File(['a'], 'urlaub-foto.jpg', { type: 'image/jpeg' });
 
-    expect(resolveDocumentMetadata({ name: '', category: '', status: '', file })).toEqual({
+    expect(resolveDocumentMetadata({ name: '', file })).toEqual({
       name: 'urlaub-foto',
-      category: 'Dokument',
-      status: 'Neu',
     });
     expect(getDocumentNameFromFile(file)).toBe('urlaub-foto');
   });

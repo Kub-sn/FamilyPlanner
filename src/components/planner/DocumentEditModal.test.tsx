@@ -24,12 +24,13 @@ describe('DocumentEditModal', () => {
     await user.click(screen.getByRole('button', { name: 'Änderungen speichern' }));
     await user.click(screen.getByRole('button', { name: 'Abbrechen' }));
 
+    expect(screen.getByRole('button', { name: 'Änderungen speichern' })).toHaveClass('auth-submit');
     expect(onFieldChange).toHaveBeenCalled();
     expect(onSave).toHaveBeenCalled();
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('omits the storage-link note for uploaded files and keeps the dialog editable', async () => {
+  it('only exposes the document name field for uploaded files', async () => {
     const user = userEvent.setup();
     const onFieldChange = vi.fn();
 
@@ -38,7 +39,6 @@ describe('DocumentEditModal', () => {
         documentEditState={{
           ...documentEditFixture,
           filePath: 'documents/certificate.pdf',
-          linkUrl: 'https://storage.example.com/certificate.pdf',
           name: 'certificate_of_completion_react_certificate_of_completion_react',
         }}
         onClose={vi.fn()}
@@ -47,9 +47,7 @@ describe('DocumentEditModal', () => {
       />,
     );
 
-    expect(
-      screen.queryByText('Datei-Uploads behalten ihren Storage-Link. Nur die Metadaten werden geändert.'),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Dokumentkategorie bearbeiten')).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Dokumentlink bearbeiten')).not.toBeInTheDocument();
 
     await user.type(screen.getByLabelText('Dokumentname bearbeiten'), ' X');

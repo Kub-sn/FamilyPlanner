@@ -11,8 +11,6 @@ const WORD_DOCUMENT_PATTERN = /\.(doc|docx)$/i;
 export const DOCUMENT_SORT_OPTIONS: Array<{ value: DocumentSortOption; label: string }> = [
   { value: 'recent', label: 'Neueste zuerst' },
   { value: 'name', label: 'Name A-Z' },
-  { value: 'category', label: 'Kategorie A-Z' },
-  { value: 'status', label: 'Status A-Z' },
   { value: 'kind', label: 'Dateityp' },
 ];
 
@@ -21,12 +19,11 @@ export const DOCUMENT_KIND_FILTER_OPTIONS: Array<{ value: DocumentFilterKind; la
   { value: 'image', label: 'Bilder' },
   { value: 'pdf', label: 'PDF' },
   { value: 'word', label: 'Word' },
-  { value: 'link', label: 'Links' },
   { value: 'file', label: 'Dateien' },
 ];
 
 function getDocumentReference(document: DocumentItem) {
-  return document.filePath || document.linkUrl || document.name;
+  return document.filePath || document.name;
 }
 
 export function isPreviewableImage(document: DocumentItem) {
@@ -48,10 +45,6 @@ export function getDocumentKind(document: DocumentItem) {
     return 'word';
   }
 
-  if (document.linkUrl && !document.filePath) {
-    return 'link';
-  }
-
   return 'file';
 }
 
@@ -63,23 +56,15 @@ export function getDocumentIcon(document: DocumentItem) {
       return 'PDF';
     case 'word':
       return 'Word';
-    case 'link':
-      return 'Link';
     default:
       return 'Datei';
   }
 }
 
 export function getDocumentMetaParts(document: DocumentItem) {
-  const category = document.category.trim();
   const type = getDocumentIcon(document).trim();
-  const status = document.status.trim();
   const parts: Array<{ key: string; value: string; tone: DocumentMetaPartTone } | null> = [
-    category && category.toLowerCase() !== 'dokument'
-      ? { key: `category-${category}`, value: category, tone: 'muted' }
-      : null,
     type ? { key: `type-${type}`, value: type, tone: 'strong' } : null,
-    status ? { key: `status-${status}`, value: status, tone: 'accent' } : null,
   ];
 
   return parts.filter(

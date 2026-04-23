@@ -5,13 +5,28 @@ type ErrorWithMessage = {
   code?: unknown;
 };
 
+const SINGLE_ROW_RESULT_ERROR = 'Cannot coerce the result to a single JSON object';
+const SINGLE_ROW_RESULT_CODE = 'PGRST116';
+
 function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
   return typeof error === 'object' && error !== null;
 }
 
+export function isMissingSingleRowResultError(error: unknown) {
+  if (error instanceof Error && typeof error.message === 'string') {
+    return error.message.includes(SINGLE_ROW_RESULT_ERROR);
+  }
+
+  return isErrorWithMessage(error)
+    && (
+      error.code === SINGLE_ROW_RESULT_CODE
+      || (typeof error.message === 'string' && error.message.includes(SINGLE_ROW_RESULT_ERROR))
+    );
+}
+
 export function humanizeAuthError(error: unknown) {
   if (error instanceof Error && error.message) {
-    if (error.message.includes('Cannot coerce the result to a single JSON object')) {
+    if (isMissingSingleRowResultError(error)) {
       return 'Die Notiz konnte nicht gespeichert werden. Prüfe bitte, ob die Datenbank-Migration für Notiz-Bearbeitung bereits ausgeführt wurde.';
     }
 
@@ -19,7 +34,7 @@ export function humanizeAuthError(error: unknown) {
   }
 
   if (isErrorWithMessage(error) && typeof error.message === 'string' && error.message.trim()) {
-    if (error.message.includes('Cannot coerce the result to a single JSON object')) {
+    if (isMissingSingleRowResultError(error)) {
       return 'Die Notiz konnte nicht gespeichert werden. Prüfe bitte, ob die Datenbank-Migration für Notiz-Bearbeitung bereits ausgeführt wurde.';
     }
 

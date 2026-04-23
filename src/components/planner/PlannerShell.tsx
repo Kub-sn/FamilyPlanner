@@ -9,7 +9,7 @@ import {
   type SetStateAction,
 } from 'react';
 import { defaultPlannerState, tabs, type DocumentItem, type PlannerState, type TabId, type UserRole } from '../../lib/planner-data';
-import { humanizeAuthError } from '../../lib/auth-errors';
+import { humanizeAuthError, isMissingSingleRowResultError } from '../../lib/auth-errors';
 import {
   buildCalendarMonth,
   getCalendarEntryDateKey,
@@ -115,11 +115,11 @@ function createLocalDocumentLink(file: File) {
 function revokeLocalDocumentLink(document: DocumentItem) {
   if (
     document.filePath
-    && document.linkUrl.startsWith('blob:')
+    && document.url.startsWith('blob:')
     && typeof URL !== 'undefined'
     && typeof URL.revokeObjectURL === 'function'
   ) {
-    URL.revokeObjectURL(document.linkUrl);
+    URL.revokeObjectURL(document.url);
   }
 }
 
@@ -143,7 +143,6 @@ export default function PlannerShell({
   const [documentSelectionErrors, setDocumentSelectionErrors] = useState<string[]>([]);
   const [isDocumentDropActive, setIsDocumentDropActive] = useState(false);
   const [documentSearchTerm, setDocumentSearchTerm] = useState('');
-  const [documentStatusFilter, setDocumentStatusFilter] = useState('all');
   const [documentKindFilter, setDocumentKindFilter] = useState<DocumentFilterKind>('all');
   const [documentSort, setDocumentSort] = useState<DocumentSortOption>('recent');
   const [documentEditState, setDocumentEditState] = useState<DocumentEditState | null>(null);
@@ -235,13 +234,6 @@ export default function PlannerShell({
     () => tabs.filter((tab) => tab.id !== 'family' || canViewFamily),
     [canViewFamily],
   );
-  const documentStatusOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(plannerState.documents.map((document) => document.status.trim()).filter(Boolean)),
-      ).sort(compareDocumentLabels),
-    [plannerState.documents],
-  );
   const visibleDocuments = useMemo(() => {
     const normalizedSearchTerm = documentSearchTerm.trim().toLowerCase();
 
@@ -249,15 +241,10 @@ export default function PlannerShell({
       .filter((document) => {
         if (
           normalizedSearchTerm
-          && ![document.name, document.category, document.status]
-            .join(' ')
+          && !document.name
             .toLowerCase()
             .includes(normalizedSearchTerm)
         ) {
-          return false;
-        }
-
-        if (documentStatusFilter !== 'all' && document.status !== documentStatusFilter) {
           return false;
         }
 
@@ -271,10 +258,6 @@ export default function PlannerShell({
         switch (documentSort) {
           case 'name':
             return compareDocumentLabels(left.name, right.name);
-          case 'category':
-            return compareDocumentLabels(left.category, right.category);
-          case 'status':
-            return compareDocumentLabels(left.status, right.status);
           case 'kind':
             return compareDocumentLabels(getDocumentKind(left), getDocumentKind(right));
           case 'recent':
@@ -282,7 +265,7 @@ export default function PlannerShell({
             return 0;
         }
       });
-  }, [documentKindFilter, documentSearchTerm, documentSort, documentStatusFilter, plannerState.documents]);
+  }, [documentKindFilter, documentSearchTerm, documentSort, plannerState.documents]);
   const sortedCalendarEntries = useMemo(
     () => sortCalendarEntries(plannerState.calendar),
     [plannerState.calendar],
@@ -513,9 +496,6 @@ export default function PlannerShell({
     setDocumentEditState({
       id: document.id,
       name: document.name,
-      category: document.category,
-      status: document.status,
-      linkUrl: document.filePath ? '' : document.linkUrl,
       filePath: document.filePath,
     });
   };
@@ -536,18 +516,12 @@ export default function PlannerShell({
 
     const metadata = resolveDocumentMetadata({
       name: documentEditState.name,
-      category: documentEditState.category,
-      status: documentEditState.status,
     });
-    const nextLinkUrl = documentEditState.filePath ? '' : documentEditState.linkUrl.trim();
 
     try {
       if (authState.family) {
         const updatedDocument = await updateDocument(documentEditState.id, {
           name: metadata.name,
-          category: metadata.category,
-          status: metadata.status,
-          linkUrl: nextLinkUrl,
           filePath: documentEditState.filePath,
         });
 
@@ -565,9 +539,6 @@ export default function PlannerShell({
               ? {
                   ...document,
                   name: metadata.name,
-                  category: metadata.category,
-                  status: metadata.status,
-                  linkUrl: document.filePath ? document.linkUrl : nextLinkUrl,
                 }
               : document,
           ),
@@ -582,20 +553,22 @@ export default function PlannerShell({
     } catch (error) {
       setCloudSync({
         phase: 'error',
-        message: humanizeAuthError(error),
+        message: isMissingSingleRowResultError(error)
+          ? 'Das Dokument konnte nicht gespeichert werden. Prüfe bitte, ob die Datenbank-Migration für Dokument-Bearbeitung bereits ausgeführt wurde.'
+          : humanizeAuthError(error),
       });
     }
   };
 
   const handleOpenDocumentPreview = (document: DocumentItem) => {
-    if (!document.linkUrl || !canPreviewDocument(document)) {
+    if (!document.url || !canPreviewDocument(document)) {
       return;
     }
 
     setDocumentPreviewState({
       id: document.id,
       name: document.name,
-      url: document.linkUrl,
+      url: document.url,
       kind: getDocumentKind(document) === 'image' ? 'image' : 'pdf',
     });
   };
@@ -1294,15 +1267,10 @@ export default function PlannerShell({
             const uploadedFile = await uploadDocumentFile(authState.family.familyId, file);
             const metadata = resolveDocumentMetadata({
               name: '',
-              category: '',
-              status: '',
               file,
             });
             const createdDocument = await createDocument(authState.family.familyId, {
               name: metadata.name,
-              category: metadata.category,
-              status: metadata.status,
-              linkUrl: '',
               filePath: uploadedFile.filePath,
             });
 
@@ -1326,18 +1294,14 @@ export default function PlannerShell({
         const createdDocuments = selectedFiles.map((file) => {
           const metadata = resolveDocumentMetadata({
             name: '',
-            category: '',
-            status: '',
             file,
           });
 
           return {
             id: nextStringId(),
             name: metadata.name,
-            category: metadata.category,
-            status: metadata.status,
-            linkUrl: createLocalDocumentLink(file),
             filePath: file.name,
+            url: createLocalDocumentLink(file),
           } satisfies DocumentItem;
         });
 
@@ -1480,8 +1444,6 @@ export default function PlannerShell({
           documentSelectionErrors={documentSelectionErrors}
           documentSelectionSummary={documentSelectionSummary}
           documentSort={documentSort}
-          documentStatusFilter={documentStatusFilter}
-          documentStatusOptions={documentStatusOptions}
           documentUploadProgress={documentUploadProgress}
           isDocumentDropActive={isDocumentDropActive}
           selectedDocumentFiles={selectedDocumentFiles}
@@ -1496,7 +1458,6 @@ export default function PlannerShell({
           onDocumentKindFilterChange={setDocumentKindFilter}
           onDocumentSearchTermChange={setDocumentSearchTerm}
           onDocumentSortChange={setDocumentSort}
-          onDocumentStatusFilterChange={setDocumentStatusFilter}
           onOpenDocumentPreview={handleOpenDocumentPreview}
           onRemoveSelectedDocumentFile={handleRemoveSelectedDocumentFile}
           onStartDocumentEdit={handleStartDocumentEdit}

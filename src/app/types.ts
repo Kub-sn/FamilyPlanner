@@ -55,15 +55,12 @@ export type ToastItem = {
   tone: ToastTone;
 };
 
-export type DocumentSortOption = 'recent' | 'name' | 'category' | 'status' | 'kind';
-export type DocumentFilterKind = 'all' | 'image' | 'pdf' | 'word' | 'link' | 'file';
+export type DocumentSortOption = 'recent' | 'name' | 'kind';
+export type DocumentFilterKind = 'all' | 'image' | 'pdf' | 'word' | 'file';
 
 export type DocumentEditState = {
   id: string;
   name: string;
-  category: string;
-  status: string;
-  linkUrl: string;
   filePath: string;
 };
 

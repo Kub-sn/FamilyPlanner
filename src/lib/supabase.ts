@@ -109,9 +109,6 @@ type MealRow = {
 type DocumentRow = {
   id: string;
   name: string;
-  category: string;
-  status: string;
-  link_url: string | null;
   file_path: string | null;
 };
 
@@ -226,7 +223,6 @@ export async function uploadDocumentFile(familyId: string, file: File) {
 
   return {
     filePath,
-    linkUrl: await createSignedDocumentUrl(client, filePath),
   };
 }
 
@@ -250,19 +246,16 @@ export async function deleteDocument(documentId: string, filePath?: string) {
 
 export async function updateDocument(
   documentId: string,
-  payload: Omit<DocumentItem, 'id'>,
+  payload: Pick<DocumentItem, 'name' | 'filePath'>,
 ): Promise<DocumentItem> {
   const client = requireSupabase();
   const { data, error } = await client
     .from('documents')
     .update({
       name: payload.name,
-      category: payload.category,
-      status: payload.status,
-      link_url: payload.filePath ? null : payload.linkUrl || null,
     })
     .eq('id', documentId)
-    .select('id, name, category, status, link_url, file_path')
+    .select('id, name, file_path')
     .single();
 
   if (error) {
@@ -274,12 +267,10 @@ export async function updateDocument(
   return {
     id: document.id,
     name: document.name,
-    category: document.category,
-    status: document.status,
-    linkUrl: document.file_path
-      ? await createSignedDocumentUrl(client, document.file_path)
-      : document.link_url ?? '',
     filePath: document.file_path ?? '',
+    url: document.file_path
+      ? await createSignedDocumentUrl(client, document.file_path)
+      : '',
   };
 }
 
@@ -1197,7 +1188,7 @@ export async function fetchDocuments(familyId: string): Promise<DocumentItem[]> 
   const client = requireSupabase();
   const { data, error } = await client
     .from('documents')
-    .select('id, name, category, status, link_url, file_path')
+    .select('id, name, file_path')
     .eq('family_id', familyId)
     .order('created_at', { ascending: false });
 
@@ -1209,19 +1200,17 @@ export async function fetchDocuments(familyId: string): Promise<DocumentItem[]> 
     (data as DocumentRow[]).map(async (document) => ({
       id: document.id,
       name: document.name,
-      category: document.category,
-      status: document.status,
-      linkUrl: document.file_path
-        ? await createSignedDocumentUrl(client, document.file_path)
-        : document.link_url ?? '',
       filePath: document.file_path ?? '',
+      url: document.file_path
+        ? await createSignedDocumentUrl(client, document.file_path)
+        : '',
     })),
   );
 }
 
 export async function createDocument(
   familyId: string,
-  payload: Omit<DocumentItem, 'id'>,
+  payload: Pick<DocumentItem, 'name' | 'filePath'>,
 ): Promise<DocumentItem> {
   const client = requireSupabase();
   const { data, error } = await client
@@ -1229,12 +1218,9 @@ export async function createDocument(
     .insert({
       family_id: familyId,
       name: payload.name,
-      category: payload.category,
-      status: payload.status,
-      link_url: payload.filePath ? null : payload.linkUrl || null,
       file_path: payload.filePath || null,
     })
-    .select('id, name, category, status, link_url, file_path')
+    .select('id, name, file_path')
     .single();
 
   if (error) {
@@ -1246,11 +1232,9 @@ export async function createDocument(
   return {
     id: document.id,
     name: document.name,
-    category: document.category,
-    status: document.status,
-    linkUrl: document.file_path
-      ? await createSignedDocumentUrl(client, document.file_path)
-      : document.link_url ?? '',
     filePath: document.file_path ?? '',
+    url: document.file_path
+      ? await createSignedDocumentUrl(client, document.file_path)
+      : '',
   };
 }

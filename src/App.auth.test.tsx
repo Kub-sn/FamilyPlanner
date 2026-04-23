@@ -28,6 +28,7 @@ const {
   signInWithPassword,
   signUpWithPassword,
   subscribeToAuthChanges,
+  updateDocument,
   updateFamilyRegistrationSetting,
   updatePassword,
 } = vi.hoisted(() => {
@@ -65,6 +66,7 @@ const {
         authChangeListener = null;
       };
     },
+    updateDocument: vi.fn(),
     updateFamilyRegistrationSetting: vi.fn(),
     updatePassword: vi.fn(),
   };
@@ -100,6 +102,7 @@ vi.mock('./lib/supabase', async () => {
     signInWithPassword,
     subscribeToAuthChanges,
     signUpWithPassword,
+    updateDocument,
     updateFamilyRegistrationSetting,
     updatePassword,
   };
@@ -190,6 +193,7 @@ describe('App auth flow', () => {
     deleteCurrentAccount.mockReset();
     signInWithPassword.mockReset();
     signUpWithPassword.mockReset();
+    updateDocument.mockReset();
     updateFamilyRegistrationSetting.mockReset();
     updatePassword.mockReset();
 
@@ -1351,10 +1355,8 @@ describe('App auth flow', () => {
       {
         id: 'document-1',
         name: 'Arztbrief',
-        category: 'Gesundheit',
-        status: 'Aktuell',
-        linkUrl: 'https://example.com/arztbrief.pdf',
-        filePath: '',
+        filePath: 'documents/arztbrief.pdf',
+        url: 'https://example.com/arztbrief.pdf',
       },
     ]);
 
@@ -1370,12 +1372,77 @@ describe('App auth flow', () => {
 
     await user.click(screen.getByRole('button', { name: 'Löschen' }));
 
-    expect(deleteDocument).toHaveBeenCalledWith('document-1', undefined);
+    expect(deleteDocument).toHaveBeenCalledWith('document-1', 'documents/arztbrief.pdf');
     expect(screen.getByText('Dokument wurde gelöscht.')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Einstellungen' }));
 
     expect(screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' })).toBeInTheDocument();
     expect(screen.getByText('Dokument wurde gelöscht.')).toBeInTheDocument();
+  });
+
+  it('shows a document-specific migration hint when cloud document edits cannot be persisted', async () => {
+    const user = userEvent.setup();
+
+    getCurrentSession.mockResolvedValue({
+      user: {
+        id: 'user-7',
+        email: 'admin@example.com',
+        user_metadata: {},
+      },
+    });
+    ensureProfile.mockResolvedValue({
+      id: 'user-7',
+      display_name: 'Admin',
+      email: 'admin@example.com',
+      role: 'admin',
+    });
+    fetchFamilyContext.mockResolvedValue({
+      familyId: 'family-7',
+      familyName: 'Familie Dokumente',
+      role: 'admin',
+    });
+    fetchFamilyMembers.mockResolvedValue([
+      {
+        id: 'user-7',
+        name: 'Admin',
+        email: 'admin@example.com',
+        role: 'admin',
+      },
+    ]);
+    fetchDocuments.mockResolvedValue([
+      {
+        id: 'document-1',
+        name: 'Arztbrief',
+        filePath: 'documents/arztbrief.pdf',
+        url: 'https://example.com/arztbrief.pdf',
+      },
+    ]);
+    updateDocument.mockRejectedValue({
+      message: 'Cannot coerce the result to a single JSON object',
+      details: 'The result contains 0 rows',
+    });
+
+    render(<App />);
+
+    await expectPlannerShellHeading();
+    await user.click(screen.getByRole('button', { name: 'Dokumente' }));
+    await user.click(screen.getByRole('button', { name: 'Dokument Arztbrief bearbeiten' }));
+    await user.clear(screen.getByLabelText('Dokumentname bearbeiten'));
+    await user.type(screen.getByLabelText('Dokumentname bearbeiten'), 'Arztbrief 2026');
+    await user.click(screen.getByRole('button', { name: 'Änderungen speichern' }));
+
+    await waitFor(() => {
+      expect(updateDocument).toHaveBeenCalledWith('document-1', {
+        name: 'Arztbrief 2026',
+        filePath: 'documents/arztbrief.pdf',
+      });
+    });
+
+    expect(
+      screen.getByText(
+        'Das Dokument konnte nicht gespeichert werden. Prüfe bitte, ob die Datenbank-Migration für Dokument-Bearbeitung bereits ausgeführt wurde.',
+      ),
+    ).toBeInTheDocument();
   });
 });
