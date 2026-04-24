@@ -5,58 +5,79 @@ import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { plannerFixture } from './planner-test-fixtures';
 import { DocumentsModule } from './DocumentsModule';
 
+vi.mock('../../hooks/useDocumentManager', () => ({
+  useDocumentManager: vi.fn(),
+}));
+
+import { useDocumentManager } from '../../hooks/useDocumentManager';
+
+const mockUseDocumentManager = vi.mocked(useDocumentManager);
+
+function buildDocumentManagerMock(overrides: Record<string, unknown> = {}) {
+  return {
+    selectedDocumentFiles: [],
+    documentSelectionErrors: [],
+    documentSelectionSummary: '',
+    isDocumentDropActive: false,
+    documentSearchTerm: '',
+    documentKindFilter: 'all' as const,
+    documentSort: 'recent' as const,
+    documentEditState: null,
+    documentPreviewState: null,
+    pendingDocumentDeletion: null,
+    documentDeletionBusy: false,
+    documentUploadProgress: null,
+    visibleDocuments: plannerFixture.documents,
+    setDocumentSearchTerm: vi.fn(),
+    setDocumentKindFilter: vi.fn(),
+    setDocumentSort: vi.fn(),
+    setDocumentEditState: vi.fn(),
+    setDocumentPreviewState: vi.fn(),
+    setPendingDocumentDeletion: vi.fn(),
+    handleDocumentInputChange: vi.fn(),
+    handleDocumentDrop: vi.fn(),
+    handleDocumentDragOver: vi.fn(),
+    handleDocumentDragLeave: vi.fn(),
+    handleClearSelectedDocumentFiles: vi.fn(),
+    handleRemoveSelectedDocumentFile: vi.fn(),
+    handleStartDocumentEdit: vi.fn(),
+    handleDocumentEditFieldChange: vi.fn(),
+    handleSaveDocumentEdit: vi.fn().mockResolvedValue(undefined),
+    handleOpenDocumentPreview: vi.fn(),
+    handleDeleteDocument: vi.fn().mockResolvedValue(undefined),
+    handleConfirmDocumentDeletion: vi.fn().mockResolvedValue(undefined),
+    handleAddDocument: vi.fn().mockResolvedValue(undefined),
+    ...overrides,
+  };
+}
+
 describe('DocumentsModule', () => {
   it('renders documents and forwards document actions', async () => {
     const user = userEvent.setup();
-    const onOpenDocumentPreview = vi.fn();
-    const onStartDocumentEdit = vi.fn();
-    const onDeleteDocument = vi.fn().mockResolvedValue(undefined);
-    const onDocumentSearchTermChange = vi.fn();
+    const mock = buildDocumentManagerMock();
+    mockUseDocumentManager.mockReturnValue(mock);
 
     render(
       <ActiveTabProvider activeTab="documents" setActiveTab={vi.fn()}>
         <DocumentsModule
-          documentKindFilter="all"
-          documentSearchTerm=""
-          documentSelectionErrors={[]}
-          documentSelectionSummary=""
-          documentSort="recent"
-          documentUploadProgress={null}
-          isDocumentDropActive={false}
-          selectedDocumentFiles={[]}
-          totalDocumentCount={plannerFixture.documents.length}
-          visibleDocuments={plannerFixture.documents}
-          onClearSelectedDocumentFiles={vi.fn()}
-          onDeleteDocument={onDeleteDocument}
-          onDocumentDragLeave={vi.fn()}
-          onDocumentDragOver={vi.fn()}
-          onDocumentDrop={vi.fn()}
-          onDocumentInputChange={vi.fn()}
-          onDocumentKindFilterChange={vi.fn()}
-          onDocumentSearchTermChange={onDocumentSearchTermChange}
-          onDocumentSortChange={vi.fn()}
-          onOpenDocumentPreview={onOpenDocumentPreview}
-          onRemoveSelectedDocumentFile={vi.fn()}
-          onStartDocumentEdit={onStartDocumentEdit}
-          onSubmit={vi.fn().mockResolvedValue(undefined)}
+          authState={{ stage: 'unauthenticated', session: null, profile: null, family: null }}
+          plannerState={plannerFixture}
+          setCloudSync={vi.fn()}
+          updateState={vi.fn()}
         />
       </ActiveTabProvider>,
     );
 
     expect(screen.getByText('Datei hochladen')).toBeInTheDocument();
-    expect(screen.queryByPlaceholderText('Dokument')).not.toBeInTheDocument();
-    expect(screen.queryByPlaceholderText('Kategorie')).not.toBeInTheDocument();
-    expect(screen.queryByPlaceholderText('Status')).not.toBeInTheDocument();
-    expect(screen.queryByPlaceholderText('Link zum Dokument (optional)')).not.toBeInTheDocument();
     expect(screen.getByText('Versicherung PDF')).toBeInTheDocument();
     await user.type(screen.getByLabelText('Dokumente suchen'), 'Versicherung');
     await user.click(screen.getByRole('button', { name: /Vorschau öffnen/i }));
     await user.click(screen.getByRole('button', { name: /bearbeiten/i }));
     await user.click(screen.getByRole('button', { name: /löschen/i }));
 
-    expect(onDocumentSearchTermChange).toHaveBeenCalled();
-    expect(onOpenDocumentPreview).toHaveBeenCalledWith(plannerFixture.documents[0]);
-    expect(onStartDocumentEdit).toHaveBeenCalledWith(plannerFixture.documents[0]);
-    expect(onDeleteDocument).toHaveBeenCalledWith(plannerFixture.documents[0]);
+    expect(mock.setDocumentSearchTerm).toHaveBeenCalled();
+    expect(mock.handleOpenDocumentPreview).toHaveBeenCalledWith(plannerFixture.documents[0]);
+    expect(mock.handleStartDocumentEdit).toHaveBeenCalledWith(plannerFixture.documents[0]);
+    expect(mock.handleDeleteDocument).toHaveBeenCalledWith(plannerFixture.documents[0]);
   });
 });

@@ -12,7 +12,6 @@ import type {
 } from '../../app/types';
 import type { SupabaseFamilyContext, SupabaseFamilyInvite } from '../../lib/supabase';
 import { ActiveTabProvider } from '../../context/ActiveTabContext';
-import { useDocumentManager } from '../../hooks/useDocumentManager';
 import { useNoteManager } from '../../hooks/useNoteManager';
 import { useCalendarManager } from '../../hooks/useCalendarManager';
 import { useAdminDirectory } from '../../hooks/useAdminDirectory';
@@ -21,8 +20,6 @@ import { useDeletionManager } from '../../hooks/useDeletionManager';
 import { AccountCard } from './AccountCard';
 import { CalendarModule } from './CalendarModule';
 import { ConfirmationDialog } from './ConfirmationDialog';
-import { DocumentEditModal } from './DocumentEditModal';
-import { DocumentPreviewModal } from './DocumentPreviewModal';
 import { DocumentsModule } from './DocumentsModule';
 import { FamilyModule } from './FamilyModule';
 import { MealsModule } from './MealsModule';
@@ -96,14 +93,6 @@ export default function PlannerShell({
     setCloudSync,
     familyInvites,
     setFamilyInvites,
-  });
-
-  const documents = useDocumentManager({
-    authState,
-    plannerState,
-    setCloudSync,
-    updateState,
-    activeTab,
   });
 
   const notes = useNoteManager({
@@ -293,77 +282,11 @@ export default function PlannerShell({
         />
 
         <DocumentsModule
-          documentKindFilter={documents.documentKindFilter}
-          documentSearchTerm={documents.documentSearchTerm}
-          documentSelectionErrors={documents.documentSelectionErrors}
-          documentSelectionSummary={documents.documentSelectionSummary}
-          documentSort={documents.documentSort}
-          documentUploadProgress={documents.documentUploadProgress}
-          isDocumentDropActive={documents.isDocumentDropActive}
-          selectedDocumentFiles={documents.selectedDocumentFiles}
-          totalDocumentCount={plannerState.documents.length}
-          visibleDocuments={documents.visibleDocuments}
-          onClearSelectedDocumentFiles={documents.handleClearSelectedDocumentFiles}
-          onDeleteDocument={documents.handleDeleteDocument}
-          onDocumentDragLeave={documents.handleDocumentDragLeave}
-          onDocumentDragOver={documents.handleDocumentDragOver}
-          onDocumentDrop={documents.handleDocumentDrop}
-          onDocumentInputChange={documents.handleDocumentInputChange}
-          onDocumentKindFilterChange={documents.setDocumentKindFilter}
-          onDocumentSearchTermChange={documents.setDocumentSearchTerm}
-          onDocumentSortChange={documents.setDocumentSort}
-          onOpenDocumentPreview={documents.handleOpenDocumentPreview}
-          onRemoveSelectedDocumentFile={documents.handleRemoveSelectedDocumentFile}
-          onStartDocumentEdit={documents.handleStartDocumentEdit}
-          onSubmit={documents.handleAddDocument}
+          authState={authState}
+          plannerState={plannerState}
+          setCloudSync={setCloudSync}
+          updateState={updateState}
         />
-
-        {documents.documentEditState ? (
-          <DocumentEditModal
-            documentEditState={documents.documentEditState}
-            onClose={() => documents.setDocumentEditState(null)}
-            onFieldChange={documents.handleDocumentEditFieldChange}
-            onSave={documents.handleSaveDocumentEdit}
-          />
-        ) : null}
-
-        {documents.documentPreviewState ? (
-          <DocumentPreviewModal
-            documentPreviewState={documents.documentPreviewState}
-            onClose={() => documents.setDocumentPreviewState(null)}
-          />
-        ) : null}
-
-        {documents.pendingDocumentDeletion ? (
-          <ConfirmationDialog
-            heading="Löschen?"
-            id="delete-document-title"
-            actions={(
-              <>
-                <button
-                  type="button"
-                  className="secondary-action"
-                  disabled={documents.documentDeletionBusy}
-                  onClick={() => documents.setPendingDocumentDeletion(null)}
-                >
-                  Abbrechen
-                </button>
-                <button
-                  type="button"
-                  className="secondary-action danger-action"
-                  disabled={documents.documentDeletionBusy}
-                  onClick={() => void documents.handleConfirmDocumentDeletion()}
-                >
-                  {documents.documentDeletionBusy ? 'Lösche…' : 'Löschen'}
-                </button>
-              </>
-            )}
-          >
-            <p className="modal-note danger-note">
-              Dokument {documents.pendingDocumentDeletion.name} löschen?
-            </p>
-          </ConfirmationDialog>
-        ) : null}
 
         <FamilyModule
           adminFamilyDirectory={adminDir.adminFamilyDirectory}

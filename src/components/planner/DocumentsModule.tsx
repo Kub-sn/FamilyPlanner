@@ -1,7 +1,6 @@
-import type { ChangeEvent, DragEvent, FormEvent } from 'react';
 import type { DocumentFilterKind, DocumentSortOption } from '../../app/types';
 import type { PlannerState } from '../../lib/planner-data';
-import type { DocumentItem } from '../../lib/planner-data';
+import type { AuthState, CloudSyncSetterValue } from '../../app/types';
 import {
   canPreviewDocument,
   DOCUMENT_KIND_FILTER_OPTIONS,
@@ -11,77 +10,51 @@ import {
   isPreviewableImage,
 } from './planner-shell-utils';
 import { useActiveTab } from '../../context/ActiveTabContext';
+import { useDocumentManager } from '../../hooks/useDocumentManager';
+import { ConfirmationDialog } from './ConfirmationDialog';
+import { DocumentEditModal } from './DocumentEditModal';
+import { DocumentPreviewModal } from './DocumentPreviewModal';
 
 export function DocumentsModule({
-  documentKindFilter,
-  documentSearchTerm,
-  documentSelectionErrors,
-  documentSelectionSummary,
-  documentSort,
-  documentUploadProgress,
-  isDocumentDropActive,
-  selectedDocumentFiles,
-  visibleDocuments,
-  totalDocumentCount,
-  onClearSelectedDocumentFiles,
-  onDocumentDragLeave,
-  onDocumentDragOver,
-  onDocumentDrop,
-  onDocumentInputChange,
-  onDocumentKindFilterChange,
-  onDocumentSearchTermChange,
-  onDocumentSortChange,
-  onOpenDocumentPreview,
-  onRemoveSelectedDocumentFile,
-  onStartDocumentEdit,
-  onDeleteDocument,
-  onSubmit,
+  authState,
+  plannerState,
+  setCloudSync,
+  updateState,
 }: {
-  documentKindFilter: DocumentFilterKind;
-  documentSearchTerm: string;
-  documentSelectionErrors: string[];
-  documentSelectionSummary: string;
-  documentSort: DocumentSortOption;
-  documentUploadProgress: { completed: number; total: number; currentName: string } | null;
-  isDocumentDropActive: boolean;
-  selectedDocumentFiles: File[];
-  visibleDocuments: PlannerState['documents'];
-  totalDocumentCount: number;
-  onClearSelectedDocumentFiles: () => void;
-  onDocumentDragLeave: (event: DragEvent<HTMLLabelElement>) => void;
-  onDocumentDragOver: (event: DragEvent<HTMLLabelElement>) => void;
-  onDocumentDrop: (event: DragEvent<HTMLLabelElement>) => void;
-  onDocumentInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
-  onDocumentKindFilterChange: (value: DocumentFilterKind) => void;
-  onDocumentSearchTermChange: (value: string) => void;
-  onDocumentSortChange: (value: DocumentSortOption) => void;
-  onOpenDocumentPreview: (document: DocumentItem) => void;
-  onRemoveSelectedDocumentFile: (file: File) => void;
-  onStartDocumentEdit: (document: DocumentItem) => void;
-  onDeleteDocument: (document: DocumentItem) => Promise<void>;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
+  authState: AuthState;
+  plannerState: PlannerState;
+  setCloudSync: (value: CloudSyncSetterValue) => void;
+  updateState: (updater: (current: PlannerState) => PlannerState) => void;
 }) {
   const { activeTab } = useActiveTab();
+
+  const documents = useDocumentManager({
+    authState,
+    plannerState,
+    setCloudSync,
+    updateState,
+    activeTab,
+  });
   return (
     <section className={activeTab === 'documents' ? 'module is-visible' : 'module'}>
-      {documentSelectionErrors.length > 0 ? (
+      {documents.documentSelectionErrors.length > 0 ? (
         <div
           className="auth-feedback auth-error module-feedback module-feedback-compact"
           aria-live="polite"
-          title={documentSelectionSummary}
+          title={documents.documentSelectionSummary}
         >
           <strong>Dateiauswahl prüfen</strong>
-          <p className="document-error-preview">{documentSelectionSummary}</p>
+          <p className="document-error-preview">{documents.documentSelectionSummary}</p>
         </div>
       ) : null}
       <div className="module-layout document-module-layout">
-        <form className="panel form-panel document-form-panel" onSubmit={(event) => void onSubmit(event)}>
+        <form className="panel form-panel document-form-panel" onSubmit={(event) => void documents.handleAddDocument(event)}>
           <h4>Dokument erfassen</h4>
           <label
-            className={isDocumentDropActive ? 'file-input-label is-drag-active' : 'file-input-label'}
-            onDrop={onDocumentDrop}
-            onDragOver={onDocumentDragOver}
-            onDragLeave={onDocumentDragLeave}
+            className={documents.isDocumentDropActive ? 'file-input-label is-drag-active' : 'file-input-label'}
+            onDrop={documents.handleDocumentDrop}
+            onDragOver={documents.handleDocumentDragOver}
+            onDragLeave={documents.handleDocumentDragLeave}
           >
             <span>Datei hochladen</span>
             <small>
@@ -93,18 +66,18 @@ export function DocumentsModule({
               type="file"
               accept="application/pdf,image/*,.doc,.docx,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               multiple
-              onChange={onDocumentInputChange}
+              onChange={documents.handleDocumentInputChange}
             />
           </label>
-          {selectedDocumentFiles.length > 0 ? (
+          {documents.selectedDocumentFiles.length > 0 ? (
             <div className="selected-file-list">
               <div className="selected-file-summary">
-                <strong>{selectedDocumentFiles.length} Datei(en) ausgewählt</strong>
-                <button type="button" className="secondary-action" onClick={onClearSelectedDocumentFiles}>
+                <strong>{documents.selectedDocumentFiles.length} Datei(en) ausgewählt</strong>
+                <button type="button" className="secondary-action" onClick={documents.handleClearSelectedDocumentFiles}>
                   Auswahl leeren
                 </button>
               </div>
-              {selectedDocumentFiles.map((file) => (
+              {documents.selectedDocumentFiles.map((file) => (
                 <div key={`${file.name}-${file.size}`} className="selected-file-card">
                   <div>
                     <strong>{file.name}</strong>
@@ -113,7 +86,7 @@ export function DocumentsModule({
                   <button
                     type="button"
                     className="secondary-action selected-file-remove"
-                    onClick={() => onRemoveSelectedDocumentFile(file)}
+                    onClick={() => documents.handleRemoveSelectedDocumentFile(file)}
                   >
                     Entfernen
                   </button>
@@ -121,18 +94,18 @@ export function DocumentsModule({
               ))}
             </div>
           ) : null}
-          {documentUploadProgress ? (
+          {documents.documentUploadProgress ? (
             <div className="upload-progress-card" aria-live="polite">
               <strong>
-                Upload {documentUploadProgress.completed + 1} von {documentUploadProgress.total}
+                Upload {documents.documentUploadProgress.completed + 1} von {documents.documentUploadProgress.total}
               </strong>
-              <small>{documentUploadProgress.currentName}</small>
+              <small>{documents.documentUploadProgress.currentName}</small>
               <div className="upload-progress-bar" aria-hidden="true">
                 <span
                   style={{
                     width: `${Math.max(
                       8,
-                      Math.round((documentUploadProgress.completed / documentUploadProgress.total) * 100),
+                      Math.round((documents.documentUploadProgress.completed / documents.documentUploadProgress.total) * 100),
                     )}%`,
                   }}
                 />
@@ -144,20 +117,20 @@ export function DocumentsModule({
         <article className="panel list-panel">
           <div className="document-toolbar">
             <div className="document-toolbar-copy">
-              <strong>{visibleDocuments.length} {visibleDocuments.length === 1 ? 'Dokument' : 'Dokumente'} sichtbar</strong>
-              <small>{totalDocumentCount} insgesamt</small>
+              <strong>{documents.visibleDocuments.length} {documents.visibleDocuments.length === 1 ? 'Dokument' : 'Dokumente'} sichtbar</strong>
+              <small>{plannerState.documents.length} insgesamt</small>
             </div>
             <div className="document-filter-grid">
               <input
                 aria-label="Dokumente suchen"
                 placeholder="Dokumente suchen"
-                value={documentSearchTerm}
-                onChange={(event) => onDocumentSearchTermChange(event.currentTarget.value)}
+                value={documents.documentSearchTerm}
+                onChange={(event) => documents.setDocumentSearchTerm(event.currentTarget.value)}
               />
               <select
                 aria-label="Dokumenttyp filtern"
-                value={documentKindFilter}
-                onChange={(event) => onDocumentKindFilterChange(event.currentTarget.value as DocumentFilterKind)}
+                value={documents.documentKindFilter}
+                onChange={(event) => documents.setDocumentKindFilter(event.currentTarget.value as DocumentFilterKind)}
               >
                 {DOCUMENT_KIND_FILTER_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -167,8 +140,8 @@ export function DocumentsModule({
               </select>
               <select
                 aria-label="Dokumente sortieren"
-                value={documentSort}
-                onChange={(event) => onDocumentSortChange(event.currentTarget.value as DocumentSortOption)}
+                value={documents.documentSort}
+                onChange={(event) => documents.setDocumentSort(event.currentTarget.value as DocumentSortOption)}
               >
                 {DOCUMENT_SORT_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -179,8 +152,8 @@ export function DocumentsModule({
             </div>
           </div>
           <ul className="document-list document-grid">
-            {visibleDocuments.length > 0 ? (
-              visibleDocuments.map((document) => (
+            {documents.visibleDocuments.length > 0 ? (
+              documents.visibleDocuments.map((document) => (
                 <li key={document.id}>
                   <div>
                     <div className="document-entry-head">
@@ -215,7 +188,7 @@ export function DocumentsModule({
                         type="button"
                         className="auth-submit document-action-button document-preview-button"
                         aria-label={`Dokument ${document.name} in Vorschau öffnen`}
-                        onClick={() => onOpenDocumentPreview(document)}
+                        onClick={() => documents.handleOpenDocumentPreview(document)}
                       >
                         Vorschau
                       </button>
@@ -224,7 +197,7 @@ export function DocumentsModule({
                       type="button"
                       className="auth-submit document-action-button document-edit-button"
                       aria-label={`Dokument ${document.name} bearbeiten`}
-                      onClick={() => onStartDocumentEdit(document)}
+                      onClick={() => documents.handleStartDocumentEdit(document)}
                     >
                       Bearbeiten
                     </button>
@@ -232,7 +205,7 @@ export function DocumentsModule({
                       type="button"
                       className="secondary-action document-delete-button"
                       aria-label={`Dokument ${document.name} löschen`}
-                      onClick={() => void onDeleteDocument(document)}
+                      onClick={() => void documents.handleDeleteDocument(document)}
                     >
                       Löschen
                     </button>
@@ -247,6 +220,53 @@ export function DocumentsModule({
           </ul>
         </article>
       </div>
+
+      {documents.documentEditState ? (
+        <DocumentEditModal
+          documentEditState={documents.documentEditState}
+          onClose={() => documents.setDocumentEditState(null)}
+          onFieldChange={documents.handleDocumentEditFieldChange}
+          onSave={documents.handleSaveDocumentEdit}
+        />
+      ) : null}
+
+      {documents.documentPreviewState ? (
+        <DocumentPreviewModal
+          documentPreviewState={documents.documentPreviewState}
+          onClose={() => documents.setDocumentPreviewState(null)}
+        />
+      ) : null}
+
+      {documents.pendingDocumentDeletion ? (
+        <ConfirmationDialog
+          heading="Löschen?"
+          id="delete-document-title"
+          actions={(
+            <>
+              <button
+                type="button"
+                className="secondary-action"
+                disabled={documents.documentDeletionBusy}
+                onClick={() => documents.setPendingDocumentDeletion(null)}
+              >
+                Abbrechen
+              </button>
+              <button
+                type="button"
+                className="secondary-action danger-action"
+                disabled={documents.documentDeletionBusy}
+                onClick={() => void documents.handleConfirmDocumentDeletion()}
+              >
+                {documents.documentDeletionBusy ? 'Lösche…' : 'Löschen'}
+              </button>
+            </>
+          )}
+        >
+          <p className="modal-note danger-note">
+            Dokument {documents.pendingDocumentDeletion.name} löschen?
+          </p>
+        </ConfirmationDialog>
+      ) : null}
     </section>
   );
 }
