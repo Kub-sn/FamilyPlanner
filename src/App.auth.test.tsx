@@ -349,9 +349,9 @@ describe('App auth flow', () => {
     const { container } = render(<App />);
 
     expect(screen.getByRole('status', { name: 'Lädt deine Familiendaten' })).toBeInTheDocument();
-    expect(container.querySelector('.brand-mark-loader .brand-mark-image')).not.toBeNull();
-    expect(container.querySelector('.auth-loader-ring-outer')).not.toBeNull();
-    expect(container.querySelector('.auth-loader-ring-inner')).not.toBeNull();
+    expect(container.querySelector('img[src="/freyLogo.svg"]')).not.toBeNull();
+    expect(container.querySelector('.animate-loader-spin')).not.toBeNull();
+    expect(container.querySelector('.animate-loader-spin-reverse')).not.toBeNull();
   });
 
   it('blocks sign-up when registration is restricted to invitations', async () => {
