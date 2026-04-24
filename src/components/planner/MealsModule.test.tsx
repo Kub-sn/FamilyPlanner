@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { plannerFixture } from './planner-test-fixtures';
 import { MealsModule } from './MealsModule';
 
@@ -11,12 +12,13 @@ describe('MealsModule', () => {
     const onToggleMealPrepared = vi.fn().mockResolvedValue(undefined);
 
     render(
-      <MealsModule
-        activeTab="meals"
-        meals={plannerFixture.meals}
-        onAddMeal={onAddMeal}
-        onToggleMealPrepared={onToggleMealPrepared}
-      />,
+      <ActiveTabProvider activeTab="meals" setActiveTab={vi.fn()}>
+        <MealsModule
+          meals={plannerFixture.meals}
+          onAddMeal={onAddMeal}
+          onToggleMealPrepared={onToggleMealPrepared}
+        />
+      </ActiveTabProvider>,
     );
 
     await user.type(screen.getByPlaceholderText('Wochentag'), 'Dienstag');

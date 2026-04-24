@@ -1,20 +1,21 @@
 import { Trash2 } from 'lucide-react';
 import type { FormEvent } from 'react';
 import type { PlannerState } from '../../lib/planner-data';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 export function NotesModule({
-  activeTab,
   notes,
   onAddNote,
   onDeleteNote,
   onOpenNote,
 }: {
-  activeTab: string;
   notes: PlannerState['notes'];
   onAddNote: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onDeleteNote: (noteId: string) => Promise<void>;
   onOpenNote: (noteId: string) => void;
 }) {
+  const { activeTab } = useActiveTab();
+
   return (
     <section className={activeTab === 'notes' ? 'module is-visible' : 'module'}>
       <div className="module-layout notes-module-layout">

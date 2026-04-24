@@ -1,19 +1,20 @@
 import type { FormEvent } from 'react';
 import type { PlannerState } from '../../lib/planner-data';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 export function TasksModule({
-  activeTab,
   ownerDefaultValue,
   tasks,
   onAddTask,
   onToggleTask,
 }: {
-  activeTab: string;
   ownerDefaultValue: string;
   tasks: PlannerState['tasks'];
   onAddTask: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onToggleTask: (id: string, done: boolean) => Promise<void>;
 }) {
+  const { activeTab } = useActiveTab();
+
   return (
     <section className={activeTab === 'tasks' ? 'module is-visible' : 'module'}>
       <div className="module-layout">

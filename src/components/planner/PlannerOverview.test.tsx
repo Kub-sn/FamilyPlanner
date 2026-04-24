@@ -3,6 +3,7 @@ import { within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { PlannerState } from '../../lib/planner-data';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { plannerFixture } from './planner-test-fixtures';
 import { PlannerOverview } from './PlannerOverview';
 
@@ -31,13 +32,14 @@ describe('PlannerOverview', () => {
     };
 
     render(
-      <PlannerOverview
-        activeTab="overview"
-        openTasks={1}
-        plannerState={plannerState}
-        sortedCalendarEntries={plannerState.calendar}
-        onToggleTask={onToggleTask}
-      />,
+      <ActiveTabProvider activeTab="overview" setActiveTab={vi.fn()}>
+        <PlannerOverview
+          openTasks={1}
+          plannerState={plannerState}
+          sortedCalendarEntries={plannerState.calendar}
+          onToggleTask={onToggleTask}
+        />
+      </ActiveTabProvider>,
     );
 
     expect(screen.getByText('Schultasche packen')).toBeInTheDocument();

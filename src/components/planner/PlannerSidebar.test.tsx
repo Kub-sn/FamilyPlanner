@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { authFixture, plannerFixture, visibleTabsFixture } from './planner-test-fixtures';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { PlannerSidebar } from './PlannerSidebar';
 
 describe('PlannerSidebar', () => {
@@ -10,18 +11,18 @@ describe('PlannerSidebar', () => {
     const setActiveTab = vi.fn();
 
     render(
-      <PlannerSidebar
-        activeTab="overview"
-        authDriven
-        authState={authFixture}
-        openTasks={1}
-        pendingShopping={2}
-        plannerState={plannerFixture}
-        setActiveTab={setActiveTab}
-        visibleTabs={visibleTabsFixture}
-        onSelectMember={vi.fn()}
-        onSignOut={vi.fn().mockResolvedValue(undefined)}
-      />,
+      <ActiveTabProvider activeTab="overview" setActiveTab={setActiveTab}>
+        <PlannerSidebar
+          authDriven
+          authState={authFixture}
+          openTasks={1}
+          pendingShopping={2}
+          plannerState={plannerFixture}
+          visibleTabs={visibleTabsFixture}
+          onSelectMember={vi.fn()}
+          onSignOut={vi.fn().mockResolvedValue(undefined)}
+        />
+      </ActiveTabProvider>,
     );
 
     expect(screen.getByText('1 To-dos')).toBeInTheDocument();

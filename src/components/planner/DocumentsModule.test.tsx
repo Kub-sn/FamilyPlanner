@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { plannerFixture } from './planner-test-fixtures';
 import { DocumentsModule } from './DocumentsModule';
 
@@ -13,32 +14,33 @@ describe('DocumentsModule', () => {
     const onDocumentSearchTermChange = vi.fn();
 
     render(
-      <DocumentsModule
-        activeTab="documents"
-        documentKindFilter="all"
-        documentSearchTerm=""
-        documentSelectionErrors={[]}
-        documentSelectionSummary=""
-        documentSort="recent"
-        documentUploadProgress={null}
-        isDocumentDropActive={false}
-        selectedDocumentFiles={[]}
-        totalDocumentCount={plannerFixture.documents.length}
-        visibleDocuments={plannerFixture.documents}
-        onClearSelectedDocumentFiles={vi.fn()}
-        onDeleteDocument={onDeleteDocument}
-        onDocumentDragLeave={vi.fn()}
-        onDocumentDragOver={vi.fn()}
-        onDocumentDrop={vi.fn()}
-        onDocumentInputChange={vi.fn()}
-        onDocumentKindFilterChange={vi.fn()}
-        onDocumentSearchTermChange={onDocumentSearchTermChange}
-        onDocumentSortChange={vi.fn()}
-        onOpenDocumentPreview={onOpenDocumentPreview}
-        onRemoveSelectedDocumentFile={vi.fn()}
-        onStartDocumentEdit={onStartDocumentEdit}
-        onSubmit={vi.fn().mockResolvedValue(undefined)}
-      />,
+      <ActiveTabProvider activeTab="documents" setActiveTab={vi.fn()}>
+        <DocumentsModule
+          documentKindFilter="all"
+          documentSearchTerm=""
+          documentSelectionErrors={[]}
+          documentSelectionSummary=""
+          documentSort="recent"
+          documentUploadProgress={null}
+          isDocumentDropActive={false}
+          selectedDocumentFiles={[]}
+          totalDocumentCount={plannerFixture.documents.length}
+          visibleDocuments={plannerFixture.documents}
+          onClearSelectedDocumentFiles={vi.fn()}
+          onDeleteDocument={onDeleteDocument}
+          onDocumentDragLeave={vi.fn()}
+          onDocumentDragOver={vi.fn()}
+          onDocumentDrop={vi.fn()}
+          onDocumentInputChange={vi.fn()}
+          onDocumentKindFilterChange={vi.fn()}
+          onDocumentSearchTermChange={onDocumentSearchTermChange}
+          onDocumentSortChange={vi.fn()}
+          onOpenDocumentPreview={onOpenDocumentPreview}
+          onRemoveSelectedDocumentFile={vi.fn()}
+          onStartDocumentEdit={onStartDocumentEdit}
+          onSubmit={vi.fn().mockResolvedValue(undefined)}
+        />
+      </ActiveTabProvider>,
     );
 
     expect(screen.getByText('Datei hochladen')).toBeInTheDocument();

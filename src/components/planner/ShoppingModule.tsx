@@ -1,17 +1,18 @@
 import type { FormEvent } from 'react';
 import type { PlannerState } from '../../lib/planner-data';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 export function ShoppingModule({
-  activeTab,
   items,
   onAddShopping,
   onToggleShopping,
 }: {
-  activeTab: string;
   items: PlannerState['shoppingItems'];
   onAddShopping: (event: FormEvent<HTMLFormElement>) => Promise<void>;
   onToggleShopping: (id: string, checked: boolean) => Promise<void>;
 }) {
+  const { activeTab } = useActiveTab();
+
   return (
     <section className={activeTab === 'shopping' ? 'module is-visible' : 'module'}>
       <div className="module-layout">

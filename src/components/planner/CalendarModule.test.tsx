@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { buildCalendarMonth, getMonthStart } from '../../lib/calendar-view';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { plannerFixture } from './planner-test-fixtures';
 import { CalendarModule } from './CalendarModule';
 
@@ -16,19 +17,20 @@ describe('CalendarModule', () => {
     const onShowToday = vi.fn();
 
     render(
-      <CalendarModule
-        activeTab="calendar"
-        calendarMonth={calendarMonth}
-        calendarViewDate={calendarViewDate}
-        selectedCalendarDate="2026-04-09"
-        selectedDayEntries={plannerFixture.calendar}
-        unscheduledCalendarEntries={[]}
-        visibleMonthEventCount={1}
-        onAddCalendar={vi.fn().mockResolvedValue(undefined)}
-        onChangeCalendarMonth={onChangeCalendarMonth}
-        onSelectCalendarDate={onSelectCalendarDate}
-        onShowToday={onShowToday}
-      />,
+      <ActiveTabProvider activeTab="calendar" setActiveTab={vi.fn()}>
+        <CalendarModule
+          calendarMonth={calendarMonth}
+          calendarViewDate={calendarViewDate}
+          selectedCalendarDate="2026-04-09"
+          selectedDayEntries={plannerFixture.calendar}
+          unscheduledCalendarEntries={[]}
+          visibleMonthEventCount={1}
+          onAddCalendar={vi.fn().mockResolvedValue(undefined)}
+          onChangeCalendarMonth={onChangeCalendarMonth}
+          onSelectCalendarDate={onSelectCalendarDate}
+          onShowToday={onShowToday}
+        />
+      </ActiveTabProvider>,
     );
 
     expect(screen.getByRole('grid', { name: 'Monatskalender' })).toBeInTheDocument();

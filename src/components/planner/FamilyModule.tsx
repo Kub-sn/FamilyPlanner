@@ -3,6 +3,7 @@ import type { PendingFamilyDeletionState, PendingMemberDeletionState } from '../
 import type { PlannerState, UserRole } from '../../lib/planner-data';
 import type { AdminFamilyDirectoryFamily, SupabaseFamilyContext, SupabaseFamilyInvite, SupabaseProfile } from '../../lib/supabase';
 import { FamilyStatusBadges, getRoleChipClass, getRoleLabel, isFamilyOwnerMember } from './planner-shell-utils';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 function getMemberMonogram(name: string) {
   const parts = name
@@ -19,7 +20,6 @@ function getMemberMonogram(name: string) {
 }
 
 export function FamilyModule({
-  activeTab,
   adminFamilyDirectory,
   adminFamilyDirectoryBusy,
   adminFamilyDirectoryError,
@@ -44,7 +44,6 @@ export function FamilyModule({
   onSetPendingFamilyDeletion,
   onSetPendingMemberDeletion,
 }: {
-  activeTab: string;
   adminFamilyDirectory: AdminFamilyDirectoryFamily[];
   adminFamilyDirectoryBusy: boolean;
   adminFamilyDirectoryError: string | null;
@@ -69,6 +68,7 @@ export function FamilyModule({
   onSetPendingFamilyDeletion: (value: PendingFamilyDeletionState) => void;
   onSetPendingMemberDeletion: (value: PendingMemberDeletionState) => void;
 }) {
+  const { activeTab } = useActiveTab();
   const canViewFamily = Boolean(authFamily);
   const accountPanelClassName = 'panel list-panel account-management-panel family-account-panel';
   const invitePanel = (

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { plannerFixture } from './planner-test-fixtures';
 import { TasksModule } from './TasksModule';
 
@@ -11,13 +12,14 @@ describe('TasksModule', () => {
     const onToggleTask = vi.fn().mockResolvedValue(undefined);
 
     render(
-      <TasksModule
-        activeTab="tasks"
-        ownerDefaultValue="Alex"
-        tasks={plannerFixture.tasks}
-        onAddTask={onAddTask}
-        onToggleTask={onToggleTask}
-      />,
+      <ActiveTabProvider activeTab="tasks" setActiveTab={vi.fn()}>
+        <TasksModule
+          ownerDefaultValue="Alex"
+          tasks={plannerFixture.tasks}
+          onAddTask={onAddTask}
+          onToggleTask={onToggleTask}
+        />
+      </ActiveTabProvider>,
     );
 
     await user.type(screen.getByPlaceholderText('Aufgabe'), 'Muell rausbringen');

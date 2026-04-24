@@ -11,6 +11,7 @@ import type {
   CloudSyncSetterValue,
 } from '../../app/types';
 import type { SupabaseFamilyContext, SupabaseFamilyInvite } from '../../lib/supabase';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { useDocumentManager } from '../../hooks/useDocumentManager';
 import { useNoteManager } from '../../hooks/useNoteManager';
 import { useCalendarManager } from '../../hooks/useCalendarManager';
@@ -188,25 +189,23 @@ export default function PlannerShell({
   const authDriven = authState.stage === 'authenticated';
 
   return (
+    <ActiveTabProvider activeTab={activeTab} setActiveTab={setActiveTab}>
     <div className="app-shell">
       <PlannerSidebar
-        activeTab={activeTab}
         authDriven={authDriven}
         authState={authState}
         openTasks={openTasks}
         pendingShopping={pendingShopping}
         plannerState={plannerState}
-        setActiveTab={setActiveTab}
         visibleTabs={visibleTabs}
         onSelectMember={handleSelectMember}
         onSignOut={onSignOut}
       />
 
       <main className="content">
-        <PlannerTopbar activeTab={activeTab} setActiveTab={setActiveTab} visibleTabs={visibleTabs} />
+        <PlannerTopbar visibleTabs={visibleTabs} />
 
         <PlannerOverview
-          activeTab={activeTab}
           openTasks={openTasks}
           plannerState={plannerState}
           sortedCalendarEntries={calendar.sortedCalendarEntries}
@@ -214,14 +213,12 @@ export default function PlannerShell({
         />
 
         <ShoppingModule
-          activeTab={activeTab}
           items={plannerState.shoppingItems}
           onAddShopping={crud.handleAddShopping}
           onToggleShopping={crud.handleToggleShopping}
         />
 
         <TasksModule
-          activeTab={activeTab}
           ownerDefaultValue={authState.profile?.display_name ?? activeMember?.name ?? ''}
           tasks={plannerState.tasks}
           onAddTask={crud.handleAddTask}
@@ -229,7 +226,6 @@ export default function PlannerShell({
         />
 
         <NotesModule
-          activeTab={activeTab}
           notes={plannerState.notes}
           onAddNote={notes.handleAddNote}
           onDeleteNote={notes.handleDeleteNote}
@@ -278,7 +274,6 @@ export default function PlannerShell({
         ) : null}
 
         <CalendarModule
-          activeTab={activeTab}
           calendarMonth={calendar.calendarMonth}
           calendarViewDate={calendar.calendarViewDate}
           selectedCalendarDate={calendar.selectedCalendarDate}
@@ -292,14 +287,12 @@ export default function PlannerShell({
         />
 
         <MealsModule
-          activeTab={activeTab}
           meals={plannerState.meals}
           onAddMeal={crud.handleAddMeal}
           onToggleMealPrepared={crud.handleToggleMealPrepared}
         />
 
         <DocumentsModule
-          activeTab={activeTab}
           documentKindFilter={documents.documentKindFilter}
           documentSearchTerm={documents.documentSearchTerm}
           documentSelectionErrors={documents.documentSelectionErrors}
@@ -373,7 +366,6 @@ export default function PlannerShell({
         ) : null}
 
         <FamilyModule
-          activeTab={activeTab}
           adminFamilyDirectory={adminDir.adminFamilyDirectory}
           adminFamilyDirectoryBusy={adminDir.adminFamilyDirectoryBusy}
           adminFamilyDirectoryError={adminDir.adminFamilyDirectoryError}
@@ -520,5 +512,6 @@ export default function PlannerShell({
         />
       </main>
     </div>
+    </ActiveTabProvider>
   );
 }

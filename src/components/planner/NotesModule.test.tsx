@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { plannerFixture } from './planner-test-fixtures';
 import { NotesModule } from './NotesModule';
 
@@ -12,13 +13,14 @@ describe('NotesModule', () => {
     const onOpenNote = vi.fn();
 
     render(
-      <NotesModule
-        activeTab="notes"
-        notes={plannerFixture.notes}
-        onAddNote={onAddNote}
-        onDeleteNote={onDeleteNote}
-        onOpenNote={onOpenNote}
-      />,
+      <ActiveTabProvider activeTab="notes" setActiveTab={vi.fn()}>
+        <NotesModule
+          notes={plannerFixture.notes}
+          onAddNote={onAddNote}
+          onDeleteNote={onDeleteNote}
+          onOpenNote={onOpenNote}
+        />
+      </ActiveTabProvider>,
     );
 
     expect(document.querySelector('.notes-module-layout')).toBeInTheDocument();

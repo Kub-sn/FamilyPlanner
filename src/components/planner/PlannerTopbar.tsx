@@ -1,15 +1,13 @@
 import type { TabId } from '../../lib/planner-data';
 import { BrandHeading } from '../BrandHeading';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 export function PlannerTopbar({
-  activeTab,
-  setActiveTab,
   visibleTabs,
 }: {
-  activeTab: TabId;
-  setActiveTab: (tab: TabId) => void;
   visibleTabs: Array<{ id: TabId; label: string }>;
 }) {
+  const { activeTab, setActiveTab } = useActiveTab();
   return (
     <div className="mobile-topbar">
       <div className="mobile-topbar-brand">

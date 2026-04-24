@@ -9,11 +9,11 @@ import {
 } from '../../lib/calendar-view';
 import type { PlannerState } from '../../lib/planner-data';
 import { getCalendarMetaParts } from './planner-shell-utils';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 type CalendarMonth = ReturnType<typeof buildCalendarMonth>;
 
 export function CalendarModule({
-  activeTab,
   calendarMonth,
   calendarViewDate,
   selectedCalendarDate,
@@ -25,7 +25,6 @@ export function CalendarModule({
   onSelectCalendarDate,
   onShowToday,
 }: {
-  activeTab: string;
   calendarMonth: CalendarMonth;
   calendarViewDate: Date;
   selectedCalendarDate: string;
@@ -37,6 +36,7 @@ export function CalendarModule({
   onSelectCalendarDate: (dateKey: string) => void;
   onShowToday: () => void;
 }) {
+  const { activeTab } = useActiveTab();
   return (
     <section className={activeTab === 'calendar' ? 'module is-visible' : 'module'}>
       <div className="module-layout calendar-module-layout">

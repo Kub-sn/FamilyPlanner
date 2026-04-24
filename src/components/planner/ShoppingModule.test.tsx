@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { plannerFixture } from './planner-test-fixtures';
 import { ShoppingModule } from './ShoppingModule';
 
@@ -11,12 +12,13 @@ describe('ShoppingModule', () => {
     const onToggleShopping = vi.fn().mockResolvedValue(undefined);
 
     render(
-      <ShoppingModule
-        activeTab="shopping"
-        items={plannerFixture.shoppingItems}
-        onAddShopping={onAddShopping}
-        onToggleShopping={onToggleShopping}
-      />,
+      <ActiveTabProvider activeTab="shopping" setActiveTab={vi.fn()}>
+        <ShoppingModule
+          items={plannerFixture.shoppingItems}
+          onAddShopping={onAddShopping}
+          onToggleShopping={onToggleShopping}
+        />
+      </ActiveTabProvider>,
     );
 
     await user.type(screen.getByPlaceholderText('Artikel'), 'Brot');

@@ -1,19 +1,20 @@
 import type { PlannerState } from '../../lib/planner-data';
 import { formatCalendarEntrySchedule } from '../../lib/calendar-view';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 export function PlannerOverview({
-  activeTab,
   openTasks,
   plannerState,
   sortedCalendarEntries,
   onToggleTask,
 }: {
-  activeTab: string;
   openTasks: number;
   plannerState: PlannerState;
   sortedCalendarEntries: PlannerState['calendar'];
   onToggleTask: (taskId: string, done: boolean) => Promise<void>;
 }) {
+  const { activeTab } = useActiveTab();
+
   return (
     <section className={activeTab === 'overview' ? 'overview-stack is-visible' : 'overview-stack'}>
       <article className="panel overview-row-panel">

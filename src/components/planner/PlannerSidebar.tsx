@@ -2,30 +2,28 @@ import type { PlannerState, TabId } from '../../lib/planner-data';
 import type { AuthState } from '../../app/types';
 import { BrandHeading } from '../BrandHeading';
 import { AccountCard } from './AccountCard';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 export function PlannerSidebar({
-  activeTab,
   authDriven,
   authState,
   openTasks,
   pendingShopping,
   plannerState,
-  setActiveTab,
   onSelectMember,
   onSignOut,
   visibleTabs,
 }: {
-  activeTab: TabId;
   authDriven: boolean;
   authState: AuthState;
   openTasks: number;
   pendingShopping: number;
   plannerState: PlannerState;
-  setActiveTab: (tab: TabId) => void;
   onSelectMember: (memberId: string) => void;
   onSignOut: () => Promise<void>;
   visibleTabs: Array<{ id: TabId; label: string }>;
 }) {
+  const { activeTab, setActiveTab } = useActiveTab();
   return (
     <aside className="sidebar">
       <div className="sidebar-brand">

@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
+import { ActiveTabProvider } from '../../context/ActiveTabContext';
 import { PlannerTopbar } from './PlannerTopbar';
 
 describe('PlannerTopbar', () => {
@@ -9,14 +10,14 @@ describe('PlannerTopbar', () => {
     const setActiveTab = vi.fn();
 
     render(
-      <PlannerTopbar
-        activeTab="overview"
-        setActiveTab={setActiveTab}
-        visibleTabs={[
-          { id: 'overview', label: 'Übersicht' },
-          { id: 'shopping', label: 'Einkauf' },
-        ]}
-      />,
+      <ActiveTabProvider activeTab="overview" setActiveTab={setActiveTab}>
+        <PlannerTopbar
+          visibleTabs={[
+            { id: 'overview', label: 'Übersicht' },
+            { id: 'shopping', label: 'Einkauf' },
+          ]}
+        />
+      </ActiveTabProvider>,
     );
 
     await user.selectOptions(screen.getByLabelText('Bereich wechseln'), 'shopping');

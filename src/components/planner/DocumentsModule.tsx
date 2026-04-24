@@ -10,9 +10,9 @@ import {
   getDocumentMetaParts,
   isPreviewableImage,
 } from './planner-shell-utils';
+import { useActiveTab } from '../../context/ActiveTabContext';
 
 export function DocumentsModule({
-  activeTab,
   documentKindFilter,
   documentSearchTerm,
   documentSelectionErrors,
@@ -37,7 +37,6 @@ export function DocumentsModule({
   onDeleteDocument,
   onSubmit,
 }: {
-  activeTab: string;
   documentKindFilter: DocumentFilterKind;
   documentSearchTerm: string;
   documentSelectionErrors: string[];
@@ -62,6 +61,7 @@ export function DocumentsModule({
   onDeleteDocument: (document: DocumentItem) => Promise<void>;
   onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
+  const { activeTab } = useActiveTab();
   return (
     <section className={activeTab === 'documents' ? 'module is-visible' : 'module'}>
       {documentSelectionErrors.length > 0 ? (
