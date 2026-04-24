@@ -607,7 +607,7 @@ test('keeps the document edit dialog free of horizontal scrolling for long names
     page.getByText('Datei-Uploads behalten ihren Storage-Link. Nur die Metadaten werden geändert.'),
   ).toHaveCount(0);
 
-  const dialogHasHorizontalOverflow = await page.locator('.modal-card').evaluate((element) => {
+  const dialogHasHorizontalOverflow = await page.locator('section[role="dialog"]').evaluate((element) => {
     return element.scrollWidth > element.clientWidth;
   });
 

@@ -22,7 +22,7 @@ export function NoteDialog({
       eyebrow="Notiz"
       className="note-dialog-card"
       actions={note.isEditing ? (
-        <div key="editing-actions" className="modal-action-group">
+        <div key="editing-actions" className="flex flex-wrap gap-3">
           <button type="button" className="secondary-action" onClick={onClose}>
             Abbrechen
           </button>
@@ -31,7 +31,7 @@ export function NoteDialog({
           </button>
         </div>
       ) : (
-        <div key="view-actions" className="modal-action-group">
+        <div key="view-actions" className="flex flex-wrap gap-3">
           <button type="button" className="secondary-action" onClick={onClose}>
             Abbrechen
           </button>
@@ -42,7 +42,7 @@ export function NoteDialog({
       )}
     >
       {note.isEditing ? (
-        <form id="note-edit-form" className="modal-form" onSubmit={(event) => void onSave(event)}>
+        <form id="note-edit-form" className="grid gap-[0.8rem] min-w-0" onSubmit={(event) => void onSave(event)}>
             <input
               aria-label="Notiztitel bearbeiten"
               value={note.title}
@@ -57,7 +57,7 @@ export function NoteDialog({
         </form>
       ) : (
         <div className="note-dialog-body">
-          <p className="modal-note note-dialog-copy">{note.text}</p>
+          <p className="m-0 p-[0.9rem_1rem] rounded-[18px] bg-[rgba(24,52,47,0.08)] text-[rgba(24,52,47,0.78)] leading-[1.5] note-dialog-copy">{note.text}</p>
         </div>
       )}
     </ModalDialog>

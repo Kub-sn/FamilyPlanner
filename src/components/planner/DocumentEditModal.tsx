@@ -19,7 +19,7 @@ export function DocumentEditModal({
       title={documentEditState.name}
       eyebrow="Dokument bearbeiten"
       actions={(
-        <div className="modal-action-group">
+        <div className="flex flex-wrap gap-3">
           <button type="button" className="secondary-action" onClick={onClose}>
             Abbrechen
           </button>
@@ -29,7 +29,7 @@ export function DocumentEditModal({
         </div>
       )}
     >
-      <form id="document-edit-form" className="modal-form" onSubmit={(event) => void onSave(event)}>
+      <form id="document-edit-form" className="grid gap-[0.8rem] min-w-0" onSubmit={(event) => void onSave(event)}>
           <input
             aria-label="Dokumentname bearbeiten"
             value={documentEditState.name}

@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
 
 @theme {
   --color-earth-50: #fffdf9;
@@ -1656,111 +1656,6 @@ button {
   padding: 0.5rem 0 !important;
 }
 
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  display: grid;
-  place-items: center;
-  padding: 1.5rem;
-  background: rgba(24, 52, 47, 0.5);
-  backdrop-filter: blur(10px);
-}
-
-.modal-card {
-  width: min(560px, 100%);
-  max-height: min(88vh, 1000px);
-  min-width: 0;
-  overflow: auto;
-  display: grid;
-  gap: 1rem;
-  padding: 1.25rem;
-  border-radius: 28px;
-  background: rgba(255, 250, 244, 0.97);
-  border: 1px solid rgba(24, 52, 47, 0.1);
-  box-shadow: 0 28px 70px rgba(24, 52, 47, 0.22);
-}
-
-.modal-card-wide {
-  width: min(980px, 100%);
-}
-
-.modal-form {
-  display: grid;
-  gap: 0.8rem;
-  min-width: 0;
-}
-
-.modal-form > * {
-  min-width: 0;
-}
-
-.modal-form input {
-  width: 100%;
-  min-width: 0;
-  padding: 0.9rem 1rem;
-  border-radius: 18px;
-  border: 1px solid rgba(24, 52, 47, 0.14);
-  background: rgba(255, 255, 255, 0.92);
-}
-
-.modal-form textarea {
-  width: 100%;
-  min-width: 0;
-  min-height: 14rem;
-  padding: 0.9rem 1rem;
-  border-radius: 18px;
-  border: 1px solid rgba(24, 52, 47, 0.14);
-  background: rgba(255, 255, 255, 0.92);
-  resize: vertical;
-}
-
-.modal-card .panel-heading {
-  display: block;
-  min-width: 0;
-}
-
-.modal-card .panel-heading > div {
-  width: auto;
-  min-width: 0;
-}
-
-.modal-card h3 {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
-.modal-note {
-  margin: 0;
-  padding: 0.9rem 1rem;
-  border-radius: 18px;
-  background: rgba(24, 52, 47, 0.08);
-  color: rgba(24, 52, 47, 0.78);
-  line-height: 1.5;
-}
-
-.danger-note {
-  background: rgba(165, 71, 34, 0.12);
-  color: #8f3415;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.modal-action-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-}
-
-.modal-link-button {
-  text-decoration: none;
-}
-
 .document-preview-modal-body {
   min-height: 24rem;
   display: grid;
@@ -2294,8 +2189,7 @@ body::after {
 .panel h3,
 .panel h4,
 .account-card strong,
-.auth-copy h1,
-.modal-card h3 {
+.auth-copy h1 {
   font-family: 'Fraunces', Georgia, serif;
   letter-spacing: -0.045em;
 }
@@ -2629,8 +2523,7 @@ body::after {
 .form-panel textarea,
 .form-panel select,
 .document-filter-grid input,
-.document-filter-grid select,
-.modal-form input {
+.document-filter-grid select {
   border-radius: 16px;
   border: 1px solid rgba(35, 63, 54, 0.12);
   background: rgba(255, 255, 255, 0.92);
@@ -2645,8 +2538,7 @@ body::after {
 }
 
 .secondary-action,
-.ghost-toggle,
-.modal-link-button {
+.ghost-toggle {
   border: 1px solid rgba(35, 63, 54, 0.08);
   background: rgba(35, 63, 54, 0.06);
 }
@@ -2793,8 +2685,7 @@ select,
 .auth-submit,
 .ghost-toggle,
 .form-panel button,
-.document-link-button,
-.modal-link-button {
+.document-link-button {
   transition:
     transform 180ms ease,
     box-shadow 180ms ease,
@@ -2814,8 +2705,7 @@ select:focus-visible,
 .ghost-toggle:focus-visible,
 .auth-submit:focus-visible,
 .form-panel button:focus-visible,
-.document-link-button:focus-visible,
-.modal-link-button:focus-visible {
+.document-link-button:focus-visible {
   outline: 2px solid rgba(185, 95, 44, 0.8);
   outline-offset: 3px;
 }
@@ -2825,9 +2715,7 @@ select:focus-visible,
 .form-panel textarea:focus,
 .form-panel select:focus,
 .document-filter-grid input:focus,
-.document-filter-grid select:focus,
-.modal-form input:focus,
-.modal-form textarea:focus {
+.document-filter-grid select:focus {
   border-color: rgba(58, 101, 87, 0.45);
   box-shadow:
     0 0 0 4px rgba(58, 101, 87, 0.08),
@@ -2842,8 +2730,7 @@ select:focus-visible,
 }
 
 .secondary-action:hover,
-.ghost-toggle:hover,
-.modal-link-button:hover {
+.ghost-toggle:hover {
   transform: translateY(-1px);
   border-color: rgba(35, 63, 54, 0.18);
   box-shadow: none;
@@ -2939,8 +2826,7 @@ select:focus-visible,
 }
 
 .planner-feedback,
-.module-feedback,
-.modal-note {
+.module-feedback {
   box-shadow: 0 10px 24px rgba(70, 54, 31, 0.08);
 }
 
@@ -3025,10 +2911,6 @@ select:focus-visible,
   border-color: rgba(185, 95, 44, 0.42);
   background: rgba(255, 247, 239, 0.72);
   transform: translateY(-1px);
-}
-
-.modal-card {
-  box-shadow: 0 34px 90px rgba(35, 27, 17, 0.24);
 }
 
 .planner-footer-status small {
@@ -3151,8 +3033,7 @@ body::after,
 .selected-file-summary,
 .upload-progress-card,
 .calendar-day-panel,
-.calendar-unscheduled-panel,
-.modal-card {
+.calendar-unscheduled-panel {
   background: var(--paper-strong);
   border-color: var(--line-soft);
   backdrop-filter: none;
@@ -3206,8 +3087,7 @@ body::after,
 .calendar-day-cell,
 .selected-file-card,
 .selected-file-summary,
-.upload-progress-card,
-.modal-card {
+.upload-progress-card {
   border-radius: 18px;
   box-shadow: var(--shadow-soft);
 }
@@ -3275,12 +3155,10 @@ body::after,
 .chip,
 .secondary-action,
 .ghost-toggle,
-.modal-link-button,
 .auth-message,
 .document-icon,
 .calendar-event-pill,
 .calendar-more-events,
-.modal-note,
 .file-input-label,
 .document-preview-modal-body {
   background: #f6eee5;
@@ -3323,8 +3201,7 @@ body::after,
 .auth-card,
 .auth-copy,
 .auth-panel,
-.panel,
-.modal-card {
+.panel {
   border-radius: 20px;
 }
 
@@ -3337,76 +3214,8 @@ body::after,
 .form-panel select,
 .document-filter-grid input,
 .document-filter-grid select,
-.modal-form input,
 .auth-panel-editorial input {
   border-radius: 12px;
-}
-
-.password-field {
-  position: relative;
-}
-
-.auth-autofill-decoys {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.auth-autofill-decoys input {
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.password-field input {
-  padding-right: 3.25rem;
-}
-
-.password-toggle {
-  position: absolute;
-  top: 50%;
-  right: 0.55rem;
-  width: 2.2rem;
-  height: 2.2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  background: transparent;
-  color: rgba(29, 36, 31, 0.62);
-  transform: translateY(-50%);
-  transition:
-    background-color 140ms ease,
-    color 140ms ease,
-    border-color 140ms ease;
-}
-
-.password-toggle svg {
-  width: 1rem;
-  height: 1rem;
-}
-
-.password-toggle:hover {
-  background: rgba(88, 104, 87, 0.1);
-  border-color: rgba(88, 104, 87, 0.16);
-  color: var(--ink-900);
-}
-
-.password-field:focus-within .password-toggle {
-  color: var(--ink-900);
-}
-
-.password-toggle:focus-visible {
-  outline: 2px solid rgba(88, 104, 87, 0.35);
-  outline-offset: 1px;
-  border-color: rgba(88, 104, 87, 0.2);
-  color: var(--ink-900);
 }
 
 .form-panel button,
@@ -3415,7 +3224,6 @@ body::after,
 .secondary-action,
 .ghost-toggle,
 .document-link-button,
-.modal-link-button,
 .mode-button {
   border-radius: 12px;
 }
@@ -3523,7 +3331,6 @@ body::after,
 .planner-footer-status small,
 .document-meta-line,
 .file-input-label small,
-.modal-note,
 .calendar-form-hint {
   color: var(--ink-600);
 }
@@ -3548,7 +3355,6 @@ body::after,
 
 .secondary-action,
 .ghost-toggle,
-.modal-link-button,
 .auth-message,
 .selected-file-card,
 .selected-file-summary,
@@ -3572,7 +3378,6 @@ body::after,
 
 .secondary-action:hover,
 .ghost-toggle:hover,
-.modal-link-button:hover,
 .mode-button:not(.active):hover {
   background: #e7d5c2;
   border-color: rgba(88, 104, 87, 0.24);
@@ -3633,8 +3438,7 @@ body::after,
 .form-panel textarea,
 .form-panel select,
 .document-filter-grid input,
-.document-filter-grid select,
-.modal-form input {
+.document-filter-grid select {
   padding: 0.72rem 0.8rem;
   border-radius: 10px;
 }
@@ -3643,7 +3447,6 @@ body::after,
 .secondary-action,
 .ghost-toggle,
 .document-link-button,
-.modal-link-button,
 .mode-button,
 .reset-button,
 .auth-submit {
@@ -3912,8 +3715,7 @@ body::after,
 
   .panel,
   .status-card,
-  .account-card,
-  .modal-card {
+  .account-card {
     border-radius: 14px;
   }
 
@@ -4116,8 +3918,7 @@ body::after,
   .form-panel textarea,
   .form-panel select,
   .document-filter-grid input,
-  .document-filter-grid select,
-  .modal-form input {
+  .document-filter-grid select {
     font-size: 16px;
   }
 

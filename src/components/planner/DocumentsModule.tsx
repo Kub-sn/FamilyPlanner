@@ -262,7 +262,7 @@ export function DocumentsModule({
             </>
           )}
         >
-          <p className="modal-note danger-note">
+          <p className="m-0 py-[0.9rem] px-4 rounded-[18px] bg-[rgba(165,71,34,0.12)] text-[#8f3415] leading-relaxed">
             Dokument {documents.pendingDocumentDeletion.name} löschen?
           </p>
         </ConfirmationDialog>

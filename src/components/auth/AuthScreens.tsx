@@ -55,7 +55,7 @@ function PasswordField({
   const [isVisible, setIsVisible] = useState(false);
 
   return (
-    <div className="password-field">
+    <div className="group relative">
       <input
         name={inputName}
         type={isVisible ? 'text' : 'password'}
@@ -65,16 +65,17 @@ function PasswordField({
         data-auth-field={field}
         data-lpignore="true"
         data-1p-ignore="true"
+        className="pr-[3.25rem]"
         onChange={(event) => onChange(event.currentTarget.value)}
       />
       <button
         type="button"
-        className="password-toggle"
+        className="absolute top-1/2 right-[0.55rem] -translate-y-1/2 inline-flex items-center justify-center w-[2.2rem] h-[2.2rem] rounded-full border border-transparent bg-transparent text-[rgba(29,36,31,0.62)] transition-[background-color,color,border-color] duration-[140ms] ease-in-out hover:bg-[rgba(88,104,87,0.1)] hover:border-[rgba(88,104,87,0.16)] hover:text-forest-950 group-focus-within:text-forest-950 focus-visible:outline-2 focus-visible:outline-[rgba(88,104,87,0.35)] focus-visible:outline-offset-1 focus-visible:border-[rgba(88,104,87,0.2)] focus-visible:text-forest-950"
         aria-label={isVisible ? `${placeholder} verbergen` : `${placeholder} anzeigen`}
         aria-pressed={isVisible}
         onClick={() => setIsVisible((current) => !current)}
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" className="w-4 h-4">
           <path
             d="M1.5 12s3.8-6 10.5-6 10.5 6 10.5 6-3.8 6-10.5 6S1.5 12 1.5 12Z"
             fill="none"
@@ -142,9 +143,9 @@ export function AuthScreen({
           </div>
 
           <form className="auth-panel auth-panel-editorial" autoComplete={authFormAutocomplete} onSubmit={(event) => void onSubmit(event)}>
-            <div className="auth-autofill-decoys" aria-hidden="true">
-              <input tabIndex={-1} autoComplete="username" defaultValue="" />
-              <input tabIndex={-1} type="password" autoComplete="current-password" defaultValue="" />
+            <div className="absolute w-px h-px overflow-hidden opacity-0 pointer-events-none" aria-hidden="true">
+              <input tabIndex={-1} autoComplete="username" defaultValue="" className="w-px h-px m-0 p-0 border-0" />
+              <input tabIndex={-1} type="password" autoComplete="current-password" defaultValue="" className="w-px h-px m-0 p-0 border-0" />
             </div>
 
             {mode === 'sign-in' || mode === 'sign-up' ? (

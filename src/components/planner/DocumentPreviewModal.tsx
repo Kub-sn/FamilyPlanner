@@ -13,13 +13,13 @@ export function DocumentPreviewModal({
       id="document-preview-title"
       title={documentPreviewState.name}
       eyebrow="Dokument-Vorschau"
-      className="modal-card-wide"
+      className="w-[min(980px,100%)]"
       actions={(
         <>
           <button type="button" className="secondary-action" onClick={onClose}>
             Abbrechen
           </button>
-          <a className="secondary-action modal-link-button" href={documentPreviewState.url} target="_blank" rel="noreferrer">
+          <a className="secondary-action no-underline" href={documentPreviewState.url} target="_blank" rel="noreferrer">
             In neuem Tab öffnen
           </a>
         </>

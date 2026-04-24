@@ -422,7 +422,7 @@ describe('App auth flow', () => {
 
     expect(emailInput).toHaveValue('');
     expect(passwordInput).toHaveValue('');
-    expect(container.querySelector('.auth-autofill-decoys')).not.toBeNull();
+    expect(container.querySelector('div[aria-hidden="true"] input[autocomplete="username"]')).not.toBeNull();
     expect(emailInput).toHaveAttribute('name', 'email');
     expect(emailInput).toHaveAttribute('autocomplete', 'username');
     expect(passwordInput).toHaveAttribute('name', 'frey-secret-key');

@@ -256,7 +256,7 @@ export default function PlannerShell({
               </>
             )}
           >
-            <p className="modal-note danger-note">
+            <p className="m-0 py-[0.9rem] px-4 rounded-[18px] bg-[rgba(165,71,34,0.12)] text-[#8f3415] leading-relaxed">
               Notiz {notes.pendingNoteDeletion.title} löschen?
             </p>
           </ConfirmationDialog>
@@ -339,7 +339,7 @@ export default function PlannerShell({
               </>
             )}
           >
-            <p className="modal-note danger-note">
+            <p className="m-0 py-[0.9rem] px-4 rounded-[18px] bg-[rgba(165,71,34,0.12)] text-[#8f3415] leading-relaxed">
               Dein Konto wird dauerhaft gelöscht. Wenn dieses Konto eine Familie besitzt, können auch zugehörige Familiendaten entfernt werden.
             </p>
           </ConfirmationDialog>
@@ -370,7 +370,7 @@ export default function PlannerShell({
               </>
             )}
           >
-            <p className="modal-note danger-note">
+            <p className="m-0 py-[0.9rem] px-4 rounded-[18px] bg-[rgba(165,71,34,0.12)] text-[#8f3415] leading-relaxed">
               {deletions.pendingMemberDeletion.memberName} wird aus {deletions.pendingMemberDeletion.familyName} entfernt und das zugehörige Konto wird dauerhaft gelöscht.
             </p>
           </ConfirmationDialog>
@@ -401,11 +401,11 @@ export default function PlannerShell({
               </>
             )}
           >
-            <p className="modal-note danger-note">
+            <p className="m-0 py-[0.9rem] px-4 rounded-[18px] bg-[rgba(165,71,34,0.12)] text-[#8f3415] leading-relaxed">
               {deletions.pendingFamilyDeletion.familyName} mit {deletions.pendingFamilyDeletion.memberCount} Mitgliedern, Einladungen und Familiendaten wird dauerhaft gelöscht. Bereits vorhandene Benutzerkonten bleiben bestehen.
             </p>
             {deletions.pendingFamilyDeletion.isCurrentFamily ? (
-              <p className="modal-note danger-note">
+              <p className="m-0 py-[0.9rem] px-4 rounded-[18px] bg-[rgba(165,71,34,0.12)] text-[#8f3415] leading-relaxed">
                 Weil dies deine aktuell geöffnete Familie ist, wirst du danach aus der App abgemeldet.
               </p>
             ) : null}
