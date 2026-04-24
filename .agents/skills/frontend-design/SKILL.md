@@ -1,6 +1,6 @@
 ---
 name: frontend-design
-description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.
+description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics.
 license: Complete terms in LICENSE.txt
 ---
 
@@ -21,8 +21,7 @@ Before coding, understand the context and commit to a BOLD aesthetic direction:
 Then implement working code (HTML/CSS/JS, React, Vue, etc.) that is:
 - Production-grade and functional
 - Visually striking and memorable
-- Cohesive with a clear aesthetic point-of-vi1212
-
+- Cohesive with a clear aesthetic point-of-view
 - Meticulously refined in every detail
 
 ## Frontend Aesthetics Guidelines
