@@ -53,15 +53,11 @@
 :root {
   --paper-base: #c9d8c7;
   --paper-strong: #fbf4ec;
-  --paper-muted: #efe6da;
   --ink-900: #1d241f;
   --ink-800: #2a342d;
   --ink-700: #394239;
   --ink-600: #4c564d;
-  --ink-500: #6d7467;
-  --forest-700: #586857;
   --forest-500: #849481;
-  --clay-500: #b95f2c;
   --clay-700: #8e3f16;
   --line-soft: rgba(88, 104, 87, 0.16);
   --shadow-soft: 0 8px 18px rgba(56, 46, 37, 0.05);
@@ -2902,10 +2898,6 @@ body,
   .auth-shell {
     place-items: start stretch;
     padding: 0.8rem;
-  }
-
-  .auth-shell-loading {
-    place-items: center;
   }
 
   .auth-card,
