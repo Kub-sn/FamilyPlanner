@@ -412,7 +412,7 @@ describe('App', () => {
 
     expect(documentCard).not.toBeNull();
     expect(
-      (documentCard as HTMLLIElement).querySelector('.document-meta-line')?.textContent?.trim(),
+      (documentCard as HTMLLIElement).querySelector('small')?.textContent?.trim(),
     ).toBe('PDF');
     expect(within(documentCard as HTMLLIElement).queryByText('Dokument · PDF')).not.toBeInTheDocument();
   });
@@ -432,7 +432,7 @@ describe('App', () => {
     expect(documentCard).not.toBeNull();
 
     const actionLabels = Array.from(
-      (documentCard as HTMLLIElement).querySelectorAll('.document-actions a, .document-actions button'),
+      (documentCard as HTMLLIElement).querySelectorAll('a[href], button'),
     ).map((element) => element.textContent?.trim());
 
     expect(actionLabels).toEqual(['Datei öffnen', 'Vorschau', 'Bearbeiten', 'Löschen']);

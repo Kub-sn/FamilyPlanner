@@ -1255,34 +1255,6 @@ button {
   transition: width 180ms ease;
 }
 
-.document-entry-head {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-}
-
-.document-entry-copy {
-  display: grid;
-  gap: 0.2rem;
-}
-
-.document-entry-copy strong,
-.document-meta-line {
-  display: block;
-}
-
-.document-meta-line {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0;
-  align-items: center;
-  color: rgba(24, 52, 47, 0.68);
-}
-
-.document-meta-separator {
-  color: rgba(24, 52, 47, 0.42);
-}
-
 .document-icon,
 .document-preview {
   width: 3rem;
@@ -1307,48 +1279,9 @@ button {
   background: rgba(255, 255, 255, 0.92);
 }
 
-.document-actions {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  justify-items: stretch;
-  align-items: stretch;
-  gap: 0.6rem;
-}
-
-.document-actions .chip {
-  margin-left: auto;
-}
-
-.document-action-button,
 .document-delete-button {
   width: 100%;
-}
-
-.document-open-button {
-  order: 1;
-}
-
-.document-preview-button {
-  order: 2;
-}
-
-.document-edit-button {
-  order: 3;
-}
-
-.document-delete-button {
   order: 4;
-}
-
-.document-link-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-}
-
-.document-delete-button {
   padding: 0.65rem 0.9rem;
 }
 
@@ -1852,31 +1785,6 @@ small {
   .form-panel button,
   .reset-button {
     width: 100%;
-  }
-
-  .document-actions {
-    width: 100%;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-items: stretch;
-  }
-
-  .document-actions .chip {
-    grid-column: 1 / -1;
-    justify-self: flex-start;
-    margin-left: 0;
-  }
-
-  .document-open-button {
-    grid-column: 1;
-  }
-
-  .document-preview-button {
-    grid-column: 2;
-  }
-
-  .document-edit-button {
-    grid-column: 1;
   }
 
   .document-delete-button {
@@ -2535,14 +2443,9 @@ body,
   background: #fbf4ec;
 }
 
-.document-meta-line,
 .file-input-label small,
 .calendar-form-hint {
   color: var(--ink-600);
-}
-
-.document-meta-separator {
-  color: rgba(29, 36, 31, 0.62);
 }
 
 .chip {

@@ -156,7 +156,7 @@ export function DocumentsModule({
               documents.visibleDocuments.map((document) => (
                 <li key={document.id}>
                   <div>
-                    <div className="document-entry-head">
+                    <div className="flex items-center gap-[0.9rem]">
                       {isPreviewableImage(document) ? (
                         <img className="document-preview" src={document.url} alt={`Vorschau für ${document.name}`} />
                       ) : (
@@ -164,12 +164,12 @@ export function DocumentsModule({
                           {getDocumentIcon(document)}
                         </span>
                       )}
-                      <div className="document-entry-copy">
-                        <strong>{document.name}</strong>
-                        <small className="document-meta-line">
+                      <div className="grid gap-[0.2rem]">
+                        <strong className="block">{document.name}</strong>
+                        <small className="inline-flex flex-wrap gap-0 items-center text-[rgba(24,52,47,0.68)] max-[560px]:text-[var(--ink-600)]">
                           {getDocumentMetaParts(document).map((part, index) => (
-                            <span key={part.key} className={`document-meta-part document-meta-part-${part.tone}`}>
-                              {index > 0 ? <span className="document-meta-separator"> · </span> : null}
+                            <span key={part.key}>
+                              {index > 0 ? <span className="text-[rgba(24,52,47,0.42)] max-[560px]:text-[rgba(29,36,31,0.62)]"> · </span> : null}
                               <span>{part.value}</span>
                             </span>
                           ))}
@@ -177,16 +177,16 @@ export function DocumentsModule({
                       </div>
                     </div>
                   </div>
-                  <div className="document-actions">
+                  <div className="w-full grid grid-cols-[repeat(2,minmax(0,1fr))] justify-items-stretch items-stretch gap-[0.6rem]">
                     {document.url ? (
-                      <a className="auth-submit document-action-button document-link-button document-open-button" href={document.url} target="_blank" rel="noreferrer">
+                      <a className="auth-submit w-full document-link-button inline-flex items-center justify-center no-underline order-1 max-[560px]:[grid-column:1]" href={document.url} target="_blank" rel="noreferrer">
                         Datei öffnen
                       </a>
                     ) : null}
                     {canPreviewDocument(document) && document.url ? (
                       <button
                         type="button"
-                        className="auth-submit document-action-button document-preview-button"
+                        className="auth-submit w-full order-2 max-[560px]:[grid-column:2]"
                         aria-label={`Dokument ${document.name} in Vorschau öffnen`}
                         onClick={() => documents.handleOpenDocumentPreview(document)}
                       >
@@ -195,7 +195,7 @@ export function DocumentsModule({
                     ) : null}
                     <button
                       type="button"
-                      className="auth-submit document-action-button document-edit-button"
+                      className="auth-submit w-full order-3 max-[560px]:[grid-column:1]"
                       aria-label={`Dokument ${document.name} bearbeiten`}
                       onClick={() => documents.handleStartDocumentEdit(document)}
                     >
@@ -203,7 +203,7 @@ export function DocumentsModule({
                     </button>
                     <button
                       type="button"
-                      className="secondary-action document-delete-button"
+                      className="secondary-action document-delete-button w-full"
                       aria-label={`Dokument ${document.name} löschen`}
                       onClick={() => void documents.handleDeleteDocument(document)}
                     >
