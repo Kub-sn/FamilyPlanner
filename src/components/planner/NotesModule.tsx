@@ -26,9 +26,9 @@ export function NotesModule({
           <button type="submit">Notiz speichern</button>
         </form>
         <article className="panel masonry-panel">
-          <div className="notes-grid">
+          <div className="columns-2 gap-x-[1.15rem] max-[720px]:columns-1">
             {notes.length > 0 ? notes.map((note) => (
-              <article key={note.id} className="note-card">
+              <article key={note.id} className="note-card break-inside-avoid relative grid mb-4 p-0 w-full max-w-full max-h-[15rem] overflow-hidden rounded-[24px] bg-[rgba(255,248,239,0.92)]">
                 <button
                   type="button"
                   className="secondary-action danger-action note-delete-button"
@@ -39,12 +39,12 @@ export function NotesModule({
                 </button>
                 <button
                   type="button"
-                  className="note-card-button note-open-button"
+                  className="appearance-none grid gap-3 w-full p-4 border-none bg-transparent text-left cursor-pointer pt-[1.2rem] pr-[4.3rem] max-[560px]:pt-[1.35rem] max-[560px]:pr-[4.75rem]"
                   onClick={() => onOpenNote(note.id)}
                   aria-label={`Notiz ${note.title} öffnen`}
                 >
-                  <h4>{note.title}</h4>
-                  <p>{note.text}</p>
+                  <h4 className="m-0 pt-0 pr-0 [overflow-wrap:anywhere] break-words hyphens-auto line-clamp-2">{note.title}</h4>
+                  <p className="m-0 leading-[1.6] [overflow-wrap:anywhere] break-words hyphens-auto line-clamp-5">{note.text}</p>
                 </button>
               </article>
             )) : null}
