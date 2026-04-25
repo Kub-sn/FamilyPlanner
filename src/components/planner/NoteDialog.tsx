@@ -20,7 +20,7 @@ export function NoteDialog({
       id="note-dialog-title"
       title={note.title}
       eyebrow="Notiz"
-      className="note-dialog-card"
+      className="w-[min(760px,100%)]"
       actions={note.isEditing ? (
         <div key="editing-actions" className="flex flex-wrap gap-3">
           <button type="button" className="secondary-action" onClick={onClose}>
@@ -56,8 +56,8 @@ export function NoteDialog({
             />
         </form>
       ) : (
-        <div className="note-dialog-body">
-          <p className="m-0 p-[0.9rem_1rem] rounded-[18px] bg-[rgba(24,52,47,0.08)] text-[rgba(24,52,47,0.78)] leading-[1.5] note-dialog-copy">{note.text}</p>
+        <div className="max-h-[min(60vh,38rem)] overflow-auto">
+          <p className="m-0 p-[0.9rem_1rem] rounded-[18px] bg-[rgba(24,52,47,0.08)] text-[rgba(24,52,47,0.78)] leading-[1.5] [overflow-wrap:anywhere] break-words hyphens-auto whitespace-pre-wrap">{note.text}</p>
         </div>
       )}
     </ModalDialog>

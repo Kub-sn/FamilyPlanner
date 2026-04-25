@@ -25,16 +25,16 @@ export function DocumentPreviewModal({
         </>
       )}
     >
-      <div className="document-preview-modal-body">
+      <div className="min-h-[24rem] grid place-items-center rounded-[24px] overflow-hidden bg-[linear-gradient(135deg,rgba(24,52,47,0.08),rgba(244,111,58,0.12))] max-[560px]:bg-[#a6b29f]">
         {documentPreviewState.kind === 'image' ? (
           <img
-            className="document-preview-full"
+            className="w-full min-h-[70vh] border-none bg-white object-contain"
             src={documentPreviewState.url}
             alt={`Vorschau für ${documentPreviewState.name}`}
           />
         ) : (
           <iframe
-            className="document-preview-frame"
+            className="w-full min-h-[70vh] border-none bg-white"
             src={documentPreviewState.url}
             title={`PDF-Vorschau für ${documentPreviewState.name}`}
           />

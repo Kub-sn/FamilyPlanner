@@ -268,26 +268,6 @@ button {
   color: #8f3415;
 }
 
-.module-feedback {
-  margin: 0 0 1rem;
-}
-
-.module-feedback-compact {
-  display: grid;
-  gap: 0.18rem;
-}
-
-.module-feedback-compact strong,
-.document-error-preview {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.document-error-preview {
-  margin: 0;
-}
-
 .app-shell {
   display: grid;
   grid-template-columns: minmax(280px, 320px) 1fr;
@@ -1477,37 +1457,6 @@ button {
   transform: translateY(-2px);
 }
 
-.document-empty-state {
-  min-height: auto;
-  align-items: center;
-  background: none !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0.5rem 0 !important;
-}
-
-.document-preview-modal-body {
-  min-height: 24rem;
-  display: grid;
-  place-items: center;
-  border-radius: 24px;
-  overflow: hidden;
-  background:
-    linear-gradient(135deg, rgba(24, 52, 47, 0.08), rgba(244, 111, 58, 0.12));
-}
-
-.document-preview-full,
-.document-preview-frame {
-  width: 100%;
-  min-height: 70vh;
-  border: none;
-  background: #fff;
-}
-
-.document-preview-full {
-  object-fit: contain;
-}
-
 .calendar-panel {
   padding: 1.25rem;
 }
@@ -2080,22 +2029,6 @@ small {
   border: 1px solid;
 }
 
-.note-dialog-card {
-  width: min(760px, 100%);
-}
-
-.note-dialog-body {
-  max-height: min(60vh, 38rem);
-  overflow: auto;
-}
-
-.note-dialog-copy {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  hyphens: auto;
-  white-space: pre-wrap;
-}
-
 @media (max-width: 1180px) {
   .sidebar {
     min-height: auto;
@@ -2253,13 +2186,8 @@ select:focus-visible,
   font-size: 1.3rem;
 }
 
-.module-feedback {
-  box-shadow: 0 10px 24px rgba(70, 54, 31, 0.08);
-}
-
 .overview-empty-state,
-.calendar-empty-state,
-.document-empty-state {
+.calendar-empty-state {
   min-height: auto;
   padding: 0.5rem 0;
   align-content: center;
@@ -2464,8 +2392,7 @@ body,
 .document-icon,
 .calendar-event-pill,
 .calendar-more-events,
-.file-input-label,
-.document-preview-modal-body {
+.file-input-label {
   background: #f6eee5;
   border-color: rgba(97, 105, 95, 0.12);
   color: var(--ink-800);
@@ -2485,7 +2412,6 @@ body,
   background: #e7eee5;
 }
 
-.document-preview-modal-body,
 .upload-progress-bar span,
 *::-webkit-scrollbar-thumb {
   background: #a6b29f;

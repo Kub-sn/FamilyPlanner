@@ -39,12 +39,12 @@ export function DocumentsModule({
     <section className={activeTab === 'documents' ? 'module is-visible' : 'module'}>
       {documents.documentSelectionErrors.length > 0 ? (
         <div
-          className="auth-feedback auth-error module-feedback module-feedback-compact"
+          className="auth-feedback auth-error mb-4 max-[720px]:shadow-[0_10px_24px_rgba(70,54,31,0.08)] grid gap-[0.18rem]"
           aria-live="polite"
           title={documents.documentSelectionSummary}
         >
-          <strong>Dateiauswahl prüfen</strong>
-          <p className="document-error-preview">{documents.documentSelectionSummary}</p>
+          <strong className="overflow-hidden whitespace-nowrap text-ellipsis">Dateiauswahl prüfen</strong>
+          <p className="overflow-hidden whitespace-nowrap text-ellipsis m-0">{documents.documentSelectionSummary}</p>
         </div>
       ) : null}
       <div className="module-layout document-module-layout">
@@ -213,7 +213,7 @@ export function DocumentsModule({
                 </li>
               ))
             ) : (
-              <li className="document-empty-state">
+              <li className="min-h-[auto] items-center !bg-transparent !border-0 !shadow-none !py-2 !px-0 max-[720px]:content-center">
                 <span>Keine Dokumente vorhanden</span>
               </li>
             )}
