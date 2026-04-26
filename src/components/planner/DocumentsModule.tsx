@@ -51,13 +51,13 @@ export function DocumentsModule({
         <form className="panel form-panel document-form-panel" onSubmit={(event) => void documents.handleAddDocument(event)}>
           <h4>Dokument erfassen</h4>
           <label
-            className={documents.isDocumentDropActive ? 'file-input-label is-drag-active' : 'file-input-label'}
+            className={`file-input-label grid gap-[0.65rem] font-semibold min-h-[8.5rem] content-start justify-items-start p-[1.3rem] border border-dashed border-[rgba(24,52,47,0.24)] rounded-[18px] bg-[rgba(246,239,226,0.5)] transition-[border-color,background,transform] duration-[140ms] ease-out hover:border-[rgba(185,95,44,0.42)] hover:bg-[rgba(255,247,239,0.72)] hover:-translate-y-px${documents.isDocumentDropActive ? ' is-drag-active !border-[#19624d] !bg-[rgba(25,98,77,0.12)] !-translate-y-px' : ''}`}
             onDrop={documents.handleDocumentDrop}
             onDragOver={documents.handleDocumentDragOver}
             onDragLeave={documents.handleDocumentDragLeave}
           >
-            <span>Datei hochladen</span>
-            <small>
+            <span className="text-base">Datei hochladen</span>
+            <small className="text-[rgba(24,52,47,0.72)] max-[560px]:text-[var(--ink-600)]">
               PDF, Bilder, Word-Dateien oder mehrere Dateien hier hineinziehen. Maximal
               erlaubt sind 15 MB pro Datei.
             </small>
@@ -70,22 +70,22 @@ export function DocumentsModule({
             />
           </label>
           {documents.selectedDocumentFiles.length > 0 ? (
-            <div className="selected-file-list">
-              <div className="selected-file-summary">
+            <div className="grid gap-3">
+              <div className="selected-file-summary flex justify-between items-center gap-4 py-[0.9rem] px-4 rounded-[18px] bg-[rgba(24,52,47,0.08)]">
                 <strong>{documents.selectedDocumentFiles.length} Datei(en) ausgewählt</strong>
                 <button type="button" className="secondary-action" onClick={documents.handleClearSelectedDocumentFiles}>
                   Auswahl leeren
                 </button>
               </div>
               {documents.selectedDocumentFiles.map((file) => (
-                <div key={`${file.name}-${file.size}`} className="selected-file-card">
+                <div key={`${file.name}-${file.size}`} className="selected-file-card flex justify-between items-center gap-4 py-[0.9rem] px-4 rounded-[18px] bg-[rgba(24,52,47,0.08)]">
                   <div>
-                    <strong>{file.name}</strong>
-                    <small>{Math.max(1, Math.round(file.size / 1024))} KB</small>
+                    <strong className="block">{file.name}</strong>
+                    <small className="block">{Math.max(1, Math.round(file.size / 1024))} KB</small>
                   </div>
                   <button
                     type="button"
-                    className="secondary-action selected-file-remove"
+                    className="secondary-action py-[0.65rem] px-[0.9rem]"
                     onClick={() => documents.handleRemoveSelectedDocumentFile(file)}
                   >
                     Entfernen
@@ -95,13 +95,14 @@ export function DocumentsModule({
             </div>
           ) : null}
           {documents.documentUploadProgress ? (
-            <div className="upload-progress-card" aria-live="polite">
-              <strong>
+            <div className="upload-progress-card grid py-[0.9rem] px-4 rounded-[18px] bg-[rgba(24,52,47,0.08)]" aria-live="polite">
+              <strong className="block">
                 Upload {documents.documentUploadProgress.completed + 1} von {documents.documentUploadProgress.total}
               </strong>
-              <small>{documents.documentUploadProgress.currentName}</small>
-              <div className="upload-progress-bar" aria-hidden="true">
+              <small className="block">{documents.documentUploadProgress.currentName}</small>
+              <div className="w-full h-[0.55rem] rounded-full overflow-hidden bg-[rgba(24,52,47,0.12)]" aria-hidden="true">
                 <span
+                  className="block h-full rounded-[inherit] bg-[linear-gradient(90deg,#19624d,#f46f3a)] transition-[width] duration-[180ms] ease-out max-[560px]:bg-[#a6b29f]"
                   style={{
                     width: `${Math.max(
                       8,
