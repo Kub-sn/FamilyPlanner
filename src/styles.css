@@ -305,14 +305,6 @@ button {
   line-height: 1;
 }
 
-.eyebrow {
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.18em;
-  font-size: 0.72rem;
-  opacity: 0.75;
-}
-
 .account-card,
 .status-card,
 .panel,
@@ -339,24 +331,6 @@ button {
   margin-top: 0.25rem;
 }
 
-.account-identity {
-  display: grid;
-  gap: 0.3rem;
-}
-
-.account-family-summary {
-  display: grid;
-  gap: 0.25rem;
-  padding-bottom: 0.25rem;
-  border-bottom: 1px solid rgba(246, 239, 226, 0.1);
-}
-
-.account-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
 .family-status-badges {
   display: flex;
   flex-wrap: wrap;
@@ -364,21 +338,14 @@ button {
   align-items: center;
 }
 
-.account-meta-row .chip {
-  width: fit-content;
-}
-
-.family-permission-note {
-  display: block;
-  margin-top: 0.1rem;
-  color: rgba(251, 244, 236, 0.76);
-  line-height: 1.5;
-}
-
 .panel-heading-tight {
   align-items: center;
   margin-top: 1rem;
   padding-top: 0.2rem;
+}
+
+.panel-heading-tight .chip {
+  flex: 0 0 auto;
 }
 
 .panel-heading-tight .chip {
@@ -517,21 +484,10 @@ button {
   min-height: 0;
 }
 
-.overview-scroll-region {
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
 .overview-empty-state {
   display: grid;
   gap: 0.3rem;
   padding: 0.35rem 0;
-}
-
-.overview-empty-state strong,
-.overview-empty-state small {
-  display: block;
 }
 
 .panel {
@@ -1089,10 +1045,6 @@ button {
   min-width: 80px;
 }
 
-.calendar-form-hint {
-  line-height: 1.5;
-}
-
 .agenda-list,
 .check-list,
 .task-list,
@@ -1302,15 +1254,6 @@ button {
   transform: translateY(-2px);
 }
 
-.calendar-panel {
-  padding: 1.25rem;
-}
-
-.calendar-shell {
-  display: grid;
-  gap: 1rem;
-}
-
 .calendar-toolbar,
 .calendar-toolbar-actions,
 .calendar-weekday-row {
@@ -1381,17 +1324,6 @@ button {
   box-shadow: inset 0 0 0 1px rgba(25, 98, 77, 0.16);
 }
 
-.calendar-day-number {
-  font-weight: 700;
-  color: #18342f;
-}
-
-.calendar-day-events {
-  display: grid;
-  align-content: start;
-  gap: 0.35rem;
-}
-
 .calendar-event-pill,
 .calendar-more-events {
   display: block;
@@ -1427,15 +1359,6 @@ button {
   background: rgba(24, 52, 47, 0.05);
 }
 
-.calendar-day-list li {
-  align-items: center;
-}
-
-.calendar-empty-state {
-  min-height: 7rem;
-  align-content: center;
-}
-
 .calendar-unscheduled-panel {
   background: rgba(246, 239, 226, 0.72);
 }
@@ -1449,39 +1372,6 @@ button {
 .done label span,
 .done div strong {
   text-decoration: line-through;
-}
-
-.note-delete-button {
-  position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 2.35rem;
-  min-height: 2.35rem;
-  padding: 0.35rem;
-  margin-bottom: 0.6rem;
-  border-radius: 999px;
-  background: #db8e95;
-  color: #ffffff;
-  line-height: 1;
-}
-
-.note-delete-button svg {
-  width: 1rem;
-  height: 1rem;
-}
-
-.note-delete-button:hover {
-  background: #d27d85;
-  color: #ffffff;
-}
-
-.reset-panel {
-  display: flex;
-  justify-content: flex-end;
 }
 
 .reset-button:hover {
@@ -1913,12 +1803,7 @@ select:focus-visible,
   z-index: 1;
 }
 
-.account-family-summary strong {
-  font-size: 1.3rem;
-}
-
-.overview-empty-state,
-.calendar-empty-state {
+.overview-empty-state {
   min-height: auto;
   padding: 0.5rem 0;
   align-content: center;
@@ -2256,10 +2141,6 @@ body,
 
 .panel {
   background: #fbf4ec;
-}
-
-.calendar-form-hint {
-  color: var(--ink-600);
 }
 
 .chip {
@@ -2764,7 +2645,7 @@ body,
     width: 100%;
   }
 
-  .mobile-account-card .family-permission-note {
+  .mobile-account-card [data-permission-note] {
     display: none;
   }
 

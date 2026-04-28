@@ -22,7 +22,7 @@ export function PlannerOverview({
           <h3>To-dos</h3>
           <span className="chip alt">{openTasks} offen</span>
         </div>
-        <div className="overview-scroll-region">
+        <div className="min-h-0 overflow-y-auto overflow-x-hidden">
           {plannerState.tasks.length > 0 ? (
             <ul className="task-list compact">
               {plannerState.tasks.map((task) => (
@@ -57,7 +57,7 @@ export function PlannerOverview({
           <h3>Kalender</h3>
           <span className="chip">{plannerState.calendar.length} Termine</span>
         </div>
-        <div className="overview-scroll-region">
+        <div className="min-h-0 overflow-y-auto overflow-x-hidden">
           {plannerState.calendar.length > 0 ? (
             <ul className="agenda-list compact">
               {sortedCalendarEntries.map((entry) => (

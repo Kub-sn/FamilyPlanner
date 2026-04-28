@@ -24,19 +24,19 @@ export function AccountCard({
 
   return (
     <div className={className}>
-      <div className="account-family-summary">
-        <strong>Familie: {authState.family?.familyName ?? plannerState.familyName}</strong>
-        <div className="account-meta-row">
+      <div className="grid gap-[0.25rem] pb-1 border-b border-[rgba(246,239,226,0.1)]">
+        <strong className="max-[720px]:text-[1.3rem]">Familie: {authState.family?.familyName ?? plannerState.familyName}</strong>
+        <div className="flex flex-wrap gap-[0.45rem]">
           {authState.profile ? (
             <FamilyStatusBadges role={authState.profile.role} isOwner={authState.family?.isOwner} />
           ) : null}
         </div>
         {showPermissionNote && permissionNote ? (
-          <small className="family-permission-note">{permissionNote}</small>
+          <small className="block mt-[0.1rem] text-[rgba(251,244,236,0.76)] leading-[1.5]" data-permission-note>{permissionNote}</small>
         ) : null}
       </div>
       {authState.profile ? (
-        <div className="account-identity">
+        <div className="grid gap-[0.3rem]">
           <strong>{authState.profile.display_name}</strong>
           <small>{authState.profile.email}</small>
           <button type="button" className="secondary-action" onClick={() => void onSignOut()}>
@@ -44,7 +44,7 @@ export function AccountCard({
           </button>
         </div>
       ) : (
-        <div className="account-identity">
+        <div className="grid gap-[0.3rem]">
           <strong>Demo-Modus</strong>
           <small>Supabase ist noch nicht verbunden. Die Daten bleiben lokal im Browser.</small>
         </div>

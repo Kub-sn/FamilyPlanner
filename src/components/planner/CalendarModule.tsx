@@ -46,13 +46,13 @@ export function CalendarModule({
           <input name="date" type="date" aria-label="Datum" />
           <input name="time" type="time" aria-label="Uhrzeit" />
           <input name="place" placeholder="Ort" />
-          <small className="calendar-form-hint">
+            <small className="leading-[1.5] max-[560px]:text-[var(--ink-600)]">
             Monatsansicht und Tagesdetails aktualisieren sich sofort nach dem Speichern.
           </small>
           <button type="submit">Termin speichern</button>
         </form>
-        <article className="panel list-panel calendar-panel">
-          <div className="calendar-shell">
+        <article className="panel list-panel p-5">
+          <div className="grid gap-4">
             <div className="calendar-toolbar">
               <div>
                 <h4>{formatCalendarMonthLabel(calendarViewDate)}</h4>
@@ -104,8 +104,8 @@ export function CalendarModule({
                   aria-label={getCalendarDayButtonLabel(day.date, day.entries.length)}
                   onClick={() => onSelectCalendarDate(day.dateKey)}
                 >
-                  <span className="calendar-day-number">{day.dayNumber}</span>
-                  <div className="calendar-day-events">
+                  <span className="font-bold text-[#18342f]">{day.dayNumber}</span>
+                  <div className="grid content-start gap-[0.35rem]">
                     {day.entries.slice(0, 3).map((entry) => (
                       <span key={entry.id} className="calendar-event-pill">
                         {entry.time.trim() ? `${entry.time} ${entry.title}` : entry.title}
@@ -128,7 +128,7 @@ export function CalendarModule({
                   </div>
                 </div>
                 {selectedDayEntries.length > 0 ? (
-                  <ul className="agenda-list calendar-day-list">
+                  <ul className="agenda-list items-center">
                     {selectedDayEntries.map((entry) => (
                       <li key={entry.id}>
                         <div>
@@ -140,7 +140,7 @@ export function CalendarModule({
                     ))}
                   </ul>
                 ) : (
-                  <div className="overview-empty-state calendar-empty-state">
+                  <div className="overview-empty-state min-h-[7rem] content-center">
                     <strong>Kein Termin an diesem Tag</strong>
                     <small>Wähle einen anderen Tag oder lege links einen neuen Termin an.</small>
                   </div>
@@ -155,7 +155,7 @@ export function CalendarModule({
                       <small>Ältere Einträge mit Freitext bleiben sichtbar, bis du sie neu anlegst.</small>
                     </div>
                   </div>
-                  <ul className="agenda-list calendar-day-list">
+                  <ul className="agenda-list items-center">
                     {unscheduledCalendarEntries.map((entry) => (
                       <li key={entry.id}>
                         <div>

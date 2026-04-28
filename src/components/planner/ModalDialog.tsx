@@ -25,7 +25,7 @@ export function ModalDialog({
       >
         <div className="block min-w-0">
           <div className="w-auto min-w-0">
-            {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
+            {eyebrow ? <p className="m-0 uppercase tracking-[0.18em] text-[0.72rem] opacity-75">{eyebrow}</p> : null}
             <h3 id={id} className="break-words">{title}</h3>
           </div>
         </div>

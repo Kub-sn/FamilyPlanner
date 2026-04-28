@@ -413,7 +413,7 @@ export default function PlannerShell({
         ) : null}
 
         {!authDriven ? (
-          <section className="module reset-panel is-visible">
+          <section className="module flex justify-end is-visible">
             <button
               type="button"
               className="reset-button"

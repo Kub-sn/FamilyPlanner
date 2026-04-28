@@ -31,7 +31,7 @@ export function NotesModule({
               <article key={note.id} className="note-card break-inside-avoid relative grid mb-4 p-0 w-full max-w-full max-h-[15rem] overflow-hidden rounded-[24px] bg-[rgba(255,248,239,0.92)]">
                 <button
                   type="button"
-                  className="secondary-action danger-action note-delete-button"
+                  className="absolute top-[0.85rem] right-[0.85rem] z-[1] inline-flex items-center justify-center min-w-[2.35rem] min-h-[2.35rem] p-[0.35rem] mb-[0.6rem] rounded-full bg-[#db8e95] text-white leading-none hover:bg-[#d27d85] [&_svg]:w-4 [&_svg]:h-4"
                   aria-label={`Notiz ${note.title} löschen`}
                   onClick={() => void onDeleteNote(note.id)}
                 >

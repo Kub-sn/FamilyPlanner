@@ -262,7 +262,7 @@ export function OnboardingScreen({
     <div className="auth-shell">
       <section className="auth-card">
         <div className="auth-copy auth-copy-editorial">
-          <p className="eyebrow">Familie anlegen</p>
+          <p className="m-0 uppercase tracking-[0.18em] text-[0.72rem] opacity-75">Familie anlegen</p>
           <h1>Willkommen, {profile.display_name}</h1>
           <p>
             Dein Konto ist angelegt. Lege jetzt deine Familie an. Du startest dabei als
