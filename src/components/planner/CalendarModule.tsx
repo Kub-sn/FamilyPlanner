@@ -53,12 +53,12 @@ export function CalendarModule({
         </form>
         <article className="panel self-start p-5">
           <div className="grid gap-4">
-            <div className="calendar-toolbar">
+            <div className="flex items-center justify-between gap-4 max-[560px]:flex-col max-[560px]:items-start">
               <div>
                 <h4>{formatCalendarMonthLabel(calendarViewDate)}</h4>
                 <small>{visibleMonthEventCount} Termine im sichtbaren Monat</small>
               </div>
-              <div className="calendar-toolbar-actions">
+              <div className="flex items-center gap-[0.6rem] max-[560px]:flex-col max-[560px]:items-start">
                 <button type="button" className="secondary-action" onClick={onShowToday}>
                   Heute
                 </button>
@@ -81,13 +81,13 @@ export function CalendarModule({
               </div>
             </div>
 
-            <div className="calendar-weekday-row" aria-hidden="true">
+            <div className="flex items-center gap-3 max-[560px]:hidden [&>span]:flex-[1_1_0] [&>span]:text-center [&>span]:text-[0.82rem] [&>span]:font-bold [&>span]:text-[rgba(24,52,47,0.68)]" aria-hidden="true">
               {CALENDAR_WEEKDAY_LABELS.map((label) => (
                 <span key={label}>{label}</span>
               ))}
             </div>
 
-            <div className="calendar-grid" role="grid" aria-label="Monatskalender">
+            <div className="grid grid-cols-[repeat(7,minmax(0,1fr))] gap-3 max-[720px]:gap-[0.55rem] max-[560px]:grid-cols-[repeat(2,minmax(0,1fr))]" role="grid" aria-label="Monatskalender">
               {calendarMonth.flat().map((day) => (
                 <button
                   key={day.dateKey}
@@ -95,7 +95,7 @@ export function CalendarModule({
                   role="gridcell"
                   className={[
                     'calendar-day-cell',
-                    day.isCurrentMonth ? '' : 'is-outside-month',
+                    day.isCurrentMonth ? '' : 'opacity-45',
                     day.isToday ? 'is-today' : '',
                     day.isSelected ? 'is-selected' : '',
                   ]

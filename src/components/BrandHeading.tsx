@@ -6,7 +6,7 @@ export function BrandHeading({
   className?: string;
 }) {
   return (
-    <div className={className ? `brand-lockup ${className}` : 'brand-lockup'}>
+    <div className={className ? `flex items-center gap-[0.85rem] [&>h1]:m-0 ${className}` : 'flex items-center gap-[0.85rem] [&>h1]:m-0'}>
       <span className="brand-mark" aria-hidden="true">
         <img src="/freyLogo.svg" alt="" className="w-full h-full block object-contain" />
       </span>

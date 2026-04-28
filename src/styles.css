@@ -136,16 +136,6 @@ button {
   color: #f6efe2;
 }
 
-.brand-lockup {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-}
-
-.brand-lockup h1 {
-  margin: 0;
-}
-
 .brand-mark {
   display: inline-flex;
   align-items: center;
@@ -321,10 +311,6 @@ button {
   align-items: center;
   margin-top: 1rem;
   padding-top: 0.2rem;
-}
-
-.panel-heading-tight .chip {
-  flex: 0 0 auto;
 }
 
 .panel-heading-tight .chip {
@@ -530,7 +516,6 @@ button {
   gap: 0.75rem;
 }
 
-.form-panel,
 .form-panel {
   display: grid;
   gap: 0.75rem;
@@ -750,43 +735,8 @@ button {
   transform: translateY(-2px);
 }
 
-.calendar-toolbar,
-.calendar-toolbar-actions,
-.calendar-weekday-row {
-  display: flex;
-  align-items: center;
-}
-
-.calendar-toolbar {
-  justify-content: space-between;
-  gap: 1rem;
-}
-
-.calendar-toolbar h4,
 .calendar-day-panel h4 {
   margin: 0;
-}
-
-.calendar-toolbar-actions {
-  gap: 0.6rem;
-}
-
-.calendar-weekday-row {
-  gap: 0.75rem;
-}
-
-.calendar-weekday-row span {
-  flex: 1 1 0;
-  text-align: center;
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: rgba(24, 52, 47, 0.68);
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.75rem;
 }
 
 .calendar-day-cell {
@@ -803,10 +753,6 @@ button {
 .calendar-day-cell:hover {
   transform: translateY(-1px);
   border-color: rgba(25, 98, 77, 0.3);
-}
-
-.calendar-day-cell.is-outside-month {
-  opacity: 0.45;
 }
 
 .calendar-day-cell.is-today {
@@ -944,10 +890,6 @@ small {
     grid-template-columns: 1fr;
   }
 
-  .calendar-grid {
-    gap: 0.55rem;
-  }
-
   .calendar-day-cell {
     min-height: 7.5rem;
     padding: 0.6rem;
@@ -965,20 +907,10 @@ small {
   .task-list li,
   .meal-list li,
   .document-list li,
-  .calendar-toolbar,
-  .calendar-toolbar-actions,
   .panel-heading,
   .member-pill {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .calendar-weekday-row {
-    display: none;
-  }
-
-  .calendar-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .ghost-toggle,
@@ -1139,13 +1071,6 @@ small {
   .overview-stack.is-visible {
     grid-template-columns: 1fr;
   }
-}
-
-@media (max-width: 720px) {
-  .auth-shell {
-    padding: 1rem;
-  }
-
 }
 
 ::selection {
