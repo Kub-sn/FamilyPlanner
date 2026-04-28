@@ -899,7 +899,7 @@ test('keeps the selected planner section after a hard reload without app routing
   const reloadedMemberList = page.getByRole('list', { name: 'Familienmitglieder Liste' });
   await expect(reloadedMemberList.locator(':scope > li').first()).toBeVisible();
   await expect(reloadedMemberList.locator(':scope > li').first().locator('[aria-hidden="true"]')).toContainText('A');
-  await expect(page.locator('.admin-directory-panel').locator('+ .family-settings-bottom-row')).toHaveCount(1);
+  await expect(page.locator('.admin-directory-panel + div')).toHaveCount(1);
   await expect(page.getByRole('button', { name: 'Lokale Daten zurücksetzen' })).toHaveCount(0);
 });
 

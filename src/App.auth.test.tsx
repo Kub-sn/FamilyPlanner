@@ -832,11 +832,11 @@ describe('App auth flow', () => {
     expect(screen.queryByText('Keine offenen Einladungen')).not.toBeInTheDocument();
     expect(getConfigCard().getByRole('checkbox', { name: 'Freie Registrierung erlauben' })).toHaveClass('app-switch');
 
-    const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.family-settings-layout');
-    const topRow = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.family-settings-top-row');
-    const bottomRow = screen.getByRole('heading', { level: 4, name: 'Registrierungeinstellung' }).closest('.family-settings-bottom-row');
-    const secondaryStack = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-secondary-stack');
+    const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.module-layout');
+    const topRow = settingsLayout?.querySelector(':scope > div');
     const inviteForm = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('form');
+    const secondaryStack = inviteForm?.parentElement;
+    const bottomRow = screen.getByRole('heading', { level: 4, name: 'Registrierungeinstellung' }).closest('article')?.parentElement;
     const configCard = getConfigCardElement();
 
     expect(settingsLayout).not.toBeNull();

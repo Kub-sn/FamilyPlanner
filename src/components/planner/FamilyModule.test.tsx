@@ -120,10 +120,10 @@ describe('FamilyModule', () => {
       </ActiveTabProvider>,
     );
 
-    const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.family-settings-layout');
-    const topRow = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.family-settings-top-row');
-    const secondaryStack = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-secondary-stack');
+    const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.module-layout');
+    const topRow = settingsLayout?.querySelector(':scope > div');
     const invitePanel = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-invite-panel');
+    const secondaryStack = invitePanel?.parentElement;
     const accountPanel = screen.getByRole('heading', { level: 4, name: 'Konto' }).closest('.family-account-panel');
 
     expect(settingsLayout).not.toBeNull();
@@ -285,10 +285,11 @@ describe('FamilyModule', () => {
       </ActiveTabProvider>,
     );
 
-    const topRow = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-settings-top-row');
+    const inviteForm = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-invite-panel');
+    const topRow = inviteForm?.parentElement?.parentElement;
     const adminDirectoryPanel = screen.getByRole('heading', { level: 4, name: 'Alle Familien' }).closest('.admin-directory-panel');
-    const bottomRow = screen.getByRole('heading', { level: 4, name: 'Registrierungeinstellung' }).closest('.family-settings-bottom-row');
-    const configPanel = screen.getByRole('heading', { level: 4, name: 'Registrierungeinstellung' }).closest('.family-config-panel');
+    const bottomRow = adminDirectoryPanel?.nextElementSibling;
+    const configPanel = screen.getByRole('heading', { level: 4, name: 'Registrierungeinstellung' }).closest('article');
     const accountPanel = screen.getByRole('heading', { level: 4, name: 'Konto' }).closest('.family-account-panel');
 
     expect(topRow).not.toBeNull();
@@ -296,8 +297,6 @@ describe('FamilyModule', () => {
     expect(bottomRow).not.toBeNull();
     expect(configPanel?.parentElement).toBe(bottomRow);
     expect(accountPanel?.parentElement).toBe(bottomRow);
-    expect(topRow?.querySelector('.family-config-panel')).toBeNull();
-    expect(topRow?.querySelector('.family-account-panel')).toBeNull();
     expect(adminDirectoryPanel?.nextElementSibling).toBe(bottomRow);
   });
 });

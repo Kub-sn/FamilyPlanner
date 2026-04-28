@@ -70,12 +70,12 @@ export function FamilyModule({
 }) {
   const { activeTab } = useActiveTab();
   const canViewFamily = Boolean(authFamily);
-  const accountPanelClassName = 'panel list-panel account-management-panel family-account-panel';
+  const accountPanelClassName = 'panel list-panel grid gap-[0.9rem] min-w-0 family-account-panel [&>.danger-action]:justify-self-start';
   const invitePanel = (
     <form className="panel form-panel family-invite-panel" onSubmit={(event) => void onAddMember(event)}>
       <h4>Familienmitglied einladen</h4>
       {canManageFamily ? (
-        <label className="invite-family-field">
+        <label className="grid gap-[0.35rem] [&>span]:text-[0.84rem] [&>span]:font-semibold [&>span]:tracking-[0.04em] [&>span]:text-[rgba(24,52,47,0.78)]">
           <span>Familie</span>
           <select
             name="familyId"
@@ -113,8 +113,7 @@ export function FamilyModule({
       <div className="panel-heading">
         <h4>Konto</h4>
       </div>
-      <p className="family-management-note">
-        Wenn du dein Konto löschst, wird der Zugang dauerhaft entfernt.
+      <p className="-mt-px m-0 text-[rgba(24,52,47,0.72)]">
       </p>
       <button type="button" className="secondary-action danger-action" onClick={onOpenDeleteAccount}>
         Account löschen
@@ -122,15 +121,15 @@ export function FamilyModule({
     </article>
   ) : null;
   const registrationPanel = canManageFamily && authFamily ? (
-    <article className="panel form-panel family-config-panel">
+    <article className="panel form-panel gap-4">
       <div className="panel-heading">
         <h4>Registrierungeinstellung</h4>
         <span className={allowOpenRegistration ? 'chip' : 'chip alt'}>
           {allowOpenRegistration ? 'Offen' : 'Nur Einladung'}
         </span>
       </div>
-      <label className="family-config-toggle">
-        <div className="family-config-toggle-copy">
+      <label className="flex items-center justify-between gap-4 py-4 px-[1.1rem] rounded-[20px] border border-[rgba(24,52,47,0.12)] bg-[rgba(246,239,226,0.56)]">
+        <div className="grid gap-[0.3rem] [&>strong]:text-[0.98rem]">
           <strong>Freie Registrierung erlauben</strong>
           <small>
             Wenn du das deaktivierst, koennen neue Konten nur noch mit einer offenen
@@ -147,7 +146,7 @@ export function FamilyModule({
           onChange={(event) => void onRegistrationAccessChange(event.currentTarget.checked)}
         />
       </label>
-      <p className="family-config-note">
+      <p className="m-0 text-[rgba(24,52,47,0.82)]">
         {allowOpenRegistration ? 'Neue Nutzer koennen sich aktuell auch ohne Einladung registrieren.' : null}
       </p>
     </article>
@@ -155,13 +154,13 @@ export function FamilyModule({
 
   return (
     <section className={activeTab === 'family' && canViewFamily ? 'module is-visible' : 'module'}>
-      <div className="module-layout role-layout family-settings-layout">
-        <div className="family-settings-top-row">
-          <article className="panel list-panel family-members-panel">
-            <div className="panel-heading family-members-panel-heading">
-              <div className="family-members-panel-copy">
+      <div className="module-layout role-layout flex flex-col gap-[0.65rem]">
+        <div className="flex flex-wrap items-start gap-[0.65rem] max-[720px]:flex-col">
+          <article className="panel list-panel flex-[1_1_620px] min-w-[min(100%,34rem)] max-[720px]:w-full max-[720px]:min-w-0">
+            <div className="panel-heading items-start">
+              <div className="grid gap-[0.3rem] min-w-0">
                 <h4>Familienmitglieder</h4>
-                <p className="family-management-note family-members-intro">
+                <p className="-mt-px text-[rgba(24,52,47,0.72)] m-0 max-w-[42rem]">
                   Jede Person steht in einer eigenen Zeile mit Rolle, E-Mail und Status, damit du sie im Desktop-Layout sofort unterscheiden kannst.
                 </p>
               </div>
@@ -228,24 +227,24 @@ export function FamilyModule({
             ) : null}
           </article>
 
-          <div className="family-secondary-stack">
+          <div className="flex flex-[0_1_360px] flex-col gap-[0.6rem] min-w-[min(100%,21rem)] max-[720px]:w-full max-[720px]:min-w-0">
             {invitePanel}
             {!canManageFamily ? accountPanel : null}
           </div>
         </div>
 
         {canManageFamily ? (
-          <article className="panel list-panel admin-directory-panel">
+          <article className="panel list-panel admin-directory-panel min-w-0 w-full overflow-x-clip gap-[0.75rem] max-[720px]:min-w-0">
               <div className="panel-heading family-inline-heading">
                 <h4>Alle Familien</h4>
                 <span className="chip">{adminFamilyDirectory.length}</span>
               </div>
               {adminFamilyDirectoryBusy ? (
-                <p className="family-management-note">Familienliste wird geladen…</p>
+                <p className="-mt-px m-0 text-[rgba(24,52,47,0.72)]">Familienliste wird geladen…</p>
               ) : null}
               {adminFamilyDirectoryError ? <p className="auth-feedback auth-error">{adminFamilyDirectoryError}</p> : null}
               {!adminFamilyDirectoryBusy && !adminFamilyDirectoryError && adminFamilyDirectory.length === 0 ? (
-                <p className="family-management-note">Noch keine Familien für die Übersicht gefunden.</p>
+                <p className="-mt-px m-0 text-[rgba(24,52,47,0.72)]">Noch keine Familien für die Übersicht gefunden.</p>
               ) : null}
               {adminFamilyDirectory.length > 0 ? (
                 <>
@@ -332,7 +331,7 @@ export function FamilyModule({
         ) : null}
 
         {canManageFamily ? (
-          <div className="family-settings-bottom-row">
+          <div className="flex flex-wrap items-start gap-[0.65rem] max-[720px]:flex-col [&>.panel]:flex-[1_1_280px] [&>.panel]:min-w-[min(100%,18rem)]">
             {registrationPanel}
             {accountPanel}
           </div>
