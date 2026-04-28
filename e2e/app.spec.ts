@@ -543,6 +543,8 @@ test('shows the planner shell and lets the user open the shopping module', async
 test('shows the upload-only documents module with a larger capture card on desktop', async ({ page }) => {
   await page.goto('/');
 
+  await expect(page.getByRole('heading', { name: 'Frey Frey' }).first()).toBeVisible();
+
   if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
     return;
   }
@@ -586,6 +588,8 @@ test('shows the upload-only documents module with a larger capture card on deskt
 test('keeps the document edit dialog free of horizontal scrolling for long names', async ({ page }) => {
   await page.goto('/');
 
+  await expect(page.getByRole('heading', { name: 'Frey Frey' }).first()).toBeVisible();
+
   if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
     return;
   }
@@ -616,6 +620,8 @@ test('keeps the document edit dialog free of horizontal scrolling for long names
 
 test('shows the filename above a two-row action grid when the filename is long', async ({ page }) => {
   await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' }).first()).toBeVisible();
 
   if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
     return;
@@ -667,6 +673,8 @@ test('shows the filename above a two-row action grid when the filename is long',
 
 test('shows three document cards per row on large displays and fewer on smaller widths', async ({ page }) => {
   await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' }).first()).toBeVisible();
 
   if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
     return;

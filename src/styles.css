@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -33,8 +32,8 @@
   --color-rose-400: #db8e95;
   --color-rose-500: #d27d85;
 
-  --font-display: "Fraunces", Georgia, serif;
-  --font-body: "IBM Plex Sans", "Aptos", "Segoe UI Variable", "Trebuchet MS", sans-serif;
+  --font-display: "Outfit Variable", "Outfit", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
 
   --animate-loader-spin: loader-spin 1.8s linear infinite;
   --animate-loader-spin-reverse: loader-spin-reverse 1.15s linear infinite;
@@ -51,7 +50,7 @@
 }
 
 :root {
-  font-family: "Aptos", "Segoe UI Variable", "Trebuchet MS", sans-serif;
+  font-family: "Plus Jakarta Sans Variable", "Plus Jakarta Sans", system-ui, sans-serif;
   color: #18342f;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -123,7 +122,7 @@ button {
 
 .auth-copy h1 {
   margin: 0;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: 'Outfit Variable', 'Outfit', system-ui, sans-serif;
   font-size: clamp(2rem, 4vw, 3rem);
   letter-spacing: -0.03em;
 }
@@ -192,7 +191,7 @@ button {
 .panel h4,
 .account-card strong,
 .auth-copy h1 {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: 'Outfit Variable', 'Outfit', system-ui, sans-serif;
   letter-spacing: -0.045em;
 }
 
@@ -1438,7 +1437,7 @@ body,
 
   .mobile-topbar-brand h1 {
     margin: 0;
-    font-family: 'Fraunces', Georgia, serif;
+    font-family: 'Outfit Variable', 'Outfit', system-ui, sans-serif;
     font-size: 1.55rem;
     letter-spacing: -0.04em;
     line-height: 1;
