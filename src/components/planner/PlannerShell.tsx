@@ -306,7 +306,7 @@ export default function PlannerShell({
           selectedInviteFamilyId={adminDir.selectedInviteFamily?.familyId ?? null}
           onAddMember={adminDir.handleAddMember}
           onOpenDeleteAccount={() => deletions.setIsDeleteAccountDialogOpen(true)}
-          onRegistrationAccessChange={(nextValue) => void adminDir.handleRegistrationAccessChange(nextValue, onUpdateFamilyRegistration)}
+          onRegistrationAccessChange={(nextValue) => adminDir.handleRegistrationAccessChange(nextValue, onUpdateFamilyRegistration)}
           onRemoveInvite={adminDir.handleRemoveInvite}
           onSelectAdminFamily={adminDir.setSelectedAdminFamilyId}
           onSelectInviteFamily={adminDir.setSelectedInviteFamilyId}

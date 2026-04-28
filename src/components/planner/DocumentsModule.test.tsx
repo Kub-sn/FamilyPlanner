@@ -60,7 +60,7 @@ describe('DocumentsModule', () => {
     render(
       <ActiveTabProvider activeTab="documents" setActiveTab={vi.fn()}>
         <DocumentsModule
-          authState={{ stage: 'unauthenticated', session: null, profile: null, family: null }}
+          authState={{ stage: 'signed-out', session: null, profile: null, family: null, error: null, message: null }}
           plannerState={plannerFixture}
           setCloudSync={vi.fn()}
           updateState={vi.fn()}
