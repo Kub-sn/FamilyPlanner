@@ -34,7 +34,7 @@ export function useNoteManager({
     const title = String(form.get('title') || '').trim();
     const text = String(form.get('text') || '').trim();
 
-    if (!title || !text) {
+    if (!text) {
       return;
     }
 
@@ -122,7 +122,7 @@ export function useNoteManager({
     const title = noteDialogState.title.trim();
     const text = noteDialogState.text.trim();
 
-    if (!title || !text) {
+    if (!text) {
       return;
     }
 

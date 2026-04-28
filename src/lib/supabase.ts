@@ -87,7 +87,7 @@ type TaskRow = {
 
 type NoteRow = {
   id: string;
-  title: string;
+  title: string | null;
   text: string;
 };
 
@@ -1017,9 +1017,14 @@ export async function fetchNotes(familyId: string): Promise<NoteItem[]> {
 
   return (data as NoteRow[]).map((note) => ({
     id: note.id,
-    title: note.title,
+    title: note.title ?? '',
     text: note.text,
   }));
+}
+
+function normalizeNoteTitle(title: string): string | null {
+  const trimmed = title.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 export async function createNote(
@@ -1029,7 +1034,11 @@ export async function createNote(
   const client = requireSupabase();
   const { data, error } = await client
     .from('notes')
-    .insert({ family_id: familyId, ...payload })
+    .insert({
+      family_id: familyId,
+      title: normalizeNoteTitle(payload.title),
+      text: payload.text,
+    })
     .select('id, title, text')
     .single();
 
@@ -1041,7 +1050,7 @@ export async function createNote(
 
   return {
     id: note.id,
-    title: note.title,
+    title: note.title ?? '',
     text: note.text,
   };
 }
@@ -1054,7 +1063,7 @@ export async function updateNote(
   const { data, error } = await client
     .from('notes')
     .update({
-      title: payload.title,
+      title: normalizeNoteTitle(payload.title),
       text: payload.text,
     })
     .eq('id', noteId)
@@ -1069,7 +1078,7 @@ export async function updateNote(
 
   return {
     id: note.id,
-    title: note.title,
+    title: note.title ?? '',
     text: note.text,
   };
 }

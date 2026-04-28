@@ -37,4 +37,47 @@ describe('NotesModule', () => {
     expect(onDeleteNote).toHaveBeenCalledWith('note-1');
     expect(onAddNote).toHaveBeenCalled();
   });
+
+  it('shows a validation message when content is empty and skips onAddNote', async () => {
+    const user = userEvent.setup();
+    const onAddNote = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <ActiveTabProvider activeTab="notes" setActiveTab={vi.fn()}>
+        <NotesModule
+          notes={[]}
+          onAddNote={onAddNote}
+          onDeleteNote={vi.fn().mockResolvedValue(undefined)}
+          onOpenNote={vi.fn()}
+        />
+      </ActiveTabProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Notiz speichern' }));
+
+    expect(onAddNote).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Inhalt ist erforderlich.');
+  });
+
+  it('saves a note when only the content is filled (title is optional)', async () => {
+    const user = userEvent.setup();
+    const onAddNote = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <ActiveTabProvider activeTab="notes" setActiveTab={vi.fn()}>
+        <NotesModule
+          notes={[]}
+          onAddNote={onAddNote}
+          onDeleteNote={vi.fn().mockResolvedValue(undefined)}
+          onOpenNote={vi.fn()}
+        />
+      </ActiveTabProvider>,
+    );
+
+    await user.type(screen.getByPlaceholderText('Inhalt'), 'Nur Inhalt');
+    await user.click(screen.getByRole('button', { name: 'Notiz speichern' }));
+
+    expect(onAddNote).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
 });

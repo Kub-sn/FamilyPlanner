@@ -63,7 +63,7 @@ create table public.tasks (
 create table public.notes (
   id uuid primary key default gen_random_uuid(),
   family_id uuid not null references public.families(id) on delete cascade,
-  title text not null,
+  title text,
   text text not null,
   created_at timestamptz not null default now()
 );

@@ -1,4 +1,4 @@
-import { type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import {
   CALENDAR_WEEKDAY_LABELS,
   formatCalendarDateLabel,
@@ -10,6 +10,8 @@ import {
 import type { PlannerState } from '../../lib/planner-data';
 import { getCalendarMetaParts } from './planner-shell-utils';
 import { useActiveTab } from '../../context/ActiveTabContext';
+import { validateRequiredFields, type FieldErrors } from '../../lib/form-validation';
+import { FieldError } from './FieldError';
 
 type CalendarMonth = ReturnType<typeof buildCalendarMonth>;
 
@@ -37,15 +39,71 @@ export function CalendarModule({
   onShowToday: () => void;
 }) {
   const { activeTab } = useActiveTab();
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const form = new FormData(event.currentTarget);
+    const next = validateRequiredFields(form, [
+      { name: 'title', label: 'Titel' },
+      { name: 'date', label: 'Datum' },
+      { name: 'time', label: 'Uhrzeit' },
+      { name: 'place', label: 'Ort' },
+    ]);
+    if (Object.keys(next).length > 0) {
+      event.preventDefault();
+      setErrors(next);
+      return;
+    }
+    setErrors({});
+    void onAddCalendar(event);
+  };
+
+  const clearFieldError = (name: string) =>
+    setErrors((current) => {
+      if (!current[name]) return current;
+      const { [name]: _removed, ...rest } = current;
+      return rest;
+    });
+
   return (
     <section className={activeTab === 'calendar' ? 'module is-visible' : 'module'}>
       <div className="module-layout calendar-module-layout">
-        <form className="panel form-panel" onSubmit={(event) => void onAddCalendar(event)}>
+        <form className="panel form-panel" onSubmit={handleSubmit} noValidate>
           <h4>Termin anlegen</h4>
-          <input name="title" placeholder="Titel" />
-          <input name="date" type="date" aria-label="Datum" />
-          <input name="time" type="time" aria-label="Uhrzeit" />
-          <input name="place" placeholder="Ort" />
+          <input
+            name="title"
+            placeholder="Titel"
+            aria-invalid={errors.title ? 'true' : undefined}
+            aria-describedby={errors.title ? 'title-error' : undefined}
+            onInput={() => clearFieldError('title')}
+          />
+          <FieldError fieldName="title" message={errors.title} />
+          <input
+            name="date"
+            type="date"
+            aria-label="Datum"
+            aria-invalid={errors.date ? 'true' : undefined}
+            aria-describedby={errors.date ? 'date-error' : undefined}
+            onInput={() => clearFieldError('date')}
+          />
+          <FieldError fieldName="date" message={errors.date} />
+          <input
+            name="time"
+            type="time"
+            aria-label="Uhrzeit"
+            aria-invalid={errors.time ? 'true' : undefined}
+            aria-describedby={errors.time ? 'time-error' : undefined}
+            onInput={() => clearFieldError('time')}
+          />
+          <FieldError fieldName="time" message={errors.time} />
+          <input
+            name="place"
+            placeholder="Ort"
+            aria-invalid={errors.place ? 'true' : undefined}
+            aria-describedby={errors.place ? 'place-error' : undefined}
+            onInput={() => clearFieldError('place')}
+          />
+          <FieldError fieldName="place" message={errors.place} />
             <small className="leading-[1.5] max-[560px]:text-[#4c564d]">
             Monatsansicht und Tagesdetails aktualisieren sich sofort nach dem Speichern.
           </small>

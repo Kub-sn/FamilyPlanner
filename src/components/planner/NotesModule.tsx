@@ -1,7 +1,9 @@
 import { Trash2 } from 'lucide-react';
-import type { FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { PlannerState } from '../../lib/planner-data';
 import { useActiveTab } from '../../context/ActiveTabContext';
+import { validateRequiredFields, type FieldErrors } from '../../lib/form-validation';
+import { FieldError } from './FieldError';
 
 export function NotesModule({
   notes,
@@ -15,14 +17,42 @@ export function NotesModule({
   onOpenNote: (noteId: string) => void;
 }) {
   const { activeTab } = useActiveTab();
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const form = new FormData(event.currentTarget);
+    const next = validateRequiredFields(form, [{ name: 'text', label: 'Inhalt' }]);
+    if (Object.keys(next).length > 0) {
+      event.preventDefault();
+      setErrors(next);
+      return;
+    }
+    setErrors({});
+    void onAddNote(event);
+  };
+
+  const clearFieldError = (name: string) =>
+    setErrors((current) => {
+      if (!current[name]) return current;
+      const { [name]: _removed, ...rest } = current;
+      return rest;
+    });
 
   return (
     <section className={activeTab === 'notes' ? 'module is-visible' : 'module'}>
       <div className="module-layout grid-cols-[minmax(320px,440px)_minmax(0,1fr)]">
-        <form className="panel form-panel min-w-0" onSubmit={(event) => void onAddNote(event)}>
+        <form className="panel form-panel min-w-0" onSubmit={handleSubmit} noValidate>
           <h4>Neue Notiz</h4>
           <input name="title" placeholder="Titel" />
-          <textarea name="text" placeholder="Inhalt" rows={5} />
+          <textarea
+            name="text"
+            placeholder="Inhalt"
+            rows={5}
+            aria-invalid={errors.text ? 'true' : undefined}
+            aria-describedby={errors.text ? 'text-error' : undefined}
+            onInput={() => clearFieldError('text')}
+          />
+          <FieldError fieldName="text" message={errors.text} />
           <button type="submit">Notiz speichern</button>
         </form>
         <article className="panel self-start">

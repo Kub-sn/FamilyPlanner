@@ -1,6 +1,8 @@
-import type { FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { PlannerState } from '../../lib/planner-data';
 import { useActiveTab } from '../../context/ActiveTabContext';
+import { validateRequiredFields, type FieldErrors } from '../../lib/form-validation';
+import { FieldError } from './FieldError';
 
 export function MealsModule({
   meals,
@@ -12,14 +14,51 @@ export function MealsModule({
   onToggleMealPrepared: (id: string, prepared: boolean) => Promise<void>;
 }) {
   const { activeTab } = useActiveTab();
+  const [errors, setErrors] = useState<FieldErrors>({});
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const form = new FormData(event.currentTarget);
+    const next = validateRequiredFields(form, [
+      { name: 'day', label: 'Wochentag' },
+      { name: 'meal', label: 'Gericht' },
+    ]);
+    if (Object.keys(next).length > 0) {
+      event.preventDefault();
+      setErrors(next);
+      return;
+    }
+    setErrors({});
+    void onAddMeal(event);
+  };
+
+  const clearFieldError = (name: string) =>
+    setErrors((current) => {
+      if (!current[name]) return current;
+      const { [name]: _removed, ...rest } = current;
+      return rest;
+    });
 
   return (
     <section className={activeTab === 'meals' ? 'module is-visible' : 'module'}>
       <div className="module-layout">
-        <form className="panel form-panel" onSubmit={(event) => void onAddMeal(event)}>
+        <form className="panel form-panel" onSubmit={handleSubmit} noValidate>
           <h4>Gericht eintragen</h4>
-          <input name="day" placeholder="Wochentag" />
-          <input name="meal" placeholder="Gericht" />
+          <input
+            name="day"
+            placeholder="Wochentag"
+            aria-invalid={errors.day ? 'true' : undefined}
+            aria-describedby={errors.day ? 'day-error' : undefined}
+            onInput={() => clearFieldError('day')}
+          />
+          <FieldError fieldName="day" message={errors.day} />
+          <input
+            name="meal"
+            placeholder="Gericht"
+            aria-invalid={errors.meal ? 'true' : undefined}
+            aria-describedby={errors.meal ? 'meal-error' : undefined}
+            onInput={() => clearFieldError('meal')}
+          />
+          <FieldError fieldName="meal" message={errors.meal} />
           <button type="submit">Gericht speichern</button>
         </form>
         <article className="panel self-start">
