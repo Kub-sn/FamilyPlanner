@@ -918,6 +918,10 @@ small {
     min-height: 7.5rem;
     padding: 0.6rem;
   }
+
+  .overview-row-panel {
+    max-height: calc(100dvh - 8rem);
+  }
 }
 
 @media (max-width: 560px) {
@@ -945,6 +949,12 @@ small {
 
   .document-delete-button {
     grid-column: 2;
+  }
+
+  .panel,
+  .status-card,
+  .account-card {
+    padding: 1rem;
   }
 }
 
@@ -1179,22 +1189,6 @@ select:focus-visible,
 
 .document-grid li {
   overflow: hidden;
-}
-
-@media (max-width: 720px) {
-  .overview-row-panel {
-    max-height: calc(100dvh - 8rem);
-  }
-
-}
-
-@media (max-width: 560px) {
-  .panel,
-  .status-card,
-  .account-card {
-    padding: 1rem;
-  }
-
 }
 
 /* ── Flattened theme ── */
