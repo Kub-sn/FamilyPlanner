@@ -115,7 +115,7 @@ export function DocumentsModule({
           ) : null}
           <button type="submit">Dokument speichern</button>
         </form>
-        <article className="panel list-panel">
+        <article className="panel self-start">
           <div className="document-toolbar grid gap-4 mb-4">
             <div className="document-toolbar-copy flex justify-between items-center gap-4 [&>strong]:block [&>small]:block max-[560px]:flex-col max-[560px]:items-start max-[560px]:gap-1">
               <strong>{documents.visibleDocuments.length} {documents.visibleDocuments.length === 1 ? 'Dokument' : 'Dokumente'} sichtbar</strong>

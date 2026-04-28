@@ -25,7 +25,7 @@ export function NotesModule({
           <textarea name="text" placeholder="Inhalt" rows={5} />
           <button type="submit">Notiz speichern</button>
         </form>
-        <article className="panel masonry-panel">
+        <article className="panel self-start">
           <div className="columns-2 gap-x-[1.15rem] max-[720px]:columns-1">
             {notes.length > 0 ? notes.map((note) => (
               <article key={note.id} className="note-card break-inside-avoid relative grid mb-4 p-0 w-full max-w-full max-h-[15rem] overflow-hidden rounded-[24px] bg-[rgba(255,248,239,0.92)]">

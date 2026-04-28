@@ -78,8 +78,8 @@ export function getRoleLabel(role: UserRole) {
 
 export function getRoleChipClass(role: UserRole) {
   return role === 'admin'
-    ? 'chip role-chip role-chip-admin'
-    : 'chip role-chip role-chip-member';
+    ? 'chip border border-[rgba(24,52,47,0.16)] shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] font-semibold tracking-[0.01em] bg-[linear-gradient(135deg,rgba(24,52,47,0.16),rgba(43,108,89,0.22))] text-[#18342f]'
+    : 'chip border border-[rgba(244,111,58,0.16)] shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] font-semibold tracking-[0.01em] bg-[linear-gradient(135deg,rgba(244,111,58,0.12),rgba(251,244,236,0.88))] text-[#9a4b29]';
 }
 
 export function isFamilyOwnerMember(memberId: string, family: SupabaseFamilyContext | null) {
@@ -95,7 +95,7 @@ export function FamilyStatusBadges({
 }) {
   return (
     <div className="family-status-badges">
-      {isOwner ? <span className="chip owner-status-badge">Familiengründer</span> : null}
+      {isOwner ? <span className="chip border border-[rgba(180,120,35,0.18)] bg-[linear-gradient(135deg,rgba(221,179,87,0.16),rgba(253,244,221,0.92))] text-[#825c18] shadow-[inset_0_1px_0_rgba(255,255,255,0.42)] font-semibold tracking-[0.01em]">Familiengründer</span> : null}
       <span className={getRoleChipClass(role)}>{getRoleLabel(role)}</span>
     </div>
   );

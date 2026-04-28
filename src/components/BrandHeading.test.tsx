@@ -8,6 +8,6 @@ describe('BrandHeading', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Frey Frey' })).toBeInTheDocument();
     expect(container.querySelector('.custom-lockup')).not.toBeNull();
-    expect(container.querySelector('.brand-mark-image')?.getAttribute('src')).toBe('/freyLogo.svg');
+    expect(container.querySelector('.brand-mark img')?.getAttribute('src')).toBe('/freyLogo.svg');
   });
 });

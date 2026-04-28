@@ -23,10 +23,10 @@ export function ShoppingModule({
           <input name="category" placeholder="Kategorie" />
           <button type="submit">Artikel speichern</button>
         </form>
-        <article className="panel list-panel">
+        <article className="panel self-start">
           <ul className="check-list">
             {items.length > 0 ? items.map((item) => (
-              <li key={item.id} className={item.checked ? 'done' : ''}>
+              <li key={item.id} className={item.checked ? '[&>label>span]:opacity-60 [&>label>span]:line-through [&>div>strong]:opacity-60 [&>div>strong]:line-through [&_small]:opacity-60 [&_span]:opacity-60' : ''}>
                 <label>
                   <input
                     type="checkbox"

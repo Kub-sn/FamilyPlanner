@@ -25,7 +25,7 @@ export function TasksModule({
           <input name="due" placeholder="Fällig am" />
           <button type="submit">Aufgabe speichern</button>
         </form>
-        <article className="panel list-panel">
+        <article className="panel self-start">
           <ul className="task-list">
             {tasks.length > 0 ? tasks.map((task) => (
               <li key={task.id} className={task.done ? 'done' : ''}>

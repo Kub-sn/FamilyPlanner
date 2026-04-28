@@ -26,7 +26,7 @@ export function PlannerSidebar({
   const { activeTab, setActiveTab } = useActiveTab();
   return (
     <aside className="sidebar">
-      <div className="sidebar-brand">
+      <div className="relative z-[1]">
         <BrandHeading text="Frey Frey" className="brand-lockup-sidebar" />
       </div>
 

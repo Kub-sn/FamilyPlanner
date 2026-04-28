@@ -22,7 +22,7 @@ export function MealsModule({
           <input name="meal" placeholder="Gericht" />
           <button type="submit">Gericht speichern</button>
         </form>
-        <article className="panel list-panel">
+        <article className="panel self-start">
           <ul className="meal-list">
             {meals.length > 0 ? meals.map((meal) => (
               <li key={meal.id} className={meal.prepared ? 'done' : ''}>

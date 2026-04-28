@@ -85,7 +85,7 @@ describe('App', () => {
     const overviewSection = container.querySelector('.overview-stack');
     const plannerHeadings = screen.getAllByRole('heading', { level: 1, name: 'Frey Frey' });
     const demoModeBadges = screen.getAllByText('Demo-Modus');
-    const brandImages = Array.from(container.querySelectorAll('.brand-mark-image'));
+    const brandImages = Array.from(container.querySelectorAll('.brand-mark img'));
 
     expect(plannerHeadings).toHaveLength(2);
     expect(demoModeBadges).toHaveLength(2);

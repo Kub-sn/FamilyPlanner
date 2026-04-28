@@ -24,9 +24,9 @@ export function PlannerOverview({
         </div>
         <div className="min-h-0 overflow-y-auto overflow-x-hidden">
           {plannerState.tasks.length > 0 ? (
-            <ul className="task-list compact">
+            <ul className="task-list [&>li]:py-[0.7rem]">
               {plannerState.tasks.map((task) => (
-                <li key={task.id} className={task.done ? 'done' : ''}>
+                <li key={task.id} className={task.done ? '[&>label>span]:opacity-60 [&>label>span]:line-through [&>div>strong]:opacity-60 [&>div>strong]:line-through [&_small]:opacity-60 [&_span]:opacity-60' : ''}>
                   <button
                     type="button"
                     className="ghost-toggle"
@@ -59,7 +59,7 @@ export function PlannerOverview({
         </div>
         <div className="min-h-0 overflow-y-auto overflow-x-hidden">
           {plannerState.calendar.length > 0 ? (
-            <ul className="agenda-list compact">
+            <ul className="agenda-list [&>li]:py-[0.7rem]">
               {sortedCalendarEntries.map((entry) => (
                 <li key={entry.id}>
                   <div>

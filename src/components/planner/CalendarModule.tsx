@@ -51,7 +51,7 @@ export function CalendarModule({
           </small>
           <button type="submit">Termin speichern</button>
         </form>
-        <article className="panel list-panel p-5">
+        <article className="panel self-start p-5">
           <div className="grid gap-4">
             <div className="calendar-toolbar">
               <div>

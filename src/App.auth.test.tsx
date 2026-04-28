@@ -258,7 +258,7 @@ describe('App auth flow', () => {
       name: 'Frey Frey',
     });
 
-    const brandImage = container.querySelector('.brand-lockup-auth .brand-mark-image');
+    const brandImage = container.querySelector('.brand-lockup-auth .brand-mark img');
 
     expect(brandImage).not.toBeNull();
     expect(brandImage?.getAttribute('src')).toBe('/freyLogo.svg');

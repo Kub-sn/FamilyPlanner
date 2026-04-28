@@ -130,7 +130,7 @@ export function AuthScreen({
 
   return (
     <div className="auth-shell">
-      <div className="auth-stage">
+      <div className="w-[min(1080px,100%)] grid gap-4 [&>.auth-card-wide]:w-full">
         <section className="auth-card auth-card-wide">
           <div className="auth-copy auth-copy-editorial">
             <BrandHeading text="Frey Frey" className="brand-lockup-auth" />
@@ -149,7 +149,7 @@ export function AuthScreen({
             </div>
 
             {mode === 'sign-in' || mode === 'sign-up' ? (
-              <div className="mode-switch auth-mode-switch">
+              <div className="mode-switch mt-0">
                 <button
                   type="button"
                   className={mode === 'sign-in' ? 'mode-button active' : 'mode-button'}

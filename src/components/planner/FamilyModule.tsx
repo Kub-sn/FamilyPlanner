@@ -70,7 +70,7 @@ export function FamilyModule({
 }) {
   const { activeTab } = useActiveTab();
   const canViewFamily = Boolean(authFamily);
-  const accountPanelClassName = 'panel list-panel grid gap-[0.9rem] min-w-0 family-account-panel [&>.danger-action]:justify-self-start';
+  const accountPanelClassName = 'panel self-start grid gap-[0.9rem] min-w-0 family-account-panel [&>.danger-action]:justify-self-start';
   const invitePanel = (
     <form className="panel form-panel family-invite-panel" onSubmit={(event) => void onAddMember(event)}>
       <h4>Familienmitglied einladen</h4>
@@ -156,7 +156,7 @@ export function FamilyModule({
     <section className={activeTab === 'family' && canViewFamily ? 'module is-visible' : 'module'}>
       <div className="module-layout role-layout flex flex-col gap-[0.65rem]">
         <div className="flex flex-wrap items-start gap-[0.65rem] max-[720px]:flex-col">
-          <article className="panel list-panel flex-[1_1_620px] min-w-[min(100%,34rem)] max-[720px]:w-full max-[720px]:min-w-0">
+          <article className="panel self-start flex-[1_1_620px] min-w-[min(100%,34rem)] max-[720px]:w-full max-[720px]:min-w-0">
             <div className="panel-heading items-start">
               <div className="grid gap-[0.3rem] min-w-0">
                 <h4>Familienmitglieder</h4>
@@ -201,7 +201,7 @@ export function FamilyModule({
               <span className="chip">{familyInvites.length}</span>
             </div>
             {familyInvites.length > 0 ? (
-              <ul className="document-list compact gap-[0.85rem] mt-[0.4rem]">
+              <ul className="document-list [&>li]:py-[0.7rem] gap-[0.85rem] mt-[0.4rem]">
                 {familyInvites.map((invite) => (
                   <li key={invite.id} className="items-stretch py-4 px-[1.05rem] border border-[rgba(24,52,47,0.09)] rounded-[20px] bg-[rgba(255,255,255,0.98)] shadow-[0_10px_22px_rgba(35,27,17,0.05)]">
                     <div className="grid gap-[0.2rem] min-w-0 content-start [&>strong]:block [&>strong]:[overflow-wrap:anywhere] [&>small]:block [&>small]:[overflow-wrap:anywhere]">
@@ -234,7 +234,7 @@ export function FamilyModule({
         </div>
 
         {canManageFamily ? (
-          <article className="panel list-panel admin-directory-panel min-w-0 w-full overflow-x-clip gap-[0.75rem] max-[720px]:min-w-0">
+          <article className="panel self-start admin-directory-panel min-w-0 w-full overflow-x-clip gap-[0.75rem] max-[720px]:min-w-0">
               <div className="panel-heading family-inline-heading">
                 <h4>Alle Familien</h4>
                 <span className="chip">{adminFamilyDirectory.length}</span>
