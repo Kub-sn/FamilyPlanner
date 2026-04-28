@@ -84,7 +84,7 @@ describe('FamilyModule', () => {
     expect(onSetPendingFamilyDeletion).toHaveBeenCalled();
   });
 
-  it('places the account panel directly below the invite panel for members without management rights', () => {
+  it('places the account panel as a full-width row below the invite panel for members without management rights', () => {
     render(
       <ActiveTabProvider activeTab="family" setActiveTab={vi.fn()}>
         <FamilyModule
@@ -120,7 +120,7 @@ describe('FamilyModule', () => {
       </ActiveTabProvider>,
     );
 
-    const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.module-layout');
+    const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.role-layout');
     const topRow = settingsLayout?.querySelector(':scope > div');
     const invitePanel = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('.family-invite-panel');
     const secondaryStack = invitePanel?.parentElement;
@@ -134,7 +134,7 @@ describe('FamilyModule', () => {
     expect(topRow?.parentElement).toBe(settingsLayout);
     expect(secondaryStack?.parentElement).toBe(topRow);
     expect(invitePanel?.parentElement).toBe(secondaryStack);
-    expect(accountPanel?.parentElement).toBe(secondaryStack);
+    expect(accountPanel?.parentElement).toBe(settingsLayout);
   });
 
   it('renders each all-families member as a separate card with badges next to the name', () => {

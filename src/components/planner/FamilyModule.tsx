@@ -70,7 +70,7 @@ export function FamilyModule({
 }) {
   const { activeTab } = useActiveTab();
   const canViewFamily = Boolean(authFamily);
-  const accountPanelClassName = 'panel self-start grid gap-[0.9rem] min-w-0 family-account-panel [&>.danger-action]:justify-self-start';
+  const accountPanelClassName = 'panel self-start grid gap-[0.9rem] min-w-0 w-full family-account-panel [&>.danger-action]:justify-self-start';
   const invitePanel = (
     <form className="panel form-panel family-invite-panel" onSubmit={(event) => void onAddMember(event)}>
       <h4>Familienmitglied einladen</h4>
@@ -154,7 +154,7 @@ export function FamilyModule({
 
   return (
     <section className={activeTab === 'family' && canViewFamily ? 'module is-visible' : 'module'}>
-      <div className="module-layout role-layout flex flex-col gap-[0.65rem]">
+      <div className="role-layout flex flex-col gap-[0.65rem]">
         <div className="flex flex-wrap items-start gap-[0.65rem] max-[720px]:flex-col">
           <article className="panel self-start flex-[1_1_620px] min-w-[min(100%,34rem)] max-[720px]:w-full max-[720px]:min-w-0">
             <div className="panel-heading items-start">
@@ -229,9 +229,10 @@ export function FamilyModule({
 
           <div className="flex flex-[0_1_360px] flex-col gap-[0.6rem] min-w-[min(100%,21rem)] max-[720px]:w-full max-[720px]:min-w-0">
             {invitePanel}
-            {!canManageFamily ? accountPanel : null}
           </div>
         </div>
+
+        {!canManageFamily ? accountPanel : null}
 
         {canManageFamily ? (
           <article className="panel self-start admin-directory-panel min-w-0 w-full overflow-x-clip gap-[0.75rem] max-[720px]:min-w-0">

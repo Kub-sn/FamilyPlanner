@@ -359,6 +359,7 @@ button {
 .form-panel {
   display: grid;
   gap: 0.75rem;
+  align-self: start;
 }
 
 .family-directory-member-copy .family-status-badges {

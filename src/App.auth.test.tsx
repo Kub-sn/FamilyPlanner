@@ -832,7 +832,7 @@ describe('App auth flow', () => {
     expect(screen.queryByText('Keine offenen Einladungen')).not.toBeInTheDocument();
     expect(getConfigCard().getByRole('checkbox', { name: 'Freie Registrierung erlauben' })).toHaveClass('app-switch');
 
-    const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.module-layout');
+    const settingsLayout = screen.getByRole('heading', { level: 4, name: 'Familienmitglieder' }).closest('.role-layout');
     const topRow = settingsLayout?.querySelector(':scope > div');
     const inviteForm = screen.getByRole('heading', { level: 4, name: 'Familienmitglied einladen' }).closest('form');
     const secondaryStack = inviteForm?.parentElement;
