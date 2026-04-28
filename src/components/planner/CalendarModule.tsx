@@ -46,7 +46,7 @@ export function CalendarModule({
           <input name="date" type="date" aria-label="Datum" />
           <input name="time" type="time" aria-label="Uhrzeit" />
           <input name="place" placeholder="Ort" />
-            <small className="leading-[1.5] max-[560px]:text-[var(--ink-600)]">
+            <small className="leading-[1.5] max-[560px]:text-[#4c564d]">
             Monatsansicht und Tagesdetails aktualisieren sich sofort nach dem Speichern.
           </small>
           <button type="submit">Termin speichern</button>

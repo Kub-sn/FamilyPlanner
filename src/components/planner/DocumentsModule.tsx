@@ -57,7 +57,7 @@ export function DocumentsModule({
             onDragLeave={documents.handleDocumentDragLeave}
           >
             <span className="text-base">Datei hochladen</span>
-            <small className="text-[rgba(24,52,47,0.72)] max-[560px]:text-[var(--ink-600)]">
+            <small className="text-[rgba(24,52,47,0.72)] max-[560px]:text-[#4c564d]">
               PDF, Bilder, Word-Dateien oder mehrere Dateien hier hineinziehen. Maximal
               erlaubt sind 15 MB pro Datei.
             </small>
@@ -167,7 +167,7 @@ export function DocumentsModule({
                       )}
                       <div className="grid gap-[0.2rem]">
                         <strong className="block">{document.name}</strong>
-                        <small className="inline-flex flex-wrap gap-0 items-center text-[rgba(24,52,47,0.68)] max-[560px]:text-[var(--ink-600)]">
+                        <small className="inline-flex flex-wrap gap-0 items-center text-[rgba(24,52,47,0.68)] max-[560px]:text-[#4c564d]">
                           {getDocumentMetaParts(document).map((part, index) => (
                             <span key={part.key}>
                               {index > 0 ? <span className="text-[rgba(24,52,47,0.42)] max-[560px]:text-[rgba(29,36,31,0.62)]"> · </span> : null}
