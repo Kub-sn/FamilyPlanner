@@ -44,7 +44,7 @@ export function TasksModule({
                 </div>
               </li>
             )) : null}
-            {tasks.length === 0 ? <li className="empty-state-text">Keine Aufgaben vorhanden</li> : null}
+            {tasks.length === 0 ? <li className="py-3 text-[rgba(24,52,47,0.55)] italic border-none list-none">Keine Aufgaben vorhanden</li> : null}
           </ul>
         </article>
       </div>

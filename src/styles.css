@@ -484,12 +484,6 @@ button {
   min-height: 0;
 }
 
-.overview-empty-state {
-  display: grid;
-  gap: 0.3rem;
-  padding: 0.35rem 0;
-}
-
 .panel {
   padding: 1.25rem;
   border-radius: 28px;
@@ -557,10 +551,6 @@ button {
   gap: 1rem;
 }
 
-.notes-module-layout {
-  grid-template-columns: minmax(320px, 440px) minmax(0, 1fr);
-}
-
 .document-module-layout {
   display: flex;
   flex-direction: column;
@@ -598,10 +588,6 @@ button {
 .form-panel {
   display: grid;
   gap: 0.75rem;
-}
-
-.notes-form-panel {
-  min-width: 0;
 }
 
 .family-directory-member-copy .family-status-badges {
@@ -685,11 +671,6 @@ button {
   opacity: 0.62;
 }
 
-.document-form-panel {
-  gap: 0.8rem;
-  padding: 1.15rem;
-}
-
 .form-panel input:not(.app-switch),
 .form-panel textarea,
 .form-panel select {
@@ -750,14 +731,6 @@ button {
   border-bottom: 1px solid rgba(24, 52, 47, 0.08);
 }
 
-.empty-state-text {
-  padding: 0.75rem 0;
-  color: rgba(24, 52, 47, 0.55);
-  font-style: italic;
-  border: none;
-  list-style: none;
-}
-
 .compact li {
   padding: 0.7rem 0;
 }
@@ -799,34 +772,9 @@ button {
   background: rgba(255, 255, 255, 0.92);
 }
 
-.document-icon,
-.document-preview {
-  width: 3rem;
-  height: 3rem;
-  border-radius: 14px;
-  flex: 0 0 auto;
-}
-
-.document-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(24, 52, 47, 0.1);
-  color: #18342f;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.document-preview {
-  object-fit: cover;
-  border: 1px solid rgba(24, 52, 47, 0.12);
-  background: rgba(255, 255, 255, 0.92);
-}
-
 .document-delete-button {
   width: 100%;
   order: 4;
-  padding: 0.65rem 0.9rem;
 }
 
 .role-layout .document-list > li {
@@ -836,24 +784,6 @@ button {
 .role-layout .family-status-badges {
   margin-left: auto;
   justify-content: flex-end;
-}
-
-.document-toolbar {
-  display: grid;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.document-toolbar-copy {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.document-toolbar-copy strong,
-.document-toolbar-copy small {
-  display: block;
 }
 
 .document-filter-grid {
@@ -1116,7 +1046,6 @@ small {
   .document-list li,
   .calendar-toolbar,
   .calendar-toolbar-actions,
-  .document-toolbar-copy,
   .panel-heading,
   .member-pill {
     flex-direction: column;
@@ -2224,8 +2153,7 @@ body,
     display: none;
   }
 
-  .form-panel,
-  .document-form-panel {
+  .form-panel {
     padding: 0.8rem;
   }
 }

@@ -18,8 +18,8 @@ export function NotesModule({
 
   return (
     <section className={activeTab === 'notes' ? 'module is-visible' : 'module'}>
-      <div className="module-layout notes-module-layout">
-        <form className="panel form-panel notes-form-panel" onSubmit={(event) => void onAddNote(event)}>
+      <div className="module-layout grid-cols-[minmax(320px,440px)_minmax(0,1fr)]">
+        <form className="panel form-panel min-w-0" onSubmit={(event) => void onAddNote(event)}>
           <h4>Neue Notiz</h4>
           <input name="title" placeholder="Titel" />
           <textarea name="text" placeholder="Inhalt" rows={5} />
@@ -48,7 +48,7 @@ export function NotesModule({
                 </button>
               </article>
             )) : null}
-            {notes.length === 0 ? <p className="empty-state-text">Keine Notizen vorhanden</p> : null}
+            {notes.length === 0 ? <p className="py-3 text-[rgba(24,52,47,0.55)] italic border-none list-none">Keine Notizen vorhanden</p> : null}
           </div>
         </article>
       </div>

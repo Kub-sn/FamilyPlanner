@@ -48,7 +48,7 @@ export function DocumentsModule({
         </div>
       ) : null}
       <div className="module-layout document-module-layout">
-        <form className="panel form-panel document-form-panel" onSubmit={(event) => void documents.handleAddDocument(event)}>
+        <form className="panel form-panel document-form-panel gap-[0.8rem] p-[1.15rem] max-[720px]:p-[0.8rem]" onSubmit={(event) => void documents.handleAddDocument(event)}>
           <h4>Dokument erfassen</h4>
           <label
             className={`file-input-label grid gap-[0.65rem] font-semibold min-h-[8.5rem] content-start justify-items-start p-[1.3rem] border border-dashed border-[rgba(24,52,47,0.24)] rounded-[18px] bg-[rgba(246,239,226,0.5)] transition-[border-color,background,transform] duration-[140ms] ease-out hover:border-[rgba(185,95,44,0.42)] hover:bg-[rgba(255,247,239,0.72)] hover:-translate-y-px${documents.isDocumentDropActive ? ' is-drag-active !border-[#19624d] !bg-[rgba(25,98,77,0.12)] !-translate-y-px' : ''}`}
@@ -116,8 +116,8 @@ export function DocumentsModule({
           <button type="submit">Dokument speichern</button>
         </form>
         <article className="panel list-panel">
-          <div className="document-toolbar">
-            <div className="document-toolbar-copy">
+          <div className="document-toolbar grid gap-4 mb-4">
+            <div className="document-toolbar-copy flex justify-between items-center gap-4 [&>strong]:block [&>small]:block max-[560px]:flex-col max-[560px]:items-start max-[560px]:gap-1">
               <strong>{documents.visibleDocuments.length} {documents.visibleDocuments.length === 1 ? 'Dokument' : 'Dokumente'} sichtbar</strong>
               <small>{plannerState.documents.length} insgesamt</small>
             </div>
@@ -159,9 +159,9 @@ export function DocumentsModule({
                   <div>
                     <div className="flex items-center gap-[0.9rem]">
                       {isPreviewableImage(document) ? (
-                        <img className="document-preview" src={document.url} alt={`Vorschau für ${document.name}`} />
+                        <img className="document-preview w-12 h-12 rounded-[14px] shrink-0 object-cover border border-[rgba(24,52,47,0.12)] bg-[rgba(255,255,255,0.92)]" src={document.url} alt={`Vorschau für ${document.name}`} />
                       ) : (
-                        <span className="document-icon" aria-hidden="true">
+                        <span className="document-icon inline-flex items-center justify-center w-12 h-12 rounded-[14px] shrink-0 bg-[rgba(24,52,47,0.1)] text-[#18342f] text-[0.78rem] font-bold" aria-hidden="true">
                           {getDocumentIcon(document)}
                         </span>
                       )}
@@ -204,7 +204,7 @@ export function DocumentsModule({
                     </button>
                     <button
                       type="button"
-                      className="secondary-action document-delete-button w-full"
+                      className="secondary-action document-delete-button w-full order-4 py-[0.65rem] px-[0.9rem]"
                       aria-label={`Dokument ${document.name} löschen`}
                       onClick={() => void documents.handleDeleteDocument(document)}
                     >

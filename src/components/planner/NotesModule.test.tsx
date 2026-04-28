@@ -23,8 +23,8 @@ describe('NotesModule', () => {
       </ActiveTabProvider>,
     );
 
-    expect(document.querySelector('.notes-module-layout')).toBeInTheDocument();
-    expect(document.querySelector('.notes-form-panel')).toBeInTheDocument();
+    expect(document.querySelector('.module-layout')).toBeInTheDocument();
+    expect(document.querySelector('.form-panel')).toBeInTheDocument();
     expect(screen.getByText('Hinweis')).toBeInTheDocument();
     expect(screen.queryByPlaceholderText('Kategorie')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Notiz Hinweis öffnen' }));

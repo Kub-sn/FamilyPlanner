@@ -44,7 +44,7 @@ export function PlannerOverview({
               ))}
             </ul>
           ) : (
-            <div className="overview-empty-state">
+            <div className="overview-empty-state grid gap-[0.3rem] py-[0.35rem]">
               <strong>Keine offenen To-dos</strong>
               <small>Neue Aufgaben tauchen hier automatisch auf.</small>
             </div>
@@ -71,7 +71,7 @@ export function PlannerOverview({
               ))}
             </ul>
           ) : (
-            <div className="overview-empty-state">
+            <div className="overview-empty-state grid gap-[0.3rem] py-[0.35rem]">
               <strong>Keine Termine geplant</strong>
               <small>Neue Termine erscheinen hier als Nächstes.</small>
             </div>

@@ -39,7 +39,7 @@ export function MealsModule({
                 </div>
               </li>
             )) : null}
-            {meals.length === 0 ? <li className="empty-state-text">Keine Gerichte vorhanden</li> : null}
+            {meals.length === 0 ? <li className="py-3 text-[rgba(24,52,47,0.55)] italic border-none list-none">Keine Gerichte vorhanden</li> : null}
           </ul>
         </article>
       </div>
