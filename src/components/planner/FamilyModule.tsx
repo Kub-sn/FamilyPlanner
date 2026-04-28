@@ -167,30 +167,30 @@ export function FamilyModule({
               </div>
               <span className="chip">{members.length}</span>
             </div>
-            <ul className="family-member-list" aria-label="Familienmitglieder Liste">
+            <ul className="list-none m-0 mt-[0.85rem] p-0 flex flex-col gap-[0.55rem]" aria-label="Familienmitglieder Liste">
               {members.length > 0 ? (
                 members.map((member, index) => (
-                  <li key={member.id} className="family-member-card">
-                    <div className="family-member-main">
-                      <span className="family-member-avatar" aria-hidden="true">
+                  <li key={member.id} className="flex justify-between items-center gap-[0.85rem] w-full min-w-0 py-4 px-[1.05rem] border border-[rgba(24,52,47,0.12)] rounded-[22px] bg-[rgba(255,255,255,0.98)] shadow-[0_12px_26px_rgba(35,27,17,0.05)] max-[720px]:flex-col max-[720px]:items-start">
+                    <div className="flex items-center gap-[0.9rem] min-w-0">
+                      <span className="grid place-items-center w-12 h-12 rounded-[16px] shrink-0 bg-[linear-gradient(135deg,rgba(24,52,47,0.14),rgba(25,98,77,0.24))] text-[#18342f] text-[0.88rem] font-extrabold tracking-[0.08em]" aria-hidden="true">
                         {getMemberMonogram(member.name)}
                       </span>
-                      <div className="family-entry-copy family-member-copy">
-                        <div className="family-member-title-row">
+                      <div className="gap-[0.3rem] grid min-w-0 [&>strong]:block [&>strong]:[overflow-wrap:anywhere] [&>small]:block [&>small]:[overflow-wrap:anywhere]">
+                        <div className="flex flex-wrap items-center gap-[0.55rem]">
                           <strong>{member.name}</strong>
-                          <span className="family-member-slot">{authProfile?.id === member.id ? 'Du' : `Mitglied ${index + 1}`}</span>
+                          <span className="inline-flex items-center py-[0.28rem] px-[0.55rem] rounded-full bg-[rgba(24,52,47,0.08)] text-[rgba(24,52,47,0.76)] text-[0.72rem] font-bold tracking-[0.05em] uppercase">{authProfile?.id === member.id ? 'Du' : `Mitglied ${index + 1}`}</span>
                         </div>
                         <small>{member.email}</small>
                       </div>
                     </div>
-                    <div className="family-member-badges">
+                    <div className="flex justify-end min-w-0 ml-auto max-[720px]:justify-start">
                       <FamilyStatusBadges role={member.role} isOwner={isFamilyOwnerMember(member.id, authFamily)} />
                     </div>
                   </li>
                 ))
               ) : (
-                <li className="family-member-card family-member-empty">
-                  <div className="family-entry-copy">
+                <li className="flex justify-between items-center gap-[0.85rem] w-full min-w-0 py-4 px-[1.05rem] border border-[rgba(24,52,47,0.12)] rounded-[22px] bg-[rgba(255,255,255,0.98)] shadow-[0_12px_26px_rgba(35,27,17,0.05)] grid-cols-[1fr] max-[720px]:flex-col max-[720px]:items-start">
+                  <div className="grid gap-[0.2rem] min-w-0 [&>strong]:block [&>strong]:[overflow-wrap:anywhere] [&>small]:block [&>small]:[overflow-wrap:anywhere]">
                     <strong>Noch keine Mitglieder geladen</strong>
                     <small>Nach Login und Familienzuordnung werden echte Mitglieder aus Supabase angezeigt.</small>
                   </div>
@@ -202,14 +202,14 @@ export function FamilyModule({
               <span className="chip">{familyInvites.length}</span>
             </div>
             {familyInvites.length > 0 ? (
-              <ul className="document-list compact invite-card-list">
+              <ul className="document-list compact gap-[0.85rem] mt-[0.4rem]">
                 {familyInvites.map((invite) => (
-                  <li key={invite.id} className="invite-card-item">
-                    <div className="family-entry-copy invite-card-copy">
+                  <li key={invite.id} className="items-stretch py-4 px-[1.05rem] border border-[rgba(24,52,47,0.09)] rounded-[20px] bg-[rgba(255,255,255,0.98)] shadow-[0_10px_22px_rgba(35,27,17,0.05)]">
+                    <div className="grid gap-[0.2rem] min-w-0 content-start [&>strong]:block [&>strong]:[overflow-wrap:anywhere] [&>small]:block [&>small]:[overflow-wrap:anywhere]">
                       <strong>{invite.email}</strong>
-                      <span className={getRoleChipClass(invite.role as UserRole)}>{getRoleLabel(invite.role as UserRole)}</span>
+                      <span className={`${getRoleChipClass(invite.role as UserRole)} w-fit`}>{getRoleLabel(invite.role as UserRole)}</span>
                     </div>
-                    <div className="invite-card-actions">
+                    <div className="flex items-center justify-end ml-auto max-[720px]:w-full max-[720px]:ml-0 max-[720px]:justify-start">
                       {canInviteFamilyMembers ? (
                         <button
                           type="button"
@@ -249,12 +249,12 @@ export function FamilyModule({
               ) : null}
               {adminFamilyDirectory.length > 0 ? (
                 <>
-                  <div className="family-directory-switcher" role="tablist" aria-label="Zwischen Familien wechseln">
+                  <div className="flex flex-wrap gap-[0.65rem] mb-[1.2rem] max-[720px]:grid max-[720px]:justify-start max-[720px]:gap-[0.55rem]" role="tablist" aria-label="Zwischen Familien wechseln">
                     {adminFamilyDirectory.map((family) => (
                       <button
                         key={family.familyId}
                         type="button"
-                        className={selectedAdminFamily?.familyId === family.familyId ? 'family-directory-button active' : 'family-directory-button'}
+                        className={`grid gap-[0.18rem] min-w-[10.5rem] py-[0.85rem] px-4 border border-[rgba(24,52,47,0.12)] rounded-[18px] bg-[rgba(255,252,248,0.96)] text-[#18342f] text-left shadow-[0_8px_18px_rgba(35,27,17,0.04)] transition-[transform,border-color,box-shadow,background] duration-[180ms] ease-out hover:-translate-y-px hover:border-[rgba(24,52,47,0.22)] hover:shadow-[0_12px_22px_rgba(35,27,17,0.06)] [&>strong]:block [&>strong]:[overflow-wrap:anywhere] [&>small]:block [&>small]:[overflow-wrap:anywhere] max-[720px]:w-auto max-[720px]:min-w-[min(10.5rem,100%)]${selectedAdminFamily?.familyId === family.familyId ? ' border-[rgba(24,52,47,0.26)] !bg-[rgba(232,242,238,0.96)] !shadow-[0_14px_26px_rgba(24,52,47,0.08)]' : ''}`}
                         aria-pressed={selectedAdminFamily?.familyId === family.familyId}
                         onClick={() => onSelectAdminFamily(family.familyId)}
                       >
@@ -265,15 +265,15 @@ export function FamilyModule({
                   </div>
 
                   {selectedAdminFamily ? (
-                    <div className="family-directory-detail">
-                      <div className="panel-heading panel-heading-tight family-directory-summary">
-                        <div className="family-directory-summary-copy">
+                    <div className="grid min-w-0 overflow-x-clip gap-3">
+                      <div className="panel-heading panel-heading-tight family-directory-summary mt-[0.1rem] min-w-0 max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-[0.55rem]">
+                        <div className="grid min-w-0 gap-[0.18rem] pl-[0.45rem]">
                           <strong>{selectedAdminFamily.familyName}</strong>
                           <small>
                             {selectedAdminFamily.members.filter((member) => member.role === 'admin').length} Admin · {selectedAdminFamily.members.length} Mitglieder
                           </small>
                         </div>
-                        <div className="family-directory-summary-actions">
+                        <div className="flex flex-wrap items-center justify-end min-w-0 gap-[0.65rem] pr-[0.35rem] [&>.danger-action]:[white-space:normal] [&>.danger-action]:[overflow-wrap:anywhere] max-[720px]:w-full max-[720px]:ml-0 max-[720px]:justify-start [&>.danger-action]:max-[720px]:w-full">
                           <button
                             type="button"
                             className="secondary-action danger-action"
@@ -291,17 +291,17 @@ export function FamilyModule({
                           </button>
                         </div>
                       </div>
-                      <ul className="document-list family-directory-members">
+                      <ul className="document-list grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] min-w-0 gap-[0.8rem]">
                         {selectedAdminFamily.members.map((member) => (
-                          <li key={member.id} className="family-directory-member-card">
-                            <div className="family-entry-copy family-directory-member-copy">
-                              <div className="family-entry-heading">
+                          <li key={member.id} className="w-full min-w-0 overflow-hidden py-4 px-[1.2rem] border border-[rgba(24,52,47,0.26)] border-b-0 rounded-[20px] bg-[rgba(255,255,255,0.98)] shadow-[0_14px_26px_rgba(24,52,47,0.08)]">
+                            <div className="family-directory-member-copy grid gap-[0.4rem] min-w-0 pl-[0.45rem] [&>strong]:block [&>strong]:[overflow-wrap:anywhere] [&>small]:block [&>small]:[overflow-wrap:anywhere]">
+                              <div className="flex flex-wrap items-center min-w-0 gap-[0.85rem] max-[720px]:flex-col max-[720px]:items-start max-[720px]:gap-[0.45rem]">
                                 <strong>{member.name}</strong>
                                 <FamilyStatusBadges role={member.role as UserRole} isOwner={member.isOwner} />
                               </div>
                               <small>{member.email}</small>
                             </div>
-                            <div className="family-directory-member-actions">
+                            <div className="flex flex-wrap items-center justify-end min-w-0 gap-[0.65rem] ml-auto pr-[0.35rem] [&>.ghost-toggle]:[white-space:normal] [&>.ghost-toggle]:[overflow-wrap:anywhere] max-[720px]:w-full max-[720px]:ml-0 max-[720px]:justify-start [&>.ghost-toggle]:max-[720px]:w-full">
                               {!member.isOwner && member.id !== authProfile?.id ? (
                                 <button
                                   type="button"

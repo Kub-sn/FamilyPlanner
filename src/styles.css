@@ -715,216 +715,6 @@ button {
   color: rgba(24, 52, 47, 0.72);
 }
 
-.family-member-list {
-  list-style: none;
-  margin: 0.85rem 0 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-}
-
-.family-member-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.85rem;
-  width: 100%;
-  min-width: 0;
-  padding: 1rem 1.05rem;
-  border: 1px solid rgba(24, 52, 47, 0.12);
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 12px 26px rgba(35, 27, 17, 0.05);
-}
-
-.family-member-main {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  min-width: 0;
-}
-
-.family-member-avatar {
-  display: grid;
-  place-items: center;
-  width: 3rem;
-  height: 3rem;
-  border-radius: 16px;
-  flex: 0 0 auto;
-  background: linear-gradient(135deg, rgba(24, 52, 47, 0.14), rgba(25, 98, 77, 0.24));
-  color: #18342f;
-  font-size: 0.88rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-
-.family-member-copy {
-  gap: 0.3rem;
-}
-
-.family-member-title-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.family-member-slot {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.28rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(24, 52, 47, 0.08);
-  color: rgba(24, 52, 47, 0.76);
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.family-member-badges {
-  display: flex;
-  justify-content: flex-end;
-  min-width: 0;
-  margin-left: auto;
-}
-
-.family-member-badges .family-status-badges {
-  justify-content: flex-end;
-}
-
-.family-member-empty {
-  grid-template-columns: 1fr;
-}
-
-.family-directory-switcher {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-bottom: 1.2rem;
-}
-
-.family-directory-button {
-  display: grid;
-  gap: 0.18rem;
-  min-width: 10.5rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(24, 52, 47, 0.12);
-  border-radius: 18px;
-  background: rgba(255, 252, 248, 0.96);
-  color: #18342f;
-  text-align: left;
-  box-shadow: 0 8px 18px rgba(35, 27, 17, 0.04);
-  transition:
-    transform 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
-}
-
-.family-directory-button:hover {
-  transform: translateY(-1px);
-  border-color: rgba(24, 52, 47, 0.22);
-  box-shadow: 0 12px 22px rgba(35, 27, 17, 0.06);
-}
-
-.family-directory-button.active {
-  border-color: rgba(24, 52, 47, 0.26);
-  background: rgba(232, 242, 238, 0.96);
-  box-shadow: 0 14px 26px rgba(24, 52, 47, 0.08);
-}
-
-.family-directory-button strong,
-.family-directory-button small {
-  display: block;
-  overflow-wrap: anywhere;
-}
-
-.family-directory-detail {
-  display: grid;
-  min-width: 0;
-  overflow-x: clip;
-  gap: 0.75rem;
-}
-
-.family-directory-summary-copy {
-  display: grid;
-  min-width: 0;
-  gap: 0.18rem;
-  padding-left: 0.45rem;
-}
-
-.family-directory-summary-copy strong,
-.family-directory-summary-copy small {
-  display: block;
-}
-
-.family-directory-summary {
-  margin-top: 0.1rem;
-  min-width: 0;
-}
-
-.family-directory-summary-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 0;
-  gap: 0.65rem;
-  padding-right: 0.35rem;
-}
-
-.family-directory-members {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  min-width: 0;
-  gap: 0.8rem;
-}
-
-.family-directory-member-card {
-  width: 100%;
-  min-width: 0;
-  overflow: hidden;
-  padding: 1rem 1.2rem;
-  border: 1px solid rgba(24, 52, 47, 0.26);
-  border-bottom: none;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 14px 26px rgba(24, 52, 47, 0.08);
-}
-
-.family-directory-member-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  min-width: 0;
-  gap: 0.65rem;
-  margin-left: auto;
-  padding-right: 0.35rem;
-}
-
-.family-directory-summary-actions .danger-action,
-.family-directory-member-actions .ghost-toggle {
-  white-space: normal;
-  overflow-wrap: anywhere;
-}
-
-.family-entry-heading {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  min-width: 0;
-  gap: 0.85rem;
-}
-
-.family-directory-member-copy {
-  gap: 0.4rem;
-  min-width: 0;
-  padding-left: 0.45rem;
-}
-
 .family-directory-member-copy .family-status-badges {
   display: flex;
   flex-wrap: wrap;
@@ -1149,46 +939,6 @@ button {
   padding: 0.65rem 0.9rem;
 }
 
-.invite-card-list {
-  gap: 0.85rem;
-  margin-top: 0.4rem;
-}
-
-.invite-card-list li.invite-card-item {
-  align-items: stretch;
-  padding: 1rem 1.05rem;
-  border: 1px solid rgba(24, 52, 47, 0.09);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.98);
-  box-shadow: 0 10px 22px rgba(35, 27, 17, 0.05);
-}
-
-.invite-card-copy {
-  align-content: start;
-  gap: 0.5rem;
-}
-
-.invite-card-copy .role-chip {
-  width: fit-content;
-}
-
-.invite-card-actions {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  margin-left: auto;
-}
-
-.invite-card-actions .ghost-toggle {
-  align-self: center;
-}
-
-.family-entry-copy {
-  display: grid;
-  gap: 0.2rem;
-  min-width: 0;
-}
-
 .role-layout .document-list > li {
   align-items: center;
 }
@@ -1196,12 +946,6 @@ button {
 .role-layout .family-status-badges {
   margin-left: auto;
   justify-content: flex-end;
-}
-
-.family-entry-copy strong,
-.family-entry-copy small {
-  display: block;
-  overflow-wrap: anywhere;
 }
 
 .document-toolbar {
@@ -2564,12 +2308,6 @@ body,
     flex-direction: column;
   }
 
-  .family-directory-summary {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.55rem;
-  }
-
   .role-layout .panel-heading .chip,
   .role-layout .panel-heading-tight .chip {
     align-self: flex-start;
@@ -2586,62 +2324,23 @@ body,
     margin-left: auto;
   }
 
-  .family-member-card {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .family-member-badges,
-  .family-member-badges .family-status-badges {
-    justify-content: flex-start;
-  }
-
   .role-layout .document-list > li {
     flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
   }
 
-  .role-layout .family-status-badges,
-  .invite-card-actions,
-  .family-directory-member-actions,
-  .family-directory-summary-actions {
+  .role-layout .family-status-badges {
     width: 100%;
     margin-left: 0;
     justify-content: flex-start;
-  }
-
-  .invite-card-actions .ghost-toggle {
-    width: 100%;
-  }
-
-  .family-directory-switcher {
-    display: grid;
-    justify-content: flex-start;
-    gap: 0.55rem;
-  }
-
-  .family-directory-button {
-    width: auto;
-    min-width: min(10.5rem, 100%);
   }
 
   .family-directory-summary .family-status-badges {
     width: 100%;
   }
 
-  .family-directory-member-copy .family-entry-heading {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.45rem;
-  }
-
   .family-directory-member-copy .family-status-badges {
-    width: 100%;
-  }
-
-  .family-directory-member-actions .ghost-toggle,
-  .family-directory-summary-actions .danger-action {
     width: 100%;
   }
 

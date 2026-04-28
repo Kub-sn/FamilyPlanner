@@ -851,7 +851,7 @@ describe('App auth flow', () => {
     const directoryCard = getAdminDirectoryCard();
     const familySwitcherButtons = directoryCard
       .getAllByRole('button')
-      .filter((button) => button.classList.contains('family-directory-button'));
+      .filter((button) => button.getAttribute('aria-pressed') !== null);
 
     expect(familySwitcherButtons).toHaveLength(2);
     expect(familySwitcherButtons[0]).toHaveTextContent('Familie Admin');

@@ -896,8 +896,9 @@ test('keeps the selected planner section after a hard reload without app routing
   await expect(page.getByRole('heading', { name: 'Familienmitglieder' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Alle Familien' })).toBeVisible();
   await expect(page.getByText('Jede Person steht in einer eigenen Zeile mit Rolle, E-Mail und Status, damit du sie im Desktop-Layout sofort unterscheiden kannst.')).toBeVisible();
-  await expect(page.locator('.family-member-card').first()).toBeVisible();
-  await expect(page.locator('.family-member-card').first().locator('.family-member-avatar')).toContainText('A');
+  const reloadedMemberList = page.getByRole('list', { name: 'Familienmitglieder Liste' });
+  await expect(reloadedMemberList.locator(':scope > li').first()).toBeVisible();
+  await expect(reloadedMemberList.locator(':scope > li').first().locator('[aria-hidden="true"]')).toContainText('A');
   await expect(page.locator('.admin-directory-panel').locator('+ .family-settings-bottom-row')).toHaveCount(1);
   await expect(page.getByRole('button', { name: 'Lokale Daten zurücksetzen' })).toHaveCount(0);
 });
@@ -935,12 +936,13 @@ test('keeps family settings cards usable on mobile widths', async ({ page }) => 
   await expect(page.getByRole('heading', { name: 'Alle Familien' })).toBeVisible();
   await expect(page.locator('.mobile-account-card .family-permission-note')).toBeHidden();
 
-  const memberCards = page.locator('.family-member-card');
-  const firstMemberCopy = memberCards.first().locator('.family-entry-copy');
+  const memberList = page.getByRole('list', { name: 'Familienmitglieder Liste' });
+  const memberCards = memberList.locator(':scope > li');
+  const firstMemberCopy = memberCards.first().locator('[class*="grid"][class*="min-w-0"]').first();
   const firstMemberBadges = memberCards.first().locator('.family-status-badges');
-  const firstMemberAvatar = memberCards.first().locator('.family-member-avatar');
-  const firstMemberSlot = memberCards.first().locator('.family-member-slot');
-  const familyButtons = page.locator('.family-directory-button');
+  const firstMemberAvatar = memberCards.first().locator('[aria-hidden="true"]');
+  const firstMemberSlot = memberCards.first().locator('span[class*="uppercase"]');
+  const familyButtons = page.locator('[aria-pressed]');
   const openInvitesHeading = page.getByRole('heading', { name: 'Offene Einladungen' });
   const openInvitesChip = openInvitesHeading.locator('..').locator('.chip');
   const allFamiliesHeading = page.getByRole('heading', { name: 'Alle Familien' });

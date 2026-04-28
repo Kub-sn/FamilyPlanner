@@ -189,8 +189,8 @@ describe('FamilyModule', () => {
     );
 
     const memberName = screen.getByText('Mia Mitglied');
-    const memberCard = memberName.closest('.family-directory-member-card');
-    const memberHeading = memberName.closest('.family-entry-heading');
+    const memberCard = memberName.closest('li');
+    const memberHeading = memberName.closest('div');
 
     expect(memberCard).not.toBeNull();
     expect(memberHeading?.querySelector('.family-status-badges')).not.toBeNull();
@@ -227,11 +227,11 @@ describe('FamilyModule', () => {
       </ActiveTabProvider>,
     );
 
-    const familyMemberCards = screen.getAllByRole('listitem').filter((item) => item.classList.contains('family-member-card'));
+    const familyMemberCards = screen.getByLabelText('Familienmitglieder Liste').querySelectorAll(':scope > li');
     const firstCard = familyMemberCards[0];
 
     expect(familyMemberCards).toHaveLength(plannerFixture.members.length);
-    expect(firstCard?.querySelector('.family-member-avatar')?.textContent).toBe('AA');
+    expect(firstCard?.querySelector('[aria-hidden="true"]')?.textContent).toBe('AA');
     expect(screen.getByText('Du')).toBeInTheDocument();
     expect(screen.getByText('Mitglied 2')).toBeInTheDocument();
   });
