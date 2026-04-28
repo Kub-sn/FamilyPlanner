@@ -97,24 +97,28 @@ button {
 
 #root {
   min-height: 100vh;
+  position: relative;
+  isolation: isolate;
 }
 
 .auth-shell {
   min-height: 100vh;
   display: grid;
   place-items: center;
-  padding: 2rem;
+  padding: 2.5rem;
 }
 
 .auth-card {
+  position: relative;
+  overflow: hidden;
   width: min(960px, 100%);
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
   gap: 1.25rem;
-  padding: 1.25rem;
+  padding: 1.5rem;
   border-radius: 32px;
   background: rgba(255, 250, 244, 0.88);
-  border: 1px solid rgba(24, 52, 47, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.55);
   box-shadow: 0 20px 50px rgba(24, 52, 47, 0.1);
 }
 
@@ -184,9 +188,10 @@ button {
   display: inline-flex;
   align-items: center;
   width: fit-content;
-  padding: 0.45rem 0.75rem;
+  padding: 0.55rem 0.9rem;
   border-radius: 999px;
   background: rgba(246, 239, 226, 0.12);
+  border: 1px solid rgba(246, 239, 226, 0.12);
 }
 
 .auth-panel {
@@ -218,6 +223,7 @@ button {
 .secondary-action {
   background: rgba(24, 52, 47, 0.08);
   color: inherit;
+  border: 1px solid;
 }
 
 .danger-action {
@@ -254,19 +260,22 @@ button {
   position: sticky;
   top: 0;
   min-height: 100vh;
+  overflow: hidden;
 }
 
 .sidebar h1,
 .panel h3,
 .panel h4,
-.account-card strong {
-  font-family: Georgia, "Times New Roman", serif;
-  letter-spacing: -0.03em;
+.account-card strong,
+.auth-copy h1 {
+  font-family: 'Fraunces', Georgia, serif;
+  letter-spacing: -0.045em;
 }
 
 .sidebar h1 {
   margin: 0.25rem 0 0.75rem;
   font-size: clamp(2rem, 3vw, 2.6rem);
+  line-height: 0.94;
 }
 
 .brand-lockup-sidebar h1,
@@ -283,6 +292,8 @@ button {
 }
 
 .account-card {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 0.65rem;
   margin-top: auto;
@@ -369,18 +380,25 @@ button {
 .tab-list {
   display: grid;
   gap: 0.65rem;
+  position: relative;
+  z-index: 1;
 }
 
 .tab-button {
+  position: relative;
   border-radius: 20px;
   border: 1px solid rgba(246, 239, 226, 0.12);
   padding: 0.95rem 1rem;
   background: rgba(246, 239, 226, 0.06);
   color: inherit;
   text-align: left;
+  font-weight: 600;
+  overflow: hidden;
 }
 
 .status-card {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 0.25rem;
   padding: 1.25rem;
@@ -390,6 +408,7 @@ button {
 
 .status-card strong {
   font-size: 1.8rem;
+  line-height: 1;
 }
 
 .content {
@@ -428,6 +447,7 @@ button {
 
 .overview-stack.is-visible {
   display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
   gap: 1rem;
   animation: rise-in 600ms ease;
 }
@@ -450,16 +470,18 @@ button {
 }
 
 .panel {
+  position: relative;
   padding: 1.25rem;
   border-radius: 28px;
   background: rgba(255, 250, 244, 0.84);
+  border: 1px solid;
 }
 
 .panel-heading {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .panel h3,
@@ -475,6 +497,8 @@ button {
   background: rgba(246, 239, 226, 0.14);
   color: inherit;
   font-size: 0.8rem;
+  border: 1px solid;
+  font-weight: 600;
 }
 
 .chip.alt {
@@ -598,12 +622,15 @@ button {
 
 .form-panel input:not(.app-switch),
 .form-panel textarea,
-.form-panel select {
+.form-panel select,
+.document-filter-grid input,
+.document-filter-grid select {
   width: 100%;
   padding: 0.9rem 1rem;
   border-radius: 18px;
-  border: 1px solid rgba(24, 52, 47, 0.14);
-  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(35, 63, 54, 0.12);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
 }
 
 .form-panel button,
@@ -629,6 +656,7 @@ button {
   background: rgba(24, 52, 47, 0.08);
   color: #18342f;
   min-width: 80px;
+  border: 1px solid;
 }
 
 .agenda-list,
@@ -711,11 +739,7 @@ button {
 
 .document-filter-grid input,
 .document-filter-grid select {
-  width: 100%;
   padding: 0.85rem 0.95rem;
-  border-radius: 18px;
-  border: 1px solid rgba(24, 52, 47, 0.14);
-  background: rgba(255, 255, 255, 0.9);
 }
 
 .document-grid {
@@ -926,36 +950,6 @@ small {
 
 /* ── Editorial – surviving rules ── */
 
-#root {
-  position: relative;
-  isolation: isolate;
-}
-
-.sidebar h1,
-.panel h3,
-.panel h4,
-.account-card strong,
-.auth-copy h1 {
-  font-family: 'Fraunces', Georgia, serif;
-  letter-spacing: -0.045em;
-}
-
-.auth-shell {
-  padding: 2.5rem;
-}
-
-.auth-card {
-  position: relative;
-  overflow: hidden;
-  padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.55);
-}
-
-.account-summary span {
-  padding: 0.55rem 0.9rem;
-  border: 1px solid rgba(246, 239, 226, 0.12);
-}
-
 .auth-panel-editorial {
   position: relative;
   align-content: start;
@@ -971,44 +965,12 @@ small {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
-.sidebar {
-  overflow: hidden;
-}
-
-.status-card,
-.tab-list,
-.account-card {
-  position: relative;
-  z-index: 1;
-}
-
-.sidebar h1 {
-  line-height: 0.94;
-}
-
 .brand-lockup-sidebar .brand-mark,
 .brand-lockup-mobile .brand-mark {
   width: 2.55rem;
   height: 2.55rem;
   padding: 0.3rem;
   border-radius: 0.82rem;
-}
-
-.status-card,
-.account-card,
-.tab-button,
-.member-pill {
-  border: 1px solid;
-}
-
-.status-card strong {
-  line-height: 1;
-}
-
-.tab-button {
-  position: relative;
-  font-weight: 600;
-  overflow: hidden;
 }
 
 .tab-button::after {
@@ -1023,44 +985,6 @@ small {
 .tab-button.active::after,
 .tab-button:hover::after {
   width: 100%;
-}
-
-.panel {
-  position: relative;
-  border: 1px solid;
-}
-
-.overview-stack.is-visible {
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-  gap: 1rem;
-}
-
-.panel-heading {
-  gap: 1.25rem;
-}
-
-.chip {
-  border: 1px solid;
-  font-weight: 600;
-}
-
-.form-panel input,
-.form-panel textarea,
-.form-panel select,
-.document-filter-grid input,
-.document-filter-grid select {
-  border: 1px solid rgba(35, 63, 54, 0.12);
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
-}
-
-.secondary-action,
-.ghost-toggle {
-  border: 1px solid;
-}
-
-.note-card {
-  border: 1px solid;
 }
 
 @media (max-width: 1180px) {
