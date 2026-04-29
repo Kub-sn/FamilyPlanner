@@ -17,6 +17,7 @@ import { useCalendarManager } from '../../hooks/useCalendarManager';
 import { useAdminDirectory } from '../../hooks/useAdminDirectory';
 import { useCrudModules } from '../../hooks/useCrudModules';
 import { useDeletionManager } from '../../hooks/useDeletionManager';
+import { isTaskDone } from '../../lib/tasks';
 import { AccountCard } from './AccountCard';
 import { CalendarModule } from './CalendarModule';
 import { ConfirmationDialog } from './ConfirmationDialog';
@@ -111,6 +112,7 @@ export default function PlannerShell({
 
   const crud = useCrudModules({
     authState,
+    plannerState,
     setCloudSync,
     updateState,
   });
@@ -129,7 +131,7 @@ export default function PlannerShell({
   // --- Derived values ---
 
   const openTasks = useMemo(
-    () => plannerState.tasks.filter((task) => !task.done).length,
+    () => plannerState.tasks.filter((task) => !isTaskDone(task)).length,
     [plannerState.tasks],
   );
 
@@ -208,10 +210,14 @@ export default function PlannerShell({
         />
 
         <TasksModule
+          familyMemberOptions={plannerState.members.map((member) => member.name)}
           ownerDefaultValue={authState.profile?.display_name ?? activeMember?.name ?? ''}
           tasks={plannerState.tasks}
           onAddTask={crud.handleAddTask}
-          onToggleTask={crud.handleToggleTask}
+          onUpdateTask={crud.handleUpdateTask}
+          onDeleteTask={crud.handleDeleteTask}
+          onSetTaskStatus={crud.handleSetTaskStatus}
+          onToggleTaskSubtask={crud.handleToggleTaskSubtask}
         />
 
         <NotesModule

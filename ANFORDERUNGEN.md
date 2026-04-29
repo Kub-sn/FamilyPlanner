@@ -1,13 +1,13 @@
 # Anforderungen
 
-- [ ] bei dokumente erfassen: 
+- [x] bei dokumente erfassen: 
   - [x] die inputs komplett löschen
-  - [ ] status, dokument kategorie linkzumdoku komplett aus db löschen
-  - [ ] bei bearbeiten nur name, alles andere entfernen
-  - [ ] bei filter status auch entfernen
-  - [ ] status a-z im filter auch entfernen als auswahlmöglichkeit
+  - [x] status, dokument kategorie linkzumdoku komplett aus db löschen
+  - [x] bei bearbeiten nur name, alles andere entfernen
+  - [x] bei filter status auch entfernen
+  - [x] status a-z im filter auch entfernen als auswahlmöglichkeit
   - [x] optional bei datei hochladen entfernen
-  - [ ] 1 dokumente zu 1 dokument machen
+  - [x] 1 dokumente zu 1 dokument machen
 
 - [x] weitere rolle: familien admin, da bei neuanmeldung und neue familie der user die rolle admin bekommt.
 
@@ -23,9 +23,9 @@
     - [ ] man kann soviele gerichte eintragen pro tag wie man möchte
 
 - [ ] notizen:
-  - [ ] nichts soll required sein
-  - [ ] wenn keine notizen vorhanden, dann soll in dem bereich wo diese wären stehen: keine Notizen vorhanden
-  - [ ] fehlermeldung soll angezeigt werden wenn ich gar nichts reinschreibe
+  - [x] nichts soll required sein
+  - [x] wenn keine notizen vorhanden, dann soll in dem bereich wo diese wären stehen: keine Notizen vorhanden
+  - [x] fehlermeldung soll angezeigt werden wenn ich gar nichts reinschreibe
   - [ ] in das textfield buttons hinzufügen für bolt, kursiv, checkliste, aufzählungen, textfarben, hintergrundfarbe(optional)
   
 - [ ] todo

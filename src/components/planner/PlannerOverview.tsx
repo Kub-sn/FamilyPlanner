@@ -1,6 +1,7 @@
 import type { PlannerState } from '../../lib/planner-data';
 import { formatCalendarEntrySchedule } from '../../lib/calendar-view';
 import { useActiveTab } from '../../context/ActiveTabContext';
+import { formatTaskDueLabel, isTaskDone } from '../../lib/tasks';
 
 export function PlannerOverview({
   openTasks,
@@ -14,6 +15,7 @@ export function PlannerOverview({
   onToggleTask: (taskId: string, done: boolean) => Promise<void>;
 }) {
   const { activeTab } = useActiveTab();
+  const visibleTasks = plannerState.tasks.filter((task) => !isTaskDone(task)).slice(0, 6);
 
   return (
     <section className={activeTab === 'overview' ? 'overview-stack is-visible' : 'overview-stack'}>
@@ -23,21 +25,21 @@ export function PlannerOverview({
           <span className="chip alt">{openTasks} offen</span>
         </div>
         <div className="min-h-0 overflow-y-auto overflow-x-hidden">
-          {plannerState.tasks.length > 0 ? (
+          {visibleTasks.length > 0 ? (
             <ul className="task-list [&>li]:py-[0.7rem]">
-              {plannerState.tasks.map((task) => (
-                <li key={task.id} className={task.done ? '[&>label>span]:opacity-60 [&>label>span]:line-through [&>div>strong]:opacity-60 [&>div>strong]:line-through [&_small]:opacity-60 [&_span]:opacity-60' : ''}>
+              {visibleTasks.map((task) => (
+                <li key={task.id}>
                   <button
                     type="button"
                     className="ghost-toggle"
-                    onClick={() => void onToggleTask(task.id, !task.done)}
+                    onClick={() => void onToggleTask(task.id, true)}
                   >
-                    {task.done ? 'Erledigt' : 'Offen'}
+                    Erledigen
                   </button>
                   <div>
                     <strong>{task.title}</strong>
                     <small>
-                      {task.owner} · {task.due}
+                      {task.owner} · {formatTaskDueLabel(task.due)}
                     </small>
                   </div>
                 </li>

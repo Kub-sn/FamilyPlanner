@@ -13,6 +13,8 @@ import type {
   NoteItem,
   ShoppingItem,
   TaskItem,
+  TaskStatus,
+  TaskSubtask,
   UserRole,
 } from './planner-data';
 
@@ -82,7 +84,8 @@ type TaskRow = {
   title: string;
   owner: string;
   due: string;
-  done: boolean;
+  status: TaskStatus;
+  subtasks: unknown;
 };
 
 type NoteRow = {
@@ -951,7 +954,7 @@ export async function fetchTasks(familyId: string): Promise<TaskItem[]> {
   const client = requireSupabase();
   const { data, error } = await client
     .from('tasks')
-    .select('id, title, owner, due, done')
+    .select('id, title, owner, due, status, subtasks')
     .eq('family_id', familyId)
     .order('created_at', { ascending: false });
 
@@ -964,7 +967,39 @@ export async function fetchTasks(familyId: string): Promise<TaskItem[]> {
     title: task.title,
     owner: task.owner,
     due: task.due,
-    done: task.done,
+    status: task.status,
+    subtasks: normalizeTaskSubtasks(task.subtasks),
+  }));
+}
+
+function normalizeTaskSubtasks(subtasks: unknown): TaskSubtask[] {
+  if (!Array.isArray(subtasks)) {
+    return [];
+  }
+
+  return subtasks.flatMap((subtask) => {
+    if (!subtask || typeof subtask !== 'object') {
+      return [];
+    }
+
+    const candidate = subtask as Partial<TaskSubtask>;
+    const id = typeof candidate.id === 'string' ? candidate.id : '';
+    const title = typeof candidate.title === 'string' ? candidate.title.trim() : '';
+    const done = Boolean(candidate.done);
+
+    if (!id || !title) {
+      return [];
+    }
+
+    return [{ id, title, done }];
+  });
+}
+
+function serializeTaskSubtasks(subtasks: TaskSubtask[]) {
+  return subtasks.map((subtask) => ({
+    id: subtask.id,
+    title: subtask.title,
+    done: subtask.done,
   }));
 }
 
@@ -975,8 +1010,15 @@ export async function createTask(
   const client = requireSupabase();
   const { data, error } = await client
     .from('tasks')
-    .insert({ family_id: familyId, ...payload })
-    .select('id, title, owner, due, done')
+    .insert({
+      family_id: familyId,
+      title: payload.title,
+      owner: payload.owner,
+      due: payload.due,
+      status: payload.status,
+      subtasks: serializeTaskSubtasks(payload.subtasks),
+    })
+    .select('id, title, owner, due, status, subtasks')
     .single();
 
   if (error) {
@@ -990,13 +1032,64 @@ export async function createTask(
     title: task.title,
     owner: task.owner,
     due: task.due,
-    done: task.done,
+    status: task.status,
+    subtasks: normalizeTaskSubtasks(task.subtasks),
   };
 }
 
-export async function updateTaskDone(id: string, done: boolean) {
+export async function updateTask(
+  id: string,
+  payload: Partial<Omit<TaskItem, 'id'>>,
+): Promise<TaskItem> {
   const client = requireSupabase();
-  const { error } = await client.from('tasks').update({ done }).eq('id', id);
+  const nextPayload: Record<string, unknown> = {};
+
+  if (payload.title !== undefined) {
+    nextPayload.title = payload.title;
+  }
+
+  if (payload.owner !== undefined) {
+    nextPayload.owner = payload.owner;
+  }
+
+  if (payload.due !== undefined) {
+    nextPayload.due = payload.due;
+  }
+
+  if (payload.status !== undefined) {
+    nextPayload.status = payload.status;
+  }
+
+  if (payload.subtasks !== undefined) {
+    nextPayload.subtasks = serializeTaskSubtasks(payload.subtasks);
+  }
+
+  const { data, error } = await client
+    .from('tasks')
+    .update(nextPayload)
+    .eq('id', id)
+    .select('id, title, owner, due, status, subtasks')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  const task = data as TaskRow;
+
+  return {
+    id: task.id,
+    title: task.title,
+    owner: task.owner,
+    due: task.due,
+    status: task.status,
+    subtasks: normalizeTaskSubtasks(task.subtasks),
+  };
+}
+
+export async function deleteTask(id: string) {
+  const client = requireSupabase();
+  const { error } = await client.from('tasks').delete().eq('id', id);
 
   if (error) {
     throw error;

@@ -540,6 +540,96 @@ test('shows the planner shell and lets the user open the shopping module', async
   await expect(page.getByRole('button', { name: 'Gericht speichern' })).toBeVisible();
 });
 
+test('creates and progresses a kanban task in demo mode', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' }).first()).toBeVisible();
+
+  if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
+    return;
+  }
+
+  await page.getByRole('button', { name: 'To-dos' }).click();
+  await expect(page.getByRole('button', { name: 'Neue Aufgabe' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Neue Aufgabe' }).click();
+  await expect(page.getByRole('heading', { name: 'Neue Aufgabe' })).toBeVisible();
+  await page.getByRole('dialog').getByPlaceholder('Aufgabe').fill('Muell rausbringen');
+  await page.getByRole('dialog').getByLabel('Fälligkeitsdatum').fill('2026-05-04');
+  await page.getByRole('dialog').getByRole('button', { name: 'Subtask hinzufügen' }).click();
+  await page.getByRole('dialog').getByLabel('Subtask 1').fill('Tonnenrand säubern');
+  await page.getByRole('dialog').getByRole('button', { name: 'Aufgabe speichern' }).click();
+
+  const newTaskCard = page.getByText('Muell rausbringen').locator('xpath=ancestor::article[1]');
+
+  await expect(newTaskCard).toContainText('0/1 erledigt');
+  await newTaskCard.getByRole('button', { name: 'Aufgabe Muell rausbringen Aktionen' }).click();
+  await page.getByRole('button', { name: 'Status ändern' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: /In Arbeit/i }).click();
+  await newTaskCard.getByRole('checkbox', { name: 'Tonnenrand säubern' }).click();
+  await expect(newTaskCard).toContainText('1/1 erledigt');
+  await newTaskCard.getByRole('button', { name: 'Aufgabe Muell rausbringen Aktionen' }).click();
+  await page.getByRole('button', { name: 'Status ändern' }).click();
+  await page.getByRole('dialog').getByRole('button', { name: /Erledigt/i }).click();
+
+  const doneColumn = page.getByRole('heading', { name: 'Erledigt' }).locator('xpath=ancestor::article[1]');
+  await expect(doneColumn).toContainText('Muell rausbringen');
+});
+
+test('changes task status via dialog on mobile widths', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' }).first()).toBeVisible();
+
+  if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
+    return;
+  }
+
+  await page.getByRole('button', { name: 'To-dos' }).click();
+  await expect(page.getByRole('button', { name: 'Neue Aufgabe' })).toBeVisible();
+
+  const taskCard = page.getByText('Schultasche packen').locator('xpath=ancestor::article[1]');
+
+  await taskCard.getByRole('button', { name: 'Aufgabe Schultasche packen Aktionen' }).click();
+  await page.getByRole('button', { name: 'Status ändern' }).click();
+  await expect(page.getByRole('heading', { name: 'Status ändern' })).toBeVisible();
+  await page.getByRole('dialog').getByRole('button', { name: /In Arbeit/i }).click();
+
+  const inProgressColumn = page.getByRole('heading', { name: 'In Arbeit' }).locator('xpath=ancestor::article[1]');
+  await expect(inProgressColumn).toContainText('Schultasche packen');
+});
+
+test('edits and deletes a task through the action menu in demo mode', async ({ page }) => {
+  await page.goto('/');
+
+  await expect(page.getByRole('heading', { name: 'Frey Frey' }).first()).toBeVisible();
+
+  if (await page.getByRole('button', { name: 'Jetzt anmelden' }).isVisible()) {
+    return;
+  }
+
+  await page.getByRole('button', { name: 'To-dos' }).click();
+
+  const taskCard = page.getByText('Schultasche packen').locator('xpath=ancestor::article[1]');
+
+  await taskCard.getByRole('button', { name: 'Aufgabe Schultasche packen Aktionen' }).click();
+  await page.getByRole('button', { name: 'Bearbeiten' }).click();
+  await expect(page.getByRole('heading', { name: 'Aufgabe bearbeiten' })).toBeVisible();
+  await page.getByRole('dialog').getByPlaceholder('Aufgabe').fill('Schultasche neu packen');
+  await page.getByRole('dialog').getByRole('button', { name: 'Änderungen speichern' }).click();
+
+  const editedTaskCard = page.getByText('Schultasche neu packen').locator('xpath=ancestor::article[1]');
+  await expect(editedTaskCard).toBeVisible();
+
+  await editedTaskCard.getByRole('button', { name: 'Aufgabe Schultasche neu packen Aktionen' }).click();
+  await page.getByRole('button', { name: 'Löschen' }).click();
+  await expect(page.getByRole('heading', { name: 'Löschen?' })).toBeVisible();
+  await page.getByRole('button', { name: /^Löschen$/ }).click();
+
+  await expect(page.getByText('Schultasche neu packen')).toHaveCount(0);
+});
+
 test('shows the upload-only documents module with a larger capture card on desktop', async ({ page }) => {
   await page.goto('/');
 

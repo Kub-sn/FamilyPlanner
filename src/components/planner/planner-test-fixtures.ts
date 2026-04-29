@@ -13,7 +13,17 @@ export const plannerFixture: PlannerState = {
     { id: 'shopping-1', name: 'Milch', quantity: '2', category: 'Kueche', checked: false },
   ],
   tasks: [
-    { id: 'task-1', title: 'Schultasche packen', owner: 'Alex', due: 'Heute', done: false },
+    {
+      id: 'task-1',
+      title: 'Schultasche packen',
+      owner: 'Alex',
+      due: '2026-05-02',
+      status: 'todo',
+      subtasks: [
+        { id: 'task-1-subtask-1', title: 'Hefte sortieren', done: true },
+        { id: 'task-1-subtask-2', title: 'Turnbeutel prüfen', done: false },
+      ],
+    },
   ],
   notes: [
     { id: 'note-1', title: 'Hinweis', text: 'Nicht vergessen.' },

@@ -32,6 +32,54 @@ describe('loadPlannerState', () => {
     ]);
   });
 
+  it('migrates legacy tasks with only a done flag to the new task shape', () => {
+    window.localStorage.setItem(
+      'family-planner-state-v2',
+      JSON.stringify({
+        ...defaultPlannerState,
+        tasks: [
+          {
+            id: 'task-1',
+            title: 'Sportsachen packen',
+            owner: 'Alex',
+            due: '2026-05-02',
+            done: true,
+          },
+          {
+            id: 'task-2',
+            title: 'Fragebogen ausfuellen',
+            owner: 'Bea',
+            due: '2026-05-03',
+            done: false,
+            subtasks: [
+              { id: 'subtask-1', title: 'Unterschrift holen', done: true },
+              { id: 'subtask-2', title: '  ', done: false },
+            ],
+          },
+        ],
+      }),
+    );
+
+    expect(loadPlannerState().tasks).toEqual([
+      {
+        id: 'task-1',
+        title: 'Sportsachen packen',
+        owner: 'Alex',
+        due: '2026-05-02',
+        status: 'done',
+        subtasks: [],
+      },
+      {
+        id: 'task-2',
+        title: 'Fragebogen ausfuellen',
+        owner: 'Bea',
+        due: '2026-05-03',
+        status: 'todo',
+        subtasks: [{ id: 'subtask-1', title: 'Unterschrift holen', done: true }],
+      },
+    ]);
+  });
+
   it('loads and saves the active tab when it is valid', () => {
     saveActiveTab('family');
 

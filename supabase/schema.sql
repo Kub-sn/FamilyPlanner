@@ -56,7 +56,8 @@ create table public.tasks (
   title text not null,
   owner text not null,
   due text not null,
-  done boolean not null default false,
+  status text not null default 'todo' check (status in ('todo', 'in-progress', 'done')),
+  subtasks jsonb not null default '[]'::jsonb,
   created_at timestamptz not null default now()
 );
 
@@ -622,6 +623,11 @@ on public.tasks
 for update
 using (public.is_family_member(family_id))
 with check (public.is_family_member(family_id));
+
+create policy "family members can delete tasks"
+on public.tasks
+for delete
+using (public.is_family_member(family_id));
 
 create policy "family members can read notes"
 on public.notes

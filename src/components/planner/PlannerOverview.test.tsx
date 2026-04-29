@@ -15,11 +15,11 @@ describe('PlannerOverview', () => {
       ...plannerFixture,
       tasks: [
         ...plannerFixture.tasks,
-        { id: 'task-2', title: 'Brotdose einpacken', owner: 'Bea', due: 'Morgen', done: false },
-        { id: 'task-3', title: 'Elternbrief lesen', owner: 'Alex', due: 'Freitag', done: false },
-        { id: 'task-4', title: 'Turnbeutel prüfen', owner: 'Bea', due: 'Samstag', done: false },
-        { id: 'task-5', title: 'Bastelsachen ordnen', owner: 'Alex', due: 'Sonntag', done: false },
-        { id: 'task-6', title: 'Hausaufgabenmappe prüfen', owner: 'Bea', due: 'Montag', done: false },
+        { id: 'task-2', title: 'Brotdose einpacken', owner: 'Bea', due: '2026-05-03', status: 'todo', subtasks: [] },
+        { id: 'task-3', title: 'Elternbrief lesen', owner: 'Alex', due: '2026-05-04', status: 'in-progress', subtasks: [] },
+        { id: 'task-4', title: 'Turnbeutel prüfen', owner: 'Bea', due: '2026-05-05', status: 'todo', subtasks: [] },
+        { id: 'task-5', title: 'Bastelsachen ordnen', owner: 'Alex', due: '2026-05-06', status: 'done', subtasks: [] },
+        { id: 'task-6', title: 'Hausaufgabenmappe prüfen', owner: 'Bea', due: '2026-05-07', status: 'todo', subtasks: [] },
       ],
       calendar: [
         ...plannerFixture.calendar,
@@ -44,9 +44,10 @@ describe('PlannerOverview', () => {
 
     expect(screen.getByText('Schultasche packen')).toBeInTheDocument();
     expect(screen.getByText('Hausaufgabenmappe prüfen')).toBeInTheDocument();
+    expect(screen.queryByText('Bastelsachen ordnen')).not.toBeInTheDocument();
     expect(screen.getByText('Laternenfest')).toBeInTheDocument();
     expect(screen.getByText('Klassenfest')).toBeInTheDocument();
-    await user.click(within(screen.getByText('Schultasche packen').closest('li') as HTMLElement).getByRole('button', { name: 'Offen' }));
+    await user.click(within(screen.getByText('Schultasche packen').closest('li') as HTMLElement).getByRole('button', { name: 'Erledigen' }));
     expect(onToggleTask).toHaveBeenCalledWith('task-1', true);
   });
 });

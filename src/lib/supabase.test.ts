@@ -58,6 +58,31 @@ function buildNoteDeleteBuilder(result: { error: unknown }) {
   };
 }
 
+function buildTaskListBuilder(result: { data: unknown; error: unknown }) {
+  return {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockResolvedValue(result),
+  };
+}
+
+function buildTaskMutationBuilder(result: { data: unknown; error: unknown }) {
+  return {
+    insert: vi.fn().mockReturnThis(),
+    update: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    select: vi.fn().mockReturnThis(),
+    single: vi.fn().mockResolvedValue(result),
+  };
+}
+
+function buildTaskDeleteBuilder(result: { error: unknown }) {
+  return {
+    delete: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockResolvedValue(result),
+  };
+}
+
 describe('auth email normalization', () => {
   beforeEach(() => {
     vi.resetModules();
@@ -799,5 +824,167 @@ describe('note persistence', () => {
     const { deleteNote } = await import('./supabase');
 
     await expect(deleteNote('note-1')).resolves.toBeUndefined();
+  });
+});
+
+describe('task persistence', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    vi.clearAllMocks();
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_PUBLISHABLE_KEY', 'publishable-key');
+  });
+
+  it('fetches tasks and normalizes malformed subtasks', async () => {
+    const taskListBuilder = buildTaskListBuilder({
+      data: [
+        {
+          id: 'task-1',
+          title: 'Ranzen packen',
+          owner: 'Alex',
+          due: '2026-05-01',
+          status: 'in-progress',
+          subtasks: [
+            { id: 'subtask-1', title: 'Deutschheft', done: true },
+            { id: 'subtask-2', title: '   ', done: false },
+            null,
+          ],
+        },
+      ],
+      error: null,
+    });
+
+    const fromMock = vi.fn().mockReturnValue(taskListBuilder);
+    createClientMock.mockReturnValue({
+      from: fromMock,
+    });
+
+    const { fetchTasks } = await import('./supabase');
+
+    await expect(fetchTasks('family-1')).resolves.toEqual([
+      {
+        id: 'task-1',
+        title: 'Ranzen packen',
+        owner: 'Alex',
+        due: '2026-05-01',
+        status: 'in-progress',
+        subtasks: [{ id: 'subtask-1', title: 'Deutschheft', done: true }],
+      },
+    ]);
+
+    expect(fromMock).toHaveBeenCalledWith('tasks');
+    expect(taskListBuilder.eq).toHaveBeenCalledWith('family_id', 'family-1');
+    expect(taskListBuilder.order).toHaveBeenCalledWith('created_at', { ascending: false });
+  });
+
+  it('creates a task and serializes subtasks for storage', async () => {
+    const taskMutationBuilder = buildTaskMutationBuilder({
+      data: {
+        id: 'task-2',
+        title: 'Elternbrief lesen',
+        owner: 'Bea',
+        due: '2026-05-02',
+        status: 'todo',
+        subtasks: [{ id: 'subtask-1', title: 'Unterschreiben', done: false }],
+      },
+      error: null,
+    });
+
+    const fromMock = vi.fn().mockReturnValue(taskMutationBuilder);
+    createClientMock.mockReturnValue({
+      from: fromMock,
+    });
+
+    const { createTask } = await import('./supabase');
+
+    await expect(
+      createTask('family-1', {
+        title: 'Elternbrief lesen',
+        owner: 'Bea',
+        due: '2026-05-02',
+        status: 'todo',
+        subtasks: [{ id: 'subtask-1', title: 'Unterschreiben', done: false }],
+      }),
+    ).resolves.toEqual({
+      id: 'task-2',
+      title: 'Elternbrief lesen',
+      owner: 'Bea',
+      due: '2026-05-02',
+      status: 'todo',
+      subtasks: [{ id: 'subtask-1', title: 'Unterschreiben', done: false }],
+    });
+
+    expect(fromMock).toHaveBeenCalledWith('tasks');
+    expect(taskMutationBuilder.insert).toHaveBeenCalledWith({
+      family_id: 'family-1',
+      title: 'Elternbrief lesen',
+      owner: 'Bea',
+      due: '2026-05-02',
+      status: 'todo',
+      subtasks: [{ id: 'subtask-1', title: 'Unterschreiben', done: false }],
+    });
+  });
+
+  it('updates a task and keeps only valid subtasks in the response', async () => {
+    const taskMutationBuilder = buildTaskMutationBuilder({
+      data: {
+        id: 'task-3',
+        title: 'Turnbeutel pruefen',
+        owner: 'Alex',
+        due: '2026-05-03',
+        status: 'done',
+        subtasks: [
+          { id: 'subtask-1', title: 'Schuhe', done: true },
+          { id: '', title: 'Ignorieren', done: true },
+        ],
+      },
+      error: null,
+    });
+
+    const fromMock = vi.fn().mockReturnValue(taskMutationBuilder);
+    createClientMock.mockReturnValue({
+      from: fromMock,
+    });
+
+    const { updateTask } = await import('./supabase');
+
+    await expect(
+      updateTask('task-3', {
+        status: 'done',
+        subtasks: [{ id: 'subtask-1', title: 'Schuhe', done: true }],
+      }),
+    ).resolves.toEqual({
+      id: 'task-3',
+      title: 'Turnbeutel pruefen',
+      owner: 'Alex',
+      due: '2026-05-03',
+      status: 'done',
+      subtasks: [{ id: 'subtask-1', title: 'Schuhe', done: true }],
+    });
+
+    expect(fromMock).toHaveBeenCalledWith('tasks');
+    expect(taskMutationBuilder.update).toHaveBeenCalledWith({
+      status: 'done',
+      subtasks: [{ id: 'subtask-1', title: 'Schuhe', done: true }],
+    });
+    expect(taskMutationBuilder.eq).toHaveBeenCalledWith('id', 'task-3');
+  });
+
+  it('deletes a task by id', async () => {
+    const taskDeleteBuilder = buildTaskDeleteBuilder({
+      error: null,
+    });
+
+    const fromMock = vi.fn().mockReturnValue(taskDeleteBuilder);
+    createClientMock.mockReturnValue({
+      from: fromMock,
+    });
+
+    const { deleteTask } = await import('./supabase');
+
+    await expect(deleteTask('task-4')).resolves.toBeUndefined();
+
+    expect(fromMock).toHaveBeenCalledWith('tasks');
+    expect(taskDeleteBuilder.eq).toHaveBeenCalledWith('id', 'task-4');
   });
 });

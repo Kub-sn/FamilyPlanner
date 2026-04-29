@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { ActiveTabProvider } from '../../context/ActiveTabContext';
@@ -6,28 +6,197 @@ import { plannerFixture } from './planner-test-fixtures';
 import { TasksModule } from './TasksModule';
 
 describe('TasksModule', () => {
-  it('renders tasks, submits the form, and toggles completion', async () => {
+  it('renders kanban columns, submits the form, changes status via dialog, and toggles a subtask', async () => {
     const user = userEvent.setup();
     const onAddTask = vi.fn().mockResolvedValue(undefined);
-    const onToggleTask = vi.fn().mockResolvedValue(undefined);
+    const onUpdateTask = vi.fn().mockResolvedValue(undefined);
+    const onDeleteTask = vi.fn().mockResolvedValue(undefined);
+    const onSetTaskStatus = vi.fn().mockResolvedValue(undefined);
+    const onToggleTaskSubtask = vi.fn().mockResolvedValue(undefined);
 
     render(
       <ActiveTabProvider activeTab="tasks" setActiveTab={vi.fn()}>
         <TasksModule
+          familyMemberOptions={plannerFixture.members.map((member) => member.name)}
           ownerDefaultValue="Alex"
           tasks={plannerFixture.tasks}
           onAddTask={onAddTask}
-          onToggleTask={onToggleTask}
+          onUpdateTask={onUpdateTask}
+          onDeleteTask={onDeleteTask}
+          onSetTaskStatus={onSetTaskStatus}
+          onToggleTaskSubtask={onToggleTaskSubtask}
         />
       </ActiveTabProvider>,
     );
 
-    await user.type(screen.getByPlaceholderText('Aufgabe'), 'Muell rausbringen');
-    await user.type(screen.getByPlaceholderText('Fällig am'), 'Heute');
-    await user.click(screen.getByRole('button', { name: 'Aufgabe speichern' }));
-    await user.click(screen.getByRole('button', { name: 'Offen' }));
+    expect(screen.getByRole('heading', { level: 4, name: 'Todo' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 4, name: 'In Arbeit' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 4, name: 'Erledigt' })).toBeInTheDocument();
+    expect(screen.getByText('1/2 erledigt')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Neue Aufgabe' })).toBeInTheDocument();
 
-    expect(onAddTask).toHaveBeenCalled();
-    expect(onToggleTask).toHaveBeenCalledWith('task-1', true);
+    await user.click(screen.getByRole('button', { name: 'Neue Aufgabe' }));
+
+    const createDialog = screen.getByRole('dialog', { name: 'Neue Aufgabe' });
+    expect(within(createDialog).getByRole('combobox', { name: 'Verantwortlich' })).toBeInTheDocument();
+
+    await user.type(within(createDialog).getByPlaceholderText('Aufgabe'), 'Muell rausbringen');
+    await user.selectOptions(within(createDialog).getByRole('combobox', { name: 'Verantwortlich' }), 'Bea User');
+    await user.type(within(createDialog).getByLabelText('Fälligkeitsdatum'), '2026-05-04');
+    await user.click(within(createDialog).getByRole('button', { name: 'Subtask hinzufügen' }));
+    await user.type(within(createDialog).getByLabelText('Subtask 1'), 'Muellsack verknoten');
+    await user.click(within(createDialog).getByRole('button', { name: 'Aufgabe speichern' }));
+
+    await user.click(screen.getByRole('button', { name: /Aufgabe Schultasche packen Aktionen/i }));
+    await user.click(screen.getByRole('button', { name: 'Status ändern' }));
+    await user.click(within(screen.getByRole('dialog', { name: 'Status ändern' })).getByRole('button', { name: /In Arbeit/i }));
+    await user.click(screen.getByRole('checkbox', { name: 'Turnbeutel prüfen' }));
+
+    expect(onAddTask).toHaveBeenCalledWith({
+      title: 'Muell rausbringen',
+      owner: 'Bea User',
+      due: '2026-05-04',
+      subtasks: [{ id: expect.any(String), title: 'Muellsack verknoten', done: false }],
+    });
+    expect(onUpdateTask).not.toHaveBeenCalled();
+    expect(onDeleteTask).not.toHaveBeenCalled();
+    expect(onSetTaskStatus).toHaveBeenCalledWith('task-1', 'in-progress');
+    expect(onToggleTaskSubtask).toHaveBeenCalledWith('task-1', 'task-1-subtask-2', true);
+  });
+
+  it('hides subtask progress and fallback text for tasks without subtasks', () => {
+    render(
+      <ActiveTabProvider activeTab="tasks" setActiveTab={vi.fn()}>
+        <TasksModule
+          familyMemberOptions={plannerFixture.members.map((member) => member.name)}
+          ownerDefaultValue="Alex"
+          tasks={[
+            ...plannerFixture.tasks,
+            {
+              id: 'task-2',
+              title: 'Muell rausbringen',
+              owner: 'Bea',
+              due: '2026-05-05',
+              status: 'todo',
+              subtasks: [],
+            },
+          ]}
+          onAddTask={vi.fn().mockResolvedValue(undefined)}
+          onUpdateTask={vi.fn().mockResolvedValue(undefined)}
+          onDeleteTask={vi.fn().mockResolvedValue(undefined)}
+          onSetTaskStatus={vi.fn().mockResolvedValue(undefined)}
+          onToggleTaskSubtask={vi.fn().mockResolvedValue(undefined)}
+        />
+      </ActiveTabProvider>,
+    );
+
+    expect(screen.queryByText('Keine Subtasks hinterlegt.')).not.toBeInTheDocument();
+    expect(screen.queryByText('0/0 erledigt')).not.toBeInTheDocument();
+    expect(screen.queryAllByText('Todo')).toHaveLength(1);
+  });
+
+  it('edits and deletes a task through the action menu', async () => {
+    const user = userEvent.setup();
+    const onUpdateTask = vi.fn().mockResolvedValue(true);
+    const onDeleteTask = vi.fn().mockResolvedValue(true);
+
+    render(
+      <ActiveTabProvider activeTab="tasks" setActiveTab={vi.fn()}>
+        <TasksModule
+          familyMemberOptions={plannerFixture.members.map((member) => member.name)}
+          ownerDefaultValue="Alex"
+          tasks={plannerFixture.tasks}
+          onAddTask={vi.fn().mockResolvedValue(undefined)}
+          onUpdateTask={onUpdateTask}
+          onDeleteTask={onDeleteTask}
+          onSetTaskStatus={vi.fn().mockResolvedValue(undefined)}
+          onToggleTaskSubtask={vi.fn().mockResolvedValue(undefined)}
+        />
+      </ActiveTabProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Aufgabe Schultasche packen Aktionen/i }));
+    await user.click(screen.getByRole('button', { name: 'Bearbeiten' }));
+
+    const editDialog = screen.getByRole('dialog', { name: 'Aufgabe bearbeiten' });
+    await user.clear(within(editDialog).getByPlaceholderText('Aufgabe'));
+    await user.type(within(editDialog).getByPlaceholderText('Aufgabe'), 'Schultasche neu packen');
+    await user.click(within(editDialog).getByRole('button', { name: 'Änderungen speichern' }));
+
+    expect(onUpdateTask).toHaveBeenCalledWith('task-1', {
+      title: 'Schultasche neu packen',
+      owner: 'Alex',
+      due: '2026-05-02',
+      status: 'todo',
+      subtasks: [
+        { id: 'task-1-subtask-1', title: 'Hefte sortieren', done: true },
+        { id: 'task-1-subtask-2', title: 'Turnbeutel prüfen', done: false },
+      ],
+    });
+
+    await user.click(screen.getByRole('button', { name: /Aufgabe Schultasche packen Aktionen/i }));
+    await user.click(screen.getByRole('button', { name: 'Löschen' }));
+    await user.click(screen.getByRole('button', { name: /^Löschen$/ }));
+
+    expect(onDeleteTask).toHaveBeenCalledWith('task-1');
+  });
+
+  it('keeps the create dialog open when saving fails', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ActiveTabProvider activeTab="tasks" setActiveTab={vi.fn()}>
+        <TasksModule
+          familyMemberOptions={plannerFixture.members.map((member) => member.name)}
+          ownerDefaultValue="Alex"
+          tasks={plannerFixture.tasks}
+          onAddTask={vi.fn().mockResolvedValue(false)}
+          onUpdateTask={vi.fn().mockResolvedValue(true)}
+          onDeleteTask={vi.fn().mockResolvedValue(true)}
+          onSetTaskStatus={vi.fn().mockResolvedValue(undefined)}
+          onToggleTaskSubtask={vi.fn().mockResolvedValue(undefined)}
+        />
+      </ActiveTabProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Neue Aufgabe' }));
+
+    const createDialog = screen.getByRole('dialog', { name: 'Neue Aufgabe' });
+    await user.type(within(createDialog).getByPlaceholderText('Aufgabe'), 'Fehlversuch');
+    await user.type(within(createDialog).getByLabelText('Fälligkeitsdatum'), '2026-05-04');
+    await user.click(within(createDialog).getByRole('button', { name: 'Aufgabe speichern' }));
+
+    expect(screen.getByRole('dialog', { name: 'Neue Aufgabe' })).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Fehlversuch')).toBeInTheDocument();
+  });
+
+  it('keeps the edit dialog open when saving fails', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ActiveTabProvider activeTab="tasks" setActiveTab={vi.fn()}>
+        <TasksModule
+          familyMemberOptions={plannerFixture.members.map((member) => member.name)}
+          ownerDefaultValue="Alex"
+          tasks={plannerFixture.tasks}
+          onAddTask={vi.fn().mockResolvedValue(true)}
+          onUpdateTask={vi.fn().mockResolvedValue(false)}
+          onDeleteTask={vi.fn().mockResolvedValue(true)}
+          onSetTaskStatus={vi.fn().mockResolvedValue(undefined)}
+          onToggleTaskSubtask={vi.fn().mockResolvedValue(undefined)}
+        />
+      </ActiveTabProvider>,
+    );
+
+    await user.click(screen.getByRole('button', { name: /Aufgabe Schultasche packen Aktionen/i }));
+    await user.click(screen.getByRole('button', { name: 'Bearbeiten' }));
+
+    const editDialog = screen.getByRole('dialog', { name: 'Aufgabe bearbeiten' });
+    await user.clear(within(editDialog).getByPlaceholderText('Aufgabe'));
+    await user.type(within(editDialog).getByPlaceholderText('Aufgabe'), 'Bleibt offen');
+    await user.click(within(editDialog).getByRole('button', { name: 'Änderungen speichern' }));
+
+    expect(screen.getByRole('dialog', { name: 'Aufgabe bearbeiten' })).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Bleibt offen')).toBeInTheDocument();
   });
 });

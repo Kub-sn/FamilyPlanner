@@ -19,8 +19,9 @@ describe('applyCloudCollections', () => {
           id: 'task-cloud-1',
           title: 'Turnbeutel packen',
           owner: 'Mia',
-          due: 'Morgen',
-          done: false,
+          due: '2026-05-01',
+          status: 'todo',
+          subtasks: [],
         },
       ],
       notes: [

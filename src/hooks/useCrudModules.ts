@@ -1,12 +1,13 @@
-import { useState, type FormEvent } from 'react';
-import type { PlannerState } from '../lib/planner-data';
+import type { FormEvent } from 'react';
+import type { PlannerState, TaskItem, TaskStatus } from '../lib/planner-data';
 import type { AuthState, CloudSyncSetterValue } from '../app/types';
 import {
   createShoppingItem,
   createTask,
+  deleteTask,
   createMeal,
   updateShoppingItemChecked,
-  updateTaskDone,
+  updateTask,
   updateMealPrepared,
 } from '../lib/supabase';
 import { humanizeAuthError } from '../lib/auth-errors';
@@ -14,12 +15,14 @@ import { nextStringId } from '../lib/id';
 
 type UseCrudModulesParams = {
   authState: AuthState;
+  plannerState: PlannerState;
   setCloudSync: (value: CloudSyncSetterValue) => void;
   updateState: (updater: (current: PlannerState) => PlannerState) => void;
 };
 
 export function useCrudModules({
   authState,
+  plannerState,
   setCloudSync,
   updateState,
 }: UseCrudModulesParams) {
@@ -85,22 +88,19 @@ export function useCrudModules({
     }
   };
 
-  const handleAddTask = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formElement = event.currentTarget;
-    const form = new FormData(formElement);
-    const title = String(form.get('title') || '').trim();
-    const owner = String(form.get('owner') || '').trim();
-    const due = String(form.get('due') || '').trim();
-
-    if (!title || !owner || !due) {
-      return;
+  const handleAddTask = async (payload: Omit<TaskItem, 'id' | 'status'>) => {
+    if (!payload.title || !payload.owner || !payload.due) {
+      return false;
     }
 
     try {
       if (authState.family) {
         const createdTask = await createTask(authState.family.familyId, {
-          title, owner, due, done: false,
+          title: payload.title,
+          owner: payload.owner,
+          due: payload.due,
+          status: 'todo',
+          subtasks: payload.subtasks,
         });
         updateState((current) => ({
           ...current,
@@ -113,10 +113,88 @@ export function useCrudModules({
       } else {
         updateState((current) => ({
           ...current,
-          tasks: [{ id: nextStringId(), title, owner, due, done: false }, ...current.tasks],
+          tasks: [{ id: nextStringId(), title: payload.title, owner: payload.owner, due: payload.due, status: 'todo', subtasks: payload.subtasks }, ...current.tasks],
         }));
       }
-      formElement.reset();
+      return true;
+    } catch (error) {
+      setCloudSync({
+        phase: 'error',
+        message: humanizeAuthError(error),
+      });
+      return false;
+    }
+  };
+
+  const handleUpdateTask = async (id: string, payload: Partial<Omit<TaskItem, 'id'>>) => {
+    const currentTask = plannerState.tasks.find((entry) => entry.id === id) ?? null;
+
+    if (!currentTask) {
+      return false;
+    }
+
+    try {
+      if (authState.family) {
+        await updateTask(id, payload);
+      }
+      updateState((current) => ({
+        ...current,
+        tasks: current.tasks.map((entry) => (
+          entry.id === id ? { ...entry, ...payload } : entry
+        )),
+      }));
+      return true;
+    } catch (error) {
+      setCloudSync({
+        phase: 'error',
+        message: humanizeAuthError(error),
+      });
+      return false;
+    }
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    try {
+      if (authState.family) {
+        await deleteTask(id);
+      }
+      updateState((current) => ({
+        ...current,
+        tasks: current.tasks.filter((entry) => entry.id !== id),
+      }));
+      return true;
+    } catch (error) {
+      setCloudSync({
+        phase: 'error',
+        message: humanizeAuthError(error),
+      });
+      return false;
+    }
+  };
+
+  const handleSetTaskStatus = async (id: string, status: TaskStatus) => {
+    const currentTask = plannerState.tasks.find((entry) => entry.id === id) ?? null;
+
+    if (!currentTask) {
+      return;
+    }
+
+    const nextSubtasks = status === 'done'
+      ? currentTask.subtasks.map((subtask) => ({ ...subtask, done: true }))
+      : currentTask.subtasks;
+
+    try {
+      if (authState.family) {
+        await updateTask(id, { status, subtasks: nextSubtasks });
+      }
+      updateState((current) => ({
+        ...current,
+        tasks: current.tasks.map((entry) =>
+          entry.id === id
+            ? { ...entry, status, subtasks: nextSubtasks }
+            : entry,
+        ),
+      }));
     } catch (error) {
       setCloudSync({
         phase: 'error',
@@ -126,13 +204,32 @@ export function useCrudModules({
   };
 
   const handleToggleTask = async (id: string, done: boolean) => {
+    await handleSetTaskStatus(id, done ? 'done' : 'todo');
+  };
+
+  const handleToggleTaskSubtask = async (taskId: string, subtaskId: string, done: boolean) => {
+    const currentTask = plannerState.tasks.find((entry) => entry.id === taskId) ?? null;
+
+    if (!currentTask) {
+      return;
+    }
+
+    const nextSubtasks = currentTask.subtasks.map((subtask) =>
+      subtask.id === subtaskId ? { ...subtask, done } : subtask,
+    );
+    const nextStatus = currentTask.status === 'done' && !done ? 'in-progress' : currentTask.status;
+
     try {
       if (authState.family) {
-        await updateTaskDone(id, done);
+        await updateTask(taskId, { subtasks: nextSubtasks, status: nextStatus });
       }
       updateState((current) => ({
         ...current,
-        tasks: current.tasks.map((entry) => (entry.id === id ? { ...entry, done } : entry)),
+        tasks: current.tasks.map((entry) =>
+          entry.id === taskId
+            ? { ...entry, status: nextStatus, subtasks: nextSubtasks }
+            : entry,
+        ),
       }));
     } catch (error) {
       setCloudSync({
@@ -202,7 +299,11 @@ export function useCrudModules({
     handleAddShopping,
     handleToggleShopping,
     handleAddTask,
+    handleUpdateTask,
+    handleDeleteTask,
     handleToggleTask,
+    handleSetTaskStatus,
+    handleToggleTaskSubtask,
     handleAddMeal,
     handleToggleMealPrepared,
   };

@@ -15,12 +15,21 @@ export type ShoppingItem = {
   checked: boolean;
 };
 
+export type TaskStatus = 'todo' | 'in-progress' | 'done';
+
+export type TaskSubtask = {
+  id: string;
+  title: string;
+  done: boolean;
+};
+
 export type TaskItem = {
   id: string;
   title: string;
   owner: string;
   due: string;
-  done: boolean;
+  status: TaskStatus;
+  subtasks: TaskSubtask[];
 };
 
 export type NoteItem = {
